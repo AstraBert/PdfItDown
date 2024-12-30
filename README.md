@@ -13,7 +13,7 @@
 
 **PdfItDown** is applicable to the following file formats:
 
-- PDF
+- Markdown
 - PowerPoint
 - Word
 - Excel
@@ -43,13 +43,23 @@ python3 -m pip install pdfitdown
 
 And then you can simply use it inside your python scripts:
 
+- To convert **.pptx/.docx/.csv/.json/.xml/.html/.zip file to PDF**
+
 ```python
 from pdfitdown.pdfconversion import convert_to_pdf
 
 output_pdf = convert_to_pdf(file_path = "BusinessGrowth.xlsx", output_path = "business_growth.pdf", title = "Business Growth")
 ```
 
-In this example, you will find the output PDF under `business_growth.pdf`.
+- To convert a **.md file to PDF**:
+
+```python
+from pdfitdown.pdfconversion import convert_markdown_to_pdf
+
+output_pdf = convert_markdown_to_pdf(file_path = "BusinessGrowth.md", output_path = "business_growth.pdf", title = "Business Growth")
+```
+
+In these examples, you will find the output PDF under `business_growth.pdf`.
 
 ### Contributing
 
