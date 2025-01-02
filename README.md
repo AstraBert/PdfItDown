@@ -18,12 +18,23 @@
 - Word
 - Excel
 - HTML
-- Text-based formats (CSV, JSON, XML)
+- Text-based formats (CSV, XML)
 - ZIP files (iterates over contents)
 
 ### How does it work?
 
 **PdfItDown** works in a very simple way:
+
+- From **markdown** to PDF
+
+```mermaid
+graph LR
+2(Input File) --> 3[Markdown content] 
+3[Markdown content] --> 4[markdown-pdf]
+4[markdown-pdf] --> 5(PDF file)
+```
+
+- From other **text-based** file formats to PDF
 
 ```mermaid
 graph LR
@@ -41,7 +52,28 @@ To install **PdfItDown**, just run:
 python3 -m pip install pdfitdown
 ```
 
-And then you can simply use it inside your python scripts:
+You can now use the command line tool:
+
+```
+usage: pdfitdown [-h] -i INPUTFILE -o OUTPUTFILE [-t TITLE]
+
+options:
+  -h, --help            show this help message and exit
+  -i INPUTFILE, --inputfile INPUTFILE
+                        Path to the input file that needs to be converted to PDF
+  -o OUTPUTFILE, --outputfile OUTPUTFILE
+                        Path to the output PDF file
+  -t TITLE, --title TITLE
+                        Title to include in the PDF metadata. Default: 'PDF Title'
+```
+
+An example usage can be:
+
+```bash
+pdfitdown -i README.md -o README.pdf -t "README"
+```
+
+Or you can use it inside your python scripts:
 
 - To convert **.pptx/.docx/.csv/.json/.xml/.html/.zip file to PDF**
 

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pdfitdown"
-version = "0.0.1"
+version = "0.0.2"
 authors = [
     { name="Clelia (Astra) Bertelli", email="astraberte9@gmail.com" },
 ]
@@ -19,6 +19,7 @@ classifiers = [
 dependencies = [
     'markitdown',
     'markdown_pdf == 1.3.2',
+    'termcolor'
 ]
 
 [project.urls]
@@ -31,3 +32,6 @@ include = ["pdfitdown*"]
 
 [options.package_data]
 pdfitdown = ["*"]
+
+[project.scripts]
+pdfitdown = "pdfitdown.pdfitdown_cli:main"
