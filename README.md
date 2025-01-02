@@ -93,6 +93,23 @@ output_pdf = convert_markdown_to_pdf(file_path = "BusinessGrowth.md", output_pat
 
 In these examples, you will find the output PDF under `business_growth.pdf`.
 
+### Troubleshooting
+
+If you encounter a segmentation fault error like in [this issue](https://github.com/AstraBert/PdfItDown/issues/1), please consider the following option:
+
+```bash
+git clone https://github.com/AstraBert/PdfItDown.git
+cd PdfItDown
+python3 -m build
+python3 -m venv virtualenv
+source virtualenv/bin/activate
+python3 -m pip install -r requirements.txt
+python3 -m pip install .
+```
+
+> [!IMPORTANT]
+> This is just a temporary fix, until `markdown-pdf` does not resolve the issue itself by implementing a newer version of PyMuPdf. See [this issue](https://github.com/vb64/markdown-pdf/issues/38) for reference
+
 ### Contributing
 
 Contributions are always welcome!
