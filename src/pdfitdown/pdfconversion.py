@@ -1,6 +1,9 @@
 # Import required libraries
 from markitdown import MarkItDown          # Library for conversion to markdown
-from markdown_pdf import MarkdownPdf, Section  # Library for PDF generation
+try:
+    from .markdown_pdf import MarkdownPdf, Section  # Library for PDF generation
+except ImportError:
+    from markdown_pdf import MarkdownPdf, Section
 
 def convert_to_pdf(
     file_path: str,     # Path to input file

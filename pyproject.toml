@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pdfitdown"
-version = "0.0.3.post1"
+version = "0.0.4"
 authors = [
     { name="Clelia (Astra) Bertelli", email="astraberte9@gmail.com" },
 ]
@@ -18,7 +18,8 @@ classifiers = [
 ]
 dependencies = [
     'markitdown',
-    'markdown_pdf == 1.3.2',
+    'markdown_it_py == 3.0.0',
+    'pymupdf == 1.25.1',
     'termcolor',
 ]
 
