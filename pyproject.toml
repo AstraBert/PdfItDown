@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pdfitdown"
-version = "0.0.4"
+version = "0.0.5"
 authors = [
     { name="Clelia (Astra) Bertelli", email="astraberte9@gmail.com" },
 ]
@@ -20,6 +20,7 @@ dependencies = [
     'markitdown',
     'markdown_it_py == 3.0.0',
     'pymupdf == 1.25.1',
+    'gradio == 5.12.0',
     'termcolor',
 ]
 
@@ -36,3 +37,4 @@ pdfitdown = ["*"]
 
 [project.scripts]
 pdfitdown = "pdfitdown.pdfitdown_cli:main"
+pdfitdown_ui = "pdfitdown.pdfitdown_ui:main"
