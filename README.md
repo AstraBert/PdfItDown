@@ -4,7 +4,7 @@
 </div>
 <br>
 <div align="center">
-    <img src="https://raw.githubusercontent.com/AstraBert/PdfItDown/main/logo.png" alt="PdfItDown Logo">
+    <img src="https://raw.githubusercontent.com/AstraBert/PdfItDown/main/img/logo.png" alt="PdfItDown Logo">
 </div>
 
 > [!IMPORTANT]
@@ -55,7 +55,7 @@ To install **PdfItDown**, just run:
 python3 -m pip install pdfitdown
 ```
 
-You can now use the command line tool:
+You can now use the **command line tool**:
 
 ```
 usage: pdfitdown [-h] -i INPUTFILE -o OUTPUTFILE [-t TITLE]
@@ -76,7 +76,7 @@ An example usage can be:
 pdfitdown -i README.md -o README.pdf -t "README"
 ```
 
-Or you can use it inside your python scripts:
+Or you can use it **inside your python scripts**:
 
 - To convert **.pptx/.docx/.csv/.json/.xml/.html/.zip file to PDF**
 
@@ -96,6 +96,17 @@ output_pdf = convert_markdown_to_pdf(file_path = "BusinessGrowth.md", output_pat
 
 In these examples, you will find the output PDF under `business_growth.pdf`.
 
+Or you can just launch a [Gradio](https://gradio.app)-based user interface:
+
+```bash
+pdfitdown_ui
+```
+
+You will be able to see the application running on `http://localhost:7860` within seconds!
+
+Watch the demo here:
+
+[![Watch the video demo!](https://raw.githubusercontent.com/AstraBert/PdfItDown/main/img/thumbnail.png)](https://raw.githubusercontent.com/AstraBert/PdfItDown/main/img/pdfitdown_ui_demo.mp4)
 
 ### Contributing
 
