@@ -44,6 +44,10 @@ def to_pdf(files: List[str]) -> List[str]:
             newfile = f.replace(".csv", ".pdf")
             file_to_add = convert_to_pdf(f, newfile, newfile.split(".")[0])
             pdfs.append(file_to_add)
+        elif f.endswith(".xlsx"):
+            newfile = f.replace(".xlsx", ".pdf")
+            file_to_add = convert_to_pdf(f, newfile, newfile.split(".")[0])
+            pdfs.append(file_to_add)
         elif f.endswith(".xml"):
             newfile = f.replace(".xml", ".pdf")
             file_to_add = convert_to_pdf(f, newfile, newfile.split(".")[0])
@@ -69,7 +73,7 @@ def main():
         inputs=gr.File(label="Upload your file"),
         outputs=gr.File(label="Converted PDF"),
         title="File to PDF Converter",
-        description="Upload a file in .docx, .pdf, .html, .pptx, .csv, .xml, or .md format, and get it converted to PDF."
+        description="Upload a file in .docx, .xlsx, .html, .pptx, .csv, .xml, or .md format, and get it converted to PDF."
     )
     iface.launch()
 

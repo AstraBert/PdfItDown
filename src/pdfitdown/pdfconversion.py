@@ -4,6 +4,7 @@ try:
     from .markdown_pdf import MarkdownPdf, Section  # Library for PDF generation
 except ImportError:
     from markdown_pdf import MarkdownPdf, Section
+import os
 
 def convert_to_pdf(
     file_path: str,     # Path to input file
@@ -11,16 +12,18 @@ def convert_to_pdf(
     title: str = "PDF Title"  # Optional title for the PDF, defaults to "PDF Title"
 ):
     """
-    Converts a .pptx/.docx/.csv/.json/.xml/.html/.zip file to PDF format.
+    Converts a .pptx/.xlsx/.docx/.csv/.json/.xml/.html/.zip file to PDF format.
     
     Args:
-        file_path: Path to the source .pdf/.pptx/.docx/.csv/.json/.xml/.html/.zip file
+        file_path: Path to the source .xlsx/.pdf/.pptx/.docx/.csv/.json/.xml/.html/.zip file
         output_path: Where to save the resulting PDF
         title: Title to be set in PDF metadata
     
     Returns:
         str: Path to the generated PDF file
     """
+    if os.path.splitext(file_path)[1] not in [".docx", ".html", ".xml", ".csv", ".md", ".pptx", ".xlsx"]:
+        raise ValueError(f"ERROR! File format for {file_path} not supported, please provide a file that has one of the following formats:\n\n- "+"\n- ".join([".docx", ".html", ".xml", ".csv", ".md", ".pptx", ".xlsx"]))
     # Initialize markdown converter
     md = MarkItDown()
     

@@ -27,8 +27,8 @@ def main():
     outf = args.outputfile
     titl = args.title
 
-    if os.path.splitext(inf)[1] not in [".docx", ".html", ".xml", ".csv", ".md", ".pptx"]:
-        cprint(f"ERROR! File format for {inf} not supported, please provide a file that has one of the following formats:\n\n- "+"\n- ".join([".docx", ".html", ".xml", ".csv", ".md", ".pptx"]),
+    if os.path.splitext(inf)[1] not in [".docx", ".html", ".xml", ".csv", ".md", ".pptx", ".xlsx"]:
+        cprint(f"ERROR! File format for {inf} not supported, please provide a file that has one of the following formats:\n\n- "+"\n- ".join([".docx", ".html", ".xml", ".csv", ".md", ".pptx", ".xlsx"]),
                color="red", file=sys.stderr)
         sys.exit(1)
     elif os.path.splitext(outf)[1] != ".pdf":
