@@ -1,7 +1,7 @@
 try:
-    from .pdfconversion import convert_to_pdf, convert_markdown_to_pdf
+    from .pdfconversion import convert_to_pdf, convert_markdown_to_pdf, convert_image_to_pdf
 except ImportError:
-    from pdfconversion import convert_to_pdf, convert_markdown_to_pdf
+    from pdfconversion import convert_to_pdf, convert_markdown_to_pdf, convert_image_to_pdf
 import warnings
 from typing import List
 import gradio as gr
@@ -26,32 +26,17 @@ def to_pdf(files: List[str]) -> List[str]:
     """
     pdfs = []
     for f in files:
-        if f.endswith(".docx"):
-            newfile = f.replace(".docx", ".pdf")
-            file_to_add = convert_to_pdf(f, newfile, newfile.split(".")[0])
-            pdfs.append(file_to_add)
-        elif f.endswith(".pdf"):
-            pdfs.append(f)
-        elif f.endswith(".html"):
-            newfile = f.replace(".html", ".pdf")
-            file_to_add = convert_to_pdf(f, newfile, newfile.split(".")[0])
-            pdfs.append(file_to_add)
-        elif f.endswith(".pptx"):
-            newfile = f.replace(".pptx", ".pdf")
-            file_to_add = convert_to_pdf(f, newfile, newfile.split(".")[0])
-            pdfs.append(file_to_add)
-        elif f.endswith(".csv"):
-            newfile = f.replace(".csv", ".pdf")
-            file_to_add = convert_to_pdf(f, newfile, newfile.split(".")[0])
-            pdfs.append(file_to_add)
-        elif f.endswith(".xlsx"):
-            newfile = f.replace(".xlsx", ".pdf")
-            file_to_add = convert_to_pdf(f, newfile, newfile.split(".")[0])
-            pdfs.append(file_to_add)
-        elif f.endswith(".xml"):
-            newfile = f.replace(".xml", ".pdf")
-            file_to_add = convert_to_pdf(f, newfile, newfile.split(".")[0])
-            pdfs.append(file_to_add)
+        if not f.endswith(".md"):
+            if not (f.endswith(".jpg") or f.endswith(".jpeg") or f.endswith(".png")):
+                extension = f.split(".")[-1]
+                newfile = f.replace("."+extension, ".pdf")
+                file_to_add = convert_to_pdf(f, newfile, newfile.split(".")[0])
+                pdfs.append(file_to_add)
+            else:
+                extension = f.split(".")[-1]
+                newfile = f.replace("."+extension, ".pdf")
+                file_to_add = convert_image_to_pdf(f, newfile)
+                pdfs.append(file_to_add)
         elif f.endswith(".md"):
             newfile = f.replace(".md", ".pdf")
             file_to_add = convert_markdown_to_pdf(f, newfile, newfile.split(".")[0])
@@ -73,7 +58,7 @@ def main():
         inputs=gr.File(label="Upload your file"),
         outputs=gr.File(label="Converted PDF"),
         title="File to PDF Converter",
-        description="Upload a file in .docx, .xlsx, .html, .pptx, .csv, .xml, or .md format, and get it converted to PDF."
+        description="Upload a file in .docx, .xlsx, .html, .pptx, .csv, .xml, .md, .jpg/.jpeg, .png format, and get it converted to PDF."
     )
     iface.launch()
 

@@ -23,6 +23,7 @@
 - HTML
 - Text-based formats (CSV, XML)
 - ZIP files (iterates over contents)
+- Image files (PNG, JPG)
 
 ### How does it work?
 
@@ -35,6 +36,15 @@ graph LR
 2(Input File) --> 3[Markdown content] 
 3[Markdown content] --> 4[markdown-pdf]
 4[markdown-pdf] --> 5(PDF file)
+```
+
+- From **image** to PDF
+
+```mermaid
+graph LR
+2(Input File) --> 3[Bytes] 
+3[Bytes] --> 4[img2pdf]
+4[img2pdf] --> 5(PDF file)
 ```
 
 - From other **text-based** file formats to PDF
@@ -92,6 +102,14 @@ output_pdf = convert_to_pdf(file_path = "BusinessGrowth.xlsx", output_path = "bu
 from pdfitdown.pdfconversion import convert_markdown_to_pdf
 
 output_pdf = convert_markdown_to_pdf(file_path = "BusinessGrowth.md", output_path = "business_growth.pdf", title = "Business Growth")
+```
+
+- To convert an **image to PDF**:
+
+```python
+from pdfitdown.pdfconversion import convert_image_to_pdf
+
+output_pdf = convert_image_to_pdf(file_path = "BusinessGrowth.png", output_path = "business_growth.pdf")
 ```
 
 In these examples, you will find the output PDF under `business_growth.pdf`.

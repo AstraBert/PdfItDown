@@ -1,5 +1,7 @@
 # Import required libraries
 from markitdown import MarkItDown          # Library for conversion to markdown
+from PIL import Image
+import img2pdf
 try:
     from .markdown_pdf import MarkdownPdf, Section  # Library for PDF generation
 except ImportError:
@@ -23,7 +25,7 @@ def convert_to_pdf(
         str: Path to the generated PDF file
     """
     if os.path.splitext(file_path)[1] not in [".docx", ".html", ".xml", ".csv", ".md", ".pptx", ".xlsx"]:
-        raise ValueError(f"ERROR! File format for {file_path} not supported, please provide a file that has one of the following formats:\n\n- "+"\n- ".join([".docx", ".html", ".xml", ".csv", ".md", ".pptx", ".xlsx"]))
+        raise ValueError(f"ERROR! File format for {file_path} not supported, please provide a file that has one of the following formats:\n\n- "+"\n- ".join([".docx", ".html", ".xml", ".csv", ".md", ".pptx", ".xlsx", ".png", ".jpg", ".png"]))
     # Initialize markdown converter
     md = MarkItDown()
     
@@ -48,6 +50,29 @@ def convert_to_pdf(
     # Return the path where the PDF was saved
     return output_path
 
+def convert_image_to_pdf(
+        file_path: str,
+        output_path: str,
+):
+    """
+    Converts a .png/.jpg/.jpeg file to PDF format.
+    
+    Args:
+        file_path: Path to the source .md file
+        output_path: Where to save the resulting PDF
+    
+    Returns:
+        str: Path to the generated PDF file
+    """
+    if not (file_path.endswith(".png") or file_path.endswith(".jpg") or file_path.endswith(".jpeg")):
+        return "File extension not allowed for image."
+    image = Image.open(file_path)
+    pdf_bytes = img2pdf.convert(image.filename)
+    with open(output_path, "wb") as file:
+        file.write(pdf_bytes)
+    file.close()
+    image.close()
+    return output_path
 
 def convert_markdown_to_pdf(
     file_path: str,     # Path to input markdown file
