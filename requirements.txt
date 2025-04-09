@@ -1,4 +1,5 @@
-pymupdf==1.25.1
-markdown-it-py==3.0.0
-markitdown
+markdown-pdf
+markitdown[all]
 termcolor
+gradio
+

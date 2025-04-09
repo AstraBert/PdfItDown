@@ -1,2 +1,6 @@
 dist/
 src/pdfitdown.egg-info/
+.pytest_cache/
+build/
+tests/__pycache__/
+tests/data/*.pdf
