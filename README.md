@@ -7,10 +7,7 @@
     <img src="https://raw.githubusercontent.com/AstraBert/PdfItDown/main/img/logo.png" alt="PdfItDown Logo">
 </div>
 
-> [!IMPORTANT]
-> `markdown-pdf` is now implemented, with support for `PyMuPdf` v1.25.1, internally in `PdfItDown`. Make sure to install the latest version of the package (from 0.0.4 on) to avoid errors such as the one in [this issue](https://github.com/AstraBert/PdfItDown/issues/1) 
-
-**PdfItDown** is a python package that relies on [`markitdown` by Microsoft](https://github.com/microsoft/markitdown/) and (a slightly modified version of) [`markdown_pdf`](https://github.com/vb64/markdown-pdf). 
+**PdfItDown** is a python package that relies on [`markitdown` by Microsoft](https://github.com/microsoft/markitdown/) and [`markdown_pdf`](https://github.com/vb64/markdown-pdf). 
 
 ### Applicability
 
@@ -88,31 +85,14 @@ pdfitdown -i README.md -o README.pdf -t "README"
 
 Or you can use it **inside your python scripts**:
 
-- To convert **.pptx/.docx/.csv/.json/.xml/.html/.zip file to PDF**
-
 ```python
-from pdfitdown.pdfconversion import convert_to_pdf
+from pdfitdown.pdfconversion import Converter
 
-output_pdf = convert_to_pdf(file_path = "BusinessGrowth.xlsx", output_path = "business_growth.pdf", title = "Business Growth")
+converter = Converter()
+converter.convert(file_path = "business_grow.md", output_path = "business_growth.pdf", title="Business Growth for Q3 in 2024")
+converter.convert(file_path = "logo.png", output_path = "logo.pdf")
+converter.convert(file_path = "users.csv", output_path = "users.pdf")
 ```
-
-- To convert a **.md file to PDF**:
-
-```python
-from pdfitdown.pdfconversion import convert_markdown_to_pdf
-
-output_pdf = convert_markdown_to_pdf(file_path = "BusinessGrowth.md", output_path = "business_growth.pdf", title = "Business Growth")
-```
-
-- To convert an **image to PDF**:
-
-```python
-from pdfitdown.pdfconversion import convert_image_to_pdf
-
-output_pdf = convert_image_to_pdf(file_path = "BusinessGrowth.png", output_path = "business_growth.pdf")
-```
-
-In these examples, you will find the output PDF under `business_growth.pdf`.
 
 Or you can just launch a [Gradio](https://gradio.app)-based user interface:
 

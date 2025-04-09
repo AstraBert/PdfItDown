@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pdfitdown"
-version = "0.1.0"
+version = "1.0.0"
 authors = [
     { name="Clelia (Astra) Bertelli", email="astraberte9@gmail.com" },
 ]
@@ -17,11 +17,10 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    'markitdown',
-    'markdown_it_py == 3.0.0',
-    'pymupdf == 1.25.1',
-    'img2pdf == 0.6.0',
-    'pillow == 11.0.0',
+    'markitdown[all]',
+    'markdown-pdf',
+    'img2pdf',
+    'pillow',
     'gradio',
     'termcolor',
 ]
@@ -40,3 +39,24 @@ pdfitdown = ["*"]
 [project.scripts]
 pdfitdown = "pdfitdown.pdfitdown_cli:main"
 pdfitdown_ui = "pdfitdown.pdfitdown_ui:main"
+
+[tool.hatch.build.targets.wheel]
+only-include = ["src/pdfitdown"]
+
+[tool.hatch.build.targets.wheel.sources]
+"src" = ""
+
+[tool.hatch.envs.default]
+dependencies = [
+    "pytest",
+]
+
+[tool.hatch.envs.default.scripts]
+test = "cp src/pdfitdown/pdfconversion.py tests/ && cp src/pdfitdown/pdfitdown_ui.py tests/ && pytest tests/*.py -p no:warnings && rm tests/pdfconversion.py && rm tests/pdfitdown_ui.py"
+
+[tool.hatch.envs.default.py-version]
+38 = "3.8"
+39 = "3.9"
+40 = "3.10"
+41 = "3.11"
+42 = "3.12"

@@ -1,111 +1,89 @@
-# Import required libraries
-from markitdown import MarkItDown          # Library for conversion to markdown
+from markitdown import MarkItDown
 from PIL import Image
 import img2pdf
-try:
-    from .markdown_pdf import MarkdownPdf, Section  # Library for PDF generation
-except ImportError:
-    from markdown_pdf import MarkdownPdf, Section
+from markdown_pdf import MarkdownPdf, Section
 import os
+from pydantic import BaseModel, field_validator
+from pathlib import Path
+import warnings
 
-def convert_to_pdf(
-    file_path: str,     # Path to input file
-    output_path: str,   # Desired path for output PDF
-    title: str = "PDF Title"  # Optional title for the PDF, defaults to "PDF Title"
-):
-    """
-    Converts a .pptx/.xlsx/.docx/.csv/.json/.xml/.html/.zip file to PDF format.
-    
-    Args:
-        file_path: Path to the source .xlsx/.pdf/.pptx/.docx/.csv/.json/.xml/.html/.zip file
-        output_path: Where to save the resulting PDF
-        title: Title to be set in PDF metadata
-    
-    Returns:
-        str: Path to the generated PDF file
-    """
-    if os.path.splitext(file_path)[1] not in [".docx", ".html", ".xml", ".csv", ".md", ".pptx", ".xlsx"]:
-        raise ValueError(f"ERROR! File format for {file_path} not supported, please provide a file that has one of the following formats:\n\n- "+"\n- ".join([".docx", ".html", ".xml", ".csv", ".md", ".pptx", ".xlsx", ".png", ".jpg", ".png"]))
-    # Initialize markdown converter
-    md = MarkItDown()
-    
-    # Convert file to markdown
-    result = md.convert(file_path)
-    
-    # Extract the text content from the conversion result
-    finstr = result.text_content
-    
-    # Create new PDF document with no table of contents (toc_level=0)
-    pdf = MarkdownPdf(toc_level=0)
-    
-    # Add the converted markdown content as a section in the PDF
-    pdf.add_section(Section(finstr))
-    
-    # Set the PDF document's title in its metadata
-    pdf.meta["title"] = title
-    
-    # Save the PDF to the specified output path
-    pdf.save(output_path)
-    
-    # Return the path where the PDF was saved
-    return output_path
+class FilePath(BaseModel):
+    file: str
+    @field_validator("file")
+    def is_valid_file(cls, file: str):
+        p = Path(file)
+        if not p.is_file():
+            raise ValueError(f"{file} is not a file")
+        else:
+            if os.path.splitext(file)[1] not in [".docx", ".html", ".xml", ".csv", ".md", ".pptx", ".xlsx", ".png", ".jpg", ".png"]:
+                raise ValueError(f"File format for {file} not supported, please provide a file that has one of the following formats:\n\n- "+"\n- ".join([".docx", ".html", ".xml", ".csv", ".md", ".pptx", ".xlsx", ".png", ".jpg", ".png"]))
+            return file
 
-def convert_image_to_pdf(
-        file_path: str,
-        output_path: str,
-):
-    """
-    Converts a .png/.jpg/.jpeg file to PDF format.
-    
-    Args:
-        file_path: Path to the source .md file
-        output_path: Where to save the resulting PDF
-    
-    Returns:
-        str: Path to the generated PDF file
-    """
-    if not (file_path.endswith(".png") or file_path.endswith(".jpg") or file_path.endswith(".jpeg")):
-        return "File extension not allowed for image."
-    image = Image.open(file_path)
-    pdf_bytes = img2pdf.convert(image.filename)
-    with open(output_path, "wb") as file:
-        file.write(pdf_bytes)
-    file.close()
-    image.close()
-    return output_path
+class FileExistsWarning(Warning):
+    """Warns you that a file exists"""
 
-def convert_markdown_to_pdf(
-    file_path: str,     # Path to input markdown file
-    output_path: str,   # Desired path for output PDF
-    title: str = "PDF Title"  # Optional title for the PDF, defaults to "PDF Title"
-):
-    """
-    Converts a .md file to PDF format.
-    
-    Args:
-        file_path: Path to the source .md file
-        output_path: Where to save the resulting PDF
-        title: Title to be set in PDF metadata
-    
-    Returns:
-        str: Path to the generated PDF file
-    """
-    # Extract the text content from the markdown file
-    f = open(file_path, "r")
+class OutputPath(BaseModel):
+    file: str
+    @field_validator("file")
+    def file_exists_warning(cls, file: str):
+        if os.path.splitext(file)[1] != ".pdf":
+            raise ValueError("Output file must be a PDF")
+        p = Path(file)
+        if p.is_file():
+            warnings.warn(f"The file {file} already exists, you are about to overwrite it", FileExistsWarning)
+        return file
 
-    finstr = f.read()
-    
-    # Create new PDF document with no table of contents (toc_level=0)
-    pdf = MarkdownPdf(toc_level=0)
-    
-    # Add the converted markdown content as a section in the PDF
-    pdf.add_section(Section(finstr))
-    
-    # Set the PDF document's title in its metadata
-    pdf.meta["title"] = title
-    
-    # Save the PDF to the specified output path
-    pdf.save(output_path)
-    
-    # Return the path where the PDF was saved
-    return output_path
+class Converter:
+    """A class for converting .docx, .html, .xml, .csv, .md, .pptx, .xlsx, .png, .jpg, .png files into PDF"""
+    def __init__(self) -> None:
+        """
+        Initialize the Converter class.
+        
+        Args:
+            None
+        Returns:
+            None
+        """
+        return
+    def convert(self,  file_path: str, output_path: str, title: str = "File Converted with PdfItDown"):
+        """
+        Convert various document types into PDF format (supports .docx, .html, .xml, .csv, .md, .pptx, .xlsx, .png, .jpg, .png). 
+        
+        Args:
+            file_path (str): The path to the input file
+            output_path (str): The path to the output file
+            title (str): The title for the PDF document (defaults to: 'File Converted with PdfItDown')
+        Returns:
+            output_path (str): Path to the output file
+        Raises:
+            ValidationError: if the format of the input file is not support or if the format of the output file is not PDF
+            FileExistsWarning: if the output PDF path is an existing file, it warns you that the file will be overwritten
+        """
+        self.file_input = FilePath(file=file_path)
+        self.file_output = OutputPath(file=output_path)
+        if os.path.splitext(self.file_input.file)[1] == ".md":
+            f = open(self.file_input.file, "r")
+            finstr = f.read()     
+            f.close()       
+            pdf = MarkdownPdf(toc_level=0)
+            pdf.add_section(Section(finstr))
+            pdf.meta["title"] = title
+            pdf.save(self.file_output.file)
+            return self.file_output.file
+        elif os.path.splitext(self.file_input.file)[1] in [".jpg", ".png"]:
+            image = Image.open(self.file_input.file)
+            pdf_bytes = img2pdf.convert(image.filename)
+            with open(self.file_output.file, "wb") as file:
+                file.write(pdf_bytes)
+            file.close()
+            image.close()
+            return self.file_output.file
+        else:
+            md = MarkItDown()
+            result = md.convert(self.file_input.file)
+            finstr = result.text_content
+            pdf = MarkdownPdf(toc_level=0)
+            pdf.add_section(Section(finstr))
+            pdf.meta["title"] = title
+            pdf.save(self.file_output.file)
+            return self.file_output.file
