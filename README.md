@@ -7,7 +7,7 @@
     <img src="https://raw.githubusercontent.com/AstraBert/PdfItDown/main/img/logo.png" alt="PdfItDown Logo">
 </div>
 
-**PdfItDown** is a python package that relies on [`markitdown` by Microsoft](https://github.com/microsoft/markitdown/) and [`markdown_pdf`](https://github.com/vb64/markdown-pdf). 
+**PdfItDown** is a python package that relies on [`markitdown` by Microsoft](https://github.com/microsoft/markitdown/), [`markdown_pdf`](https://github.com/vb64/markdown-pdf) and [img2pdf](https://pypi.org/project/img2pdf/).
 
 ### Applicability
 
@@ -18,7 +18,7 @@
 - Word
 - Excel
 - HTML
-- Text-based formats (CSV, XML)
+- Text-based formats (CSV, XML, JSON)
 - ZIP files (iterates over contents)
 - Image files (PNG, JPG)
 

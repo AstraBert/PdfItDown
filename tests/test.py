@@ -1,14 +1,10 @@
-import warnings
-
-warnings.filterwarnings("ignore")
-
 from pathlib import Path
 from pdfconversion import Converter
 import os
 from pydantic import ValidationError
 
 def test_file_conversion():
-    test_files = ["tests/data/test0.png", "tests/data/test1.csv", "tests/data/test2.md"]
+    test_files = ["tests/data/test0.png", "tests/data/test1.csv", "tests/data/test2.md", "tests/data/test3.json"]
     test_error = "tests/data/test.txt"
     outputs = []
     expected_outputs = []
