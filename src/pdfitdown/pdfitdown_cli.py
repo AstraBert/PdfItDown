@@ -1,5 +1,8 @@
 from argparse import ArgumentParser
-from pdfconversion import Converter
+try:
+    from pdfconversion import Converter
+except ModuleNotFoundError:
+    from .pdfconversion import Converter
 import sys
 from termcolor import cprint
 import warnings
