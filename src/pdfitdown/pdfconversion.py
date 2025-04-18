@@ -15,7 +15,7 @@ class FilePath(BaseModel):
         if not p.is_file():
             raise ValueError(f"{file} is not a file")
         else:
-            if os.path.splitext(file)[1] not in [".docx", ".html", ".xml", ".csv", ".md", ".pptx", ".xlsx", ".png", ".jpg", ".png", ".json"]:
+            if os.path.splitext(file)[1] not in [".docx", ".html", ".xml", ".csv", ".md", ".pptx", ".xlsx", ".png", ".jpg", ".png", ".json", ".zip"]:
                 raise ValueError(f"File format for {file} not supported, please provide a file that has one of the following formats:\n\n- "+"\n- ".join([".docx", ".html", ".xml", ".csv", ".md", ".pptx", ".xlsx", ".png", ".jpg", ".png", ".json"]))
             return file
 
@@ -34,7 +34,7 @@ class OutputPath(BaseModel):
         return file
 
 class Converter:
-    """A class for converting .docx, .html, .xml, .json, .csv, .md, .pptx, .xlsx, .png, .jpg, .png files into PDF"""
+    """A class for converting .docx, .html, .xml, .json, .csv, .md, .pptx, .xlsx, .png, .jpg, .png, .zip files into PDF"""
     def __init__(self) -> None:
         """
         Initialize the Converter class.
@@ -47,7 +47,7 @@ class Converter:
         return
     def convert(self,  file_path: str, output_path: str, title: str = "File Converted with PdfItDown"):
         """
-        Convert various document types into PDF format (supports .docx, .html, .xml, .json, .csv, .md, .pptx, .xlsx, .png, .jpg, .png). 
+        Convert various document types into PDF format (supports .docx, .html, .xml, .json, .csv, .md, .pptx, .xlsx, .png, .jpg, .png, .zip). 
         
         Args:
             file_path (str): The path to the input file
