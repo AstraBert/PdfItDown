@@ -32,7 +32,7 @@ def main():
         inputs=gr.File(label="Upload your file", file_count="multiple"),
         outputs=gr.File(label="Converted PDF", file_count="multiple"),
         title="File to PDF Converter",
-        description="Upload a file in .docx, .xlsx, .html, .pptx, .json, .csv, .xml, .md, .jpg/.jpeg, .png format, and get it converted to PDF."
+        description="Upload a file in .docx, .xlsx, .html, .pptx, .json, .csv, .xml, .md, .jpg/.jpeg, .png, .zip format, and get it converted to PDF."
     )
     iface.launch()
 
