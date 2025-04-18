@@ -1,4 +1,7 @@
-from pdfconversion import Converter
+try:
+    from pdfconversion import Converter
+except ModuleNotFoundError:
+    from .pdfconversion import Converter
 import warnings
 from typing import List
 import gradio as gr
