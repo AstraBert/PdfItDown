@@ -94,6 +94,30 @@ converter.convert(file_path = "logo.png", output_path = "logo.pdf")
 converter.convert(file_path = "users.csv", output_path = "users.pdf")
 ```
 
+You can also convert **multiple files at once**:
+
+- In the CLI:
+
+```bash
+# with custom output paths
+pdfitdown_cli -i "test0.png,test1.csv" -o "testoutput0.pdf,testoutput1.pdf"
+# with inferred output paths
+pdfitdown_cli -i "test0.png,test1.csv"
+```
+
+- In the Python API:
+
+```python
+from pdfitdown.pdfconversion import Converter
+
+converter = Converter()
+# with custom output paths
+converter.multiple_convert(file_paths = ["business_grow.md", "logo.png"], output_paths = ["business_growth.pdf", "logo.pdf"])
+# with inferred output paths
+converter.multiple_convert(file_paths = ["business_grow.md", "logo.png"])
+```
+
+
 Or you can just launch a [Gradio](https://gradio.app)-based user interface:
 
 ```bash

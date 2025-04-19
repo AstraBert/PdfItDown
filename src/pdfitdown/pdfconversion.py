@@ -3,8 +3,10 @@ from PIL import Image
 import img2pdf
 from markdown_pdf import MarkdownPdf, Section
 import os
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, model_validator
 from pathlib import Path
+from typing import List, Optional
+from typing_extensions import Self
 import warnings
 
 class FilePath(BaseModel):
@@ -16,8 +18,9 @@ class FilePath(BaseModel):
             raise ValueError(f"{file} is not a file")
         else:
             if os.path.splitext(file)[1] not in [".docx", ".html", ".xml", ".csv", ".md", ".pptx", ".xlsx", ".png", ".jpg", ".png", ".json", ".zip"]:
-                raise ValueError(f"File format for {file} not supported, please provide a file that has one of the following formats:\n\n- "+"\n- ".join([".docx", ".html", ".xml", ".csv", ".md", ".pptx", ".xlsx", ".png", ".jpg", ".png", ".json"]))
+                raise ValueError(f"File format for {file} not supported, please provide a file that has one of the following formats:\n\n- "+"\n- ".join([".docx", ".html", ".xml", ".csv", ".md", ".pptx", ".xlsx", ".png", ".jpg", ".png", ".json", ".zip"]))
             return file
+
 
 class FileExistsWarning(Warning):
     """Warns you that a file exists"""
@@ -32,6 +35,21 @@ class OutputPath(BaseModel):
         if p.is_file():
             warnings.warn(f"The file {file} already exists, you are about to overwrite it", FileExistsWarning)
         return file
+
+class MultipleFileConversion(BaseModel):
+    input_files: List[FilePath]
+    output_files: List[str] | List[OutputPath] | None
+    @model_validator(mode="after")
+    def validate_multiple_file_conversion(self) -> Self:
+        if self.output_files is not None and len(self.input_files) != len(self.output_files):
+            raise ValueError("Input and output files must be lists of the same  length")
+        else:
+            if self.output_files is None:
+                self.output_files = [OutputPath(file=(fl.file.replace(os.path.splitext(fl.file)[1],".pdf"))) for fl in self.input_files]
+            else:
+                if isinstance(self.output_files[0], str):
+                    self.output_files = [OutputPath(file=fl) for fl in self.output_files]
+        return self
 
 class Converter:
     """A class for converting .docx, .html, .xml, .json, .csv, .md, .pptx, .xlsx, .png, .jpg, .png, .zip files into PDF"""
@@ -87,3 +105,22 @@ class Converter:
             pdf.meta["title"] = title
             pdf.save(self.file_output.file)
             return self.file_output.file
+    def multiple_convert(self,  file_paths: List[str], output_paths: Optional[List[str]] = None):
+        """
+        Convert various document types into PDF format (supports .docx, .html, .xml, .json, .csv, .md, .pptx, .xlsx, .png, .jpg, .png, .zip). Converts multiple files at once.
+        
+        Args:
+            file_paths (str): The paths to the input files
+            output_paths (Optional[str]): The path to the output files
+        Returns:
+            output_paths (str): Paths to the output files
+        Raises:
+            ValidationError: if the format of the input file is not support or if the format of the output file is not PDF
+            FileExistsWarning: if the output PDF path is an existing file, it warns you that the file will be overwritten
+        """
+        for file in file_paths:
+            input_files = [FilePath(file=fl) for fl in file_paths]
+            to_convert_list = MultipleFileConversion(input_files=input_files, output_files=output_paths)
+            for i in range(len(to_convert_list.input_files)):
+                result = self.convert(file_path=to_convert_list.input_files[i].file, output_path=to_convert_list.output_files[i].file)
+            return [el.file for el in to_convert_list.output_files]
