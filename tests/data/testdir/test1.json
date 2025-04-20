@@ -1,0 +1,8 @@
+{
+    "files": [
+        "test1.json", "test2.json", "test3.json"
+    ],
+    "content": [
+        "Cases", "Types", "Functions"
+    ]
+}

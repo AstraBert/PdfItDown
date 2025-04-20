@@ -65,16 +65,22 @@ python3 -m pip install pdfitdown
 You can now use the **command line tool**:
 
 ```
-usage: pdfitdown [-h] -i INPUTFILE -o OUTPUTFILE [-t TITLE]
+usage: pdfitdown_cli.py [-h] [-i INPUTFILE] [-o OUTPUTFILE] [-t TITLE] [-d DIRECTORY]
 
 options:
   -h, --help            show this help message and exit
-  -i INPUTFILE, --inputfile INPUTFILE
-                        Path to the input file that needs to be converted to PDF
-  -o OUTPUTFILE, --outputfile OUTPUTFILE
-                        Path to the output PDF file
-  -t TITLE, --title TITLE
-                        Title to include in the PDF metadata. Default: 'PDF Title'
+  -i, --inputfile INPUTFILE
+                        Path to the input file(s) that need to be converted to PDF. The path should be comma
+                        separated: input1.csv,input2.md,...,inputN.xml.
+  -o, --outputfile OUTPUTFILE
+                        Path to the output PDF file(s). If more than one input file is provided, you should provide an
+                        equally long list of output files. The path should be comma separated:
+                        output1.pdf,output2.pdf,...,outputN.pdf. Defaults to 'None'
+  -t, --title TITLE     Title to include in the PDF metadata. Default: 'File Converted with PdfItDown'. If more than
+                        one file is provided, it will be ignored.
+  -d, --directory DIRECTORY
+                        Directory whose files you want to bulk-convert to PDF. If the --inputfile argument is also
+                        provided, it will be ignored. Defaults to None.
 ```
 
 An example usage can be:
@@ -117,6 +123,23 @@ converter.multiple_convert(file_paths = ["business_grow.md", "logo.png"], output
 converter.multiple_convert(file_paths = ["business_grow.md", "logo.png"])
 ```
 
+You can bulk-convert **all the files in a directory**:
+
+- In the CLI:
+
+```bash
+pdfitdown_cli -d tests/data/testdir
+```
+
+- In the Python API:
+
+```python
+from pdfitdown.pdfconversion import Converter
+
+converter = Converter()
+output_paths = converter.multiple_convert(directory_path = "tests/data/testdir")
+print(output_paths)
+```
 
 Or you can just launch a [Gradio](https://gradio.app)-based user interface:
 
