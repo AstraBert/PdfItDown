@@ -25,6 +25,18 @@ class FilePath(BaseModel):
 class FileExistsWarning(Warning):
     """Warns you that a file exists"""
 
+class DirPath(BaseModel):
+    path: str
+    @model_validator(mode="after")
+    def validate_dir_path(self) -> Self:
+        if Path(self.path).is_dir():
+            if len(os.listdir(self.path)) == 0:
+                raise ValueError("You should provide a non-empty directory")
+            else:
+                return self
+        else:
+            raise ValueError("You should provide the path for an existing directory")
+
 class OutputPath(BaseModel):
     file: str
     @field_validator("file")
@@ -113,7 +125,7 @@ class Converter:
             file_paths (str): The paths to the input files
             output_paths (Optional[str]): The path to the output files
         Returns:
-            output_paths (str): Paths to the output files
+            output_paths (List[str]): Paths to the output files
         Raises:
             ValidationError: if the format of the input file is not support or if the format of the output file is not PDF
             FileExistsWarning: if the output PDF path is an existing file, it warns you that the file will be overwritten
@@ -124,3 +136,23 @@ class Converter:
             for i in range(len(to_convert_list.input_files)):
                 result = self.convert(file_path=to_convert_list.input_files[i].file, output_path=to_convert_list.output_files[i].file)
             return [el.file for el in to_convert_list.output_files]
+    def convert_directory(self, directory_path: str):
+        """
+        Convert various document types into PDF format (supports .docx, .html, .xml, .json, .csv, .md, .pptx, .xlsx, .png, .jpg, .png, .zip). Converts all the files in a directory at once.
+        
+        Args:
+            directory_path (str): The paths to the input files
+        Returns:
+            output_paths (List[str]): Paths to the output files
+        Raises:
+            ValidationError: if the format of the input file is not support or if the format of the output file is not PDF
+            FileExistsWarning: if the output PDF path is an existing file, it warns you that the file will be overwritten
+        """
+        dirpath = DirPath(path=directory_path)
+        fls = []
+        p = os.walk(dirpath.path)
+        for root, parent, file in p:
+            for f in file:
+                fls.append(root+"/"+f)
+        output_paths = self.multiple_convert(file_paths=fls)
+        return output_paths

@@ -2,7 +2,7 @@ from pdfconversion import Converter, MultipleFileConversion, OutputPath, FilePat
 import os
 from pydantic import ValidationError
 
-TEST_FILES = ["./tests/data/"+f for f in os.listdir("./tests/data/") if not f.endswith(".txt")]
+TEST_FILES = ["./tests/data/"+f for f in os.listdir("./tests/data/") if not f.endswith(".txt") and os.path.isfile("./tests/data/"+f)]
 
 def test_multiplefileconversion_class():
     test_cases = [
