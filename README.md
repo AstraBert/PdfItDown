@@ -7,7 +7,9 @@
     <img src="https://raw.githubusercontent.com/AstraBert/PdfItDown/main/img/logo.png" alt="PdfItDown Logo">
 </div>
 
-**PdfItDown** is a python package that relies on [`markitdown` by Microsoft](https://github.com/microsoft/markitdown/), [`markdown_pdf`](https://github.com/vb64/markdown-pdf) and [img2pdf](https://pypi.org/project/img2pdf/).
+[![Discord](https://img.shields.io/badge/Discord-%235865F2.svg?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/qxzFz9VE)
+
+**PdfItDown** is a python package that relies on [`markitdown` by Microsoft](https://github.com/microsoft/markitdown/), [`markdown_pdf`](https://github.com/vb64/markdown-pdf) and [img2pdf](https://pypi.org/project/img2pdf/). Visit us on our [documentation website](https://pdfitdown.eu)!
 
 ### Applicability
 
@@ -137,7 +139,7 @@ pdfitdown_cli -d tests/data/testdir
 from pdfitdown.pdfconversion import Converter
 
 converter = Converter()
-output_paths = converter.multiple_convert(directory_path = "tests/data/testdir")
+output_paths = converter.convert_directory(directory_path = "tests/data/testdir")
 print(output_paths)
 ```
 
