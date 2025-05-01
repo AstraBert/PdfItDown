@@ -23,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.10", "3.11", "3.12"]
 
     steps:
       - uses: actions/checkout@v4
@@ -37,4 +37,6 @@ jobs:
         run: pip install --upgrade hatch
 
       - name: Run tests
+        env:
+          llamacloud_api_key: ${{ secrets.LLAMACLOUD_API_KEY }}
         run: hatch run test
