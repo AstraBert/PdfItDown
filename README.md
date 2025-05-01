@@ -9,7 +9,7 @@
 
 [![Discord](https://img.shields.io/badge/Discord-%235865F2.svg?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/qxzFz9VE)
 
-**PdfItDown** is a python package that relies on [`markitdown` by Microsoft](https://github.com/microsoft/markitdown/), [`markdown_pdf`](https://github.com/vb64/markdown-pdf) and [img2pdf](https://pypi.org/project/img2pdf/). Visit us on our [documentation website](https://pdfitdown.eu)!
+**PdfItDown** is a python package that relies on [`markitdown` by Microsoft](https://github.com/microsoft/markitdown/), [`markdown_pdf`](https://github.com/vb64/markdown-pdf), [img2pdf](https://pypi.org/project/img2pdf/), [`docling`](https://docling-project.github.io/docling/) abd [`LlamaParse`](https://docs.cloud.llamaindex.ai/llamaparse/overview). Visit us on our [documentation website](https://pdfitdown.eu)!
 
 ### Applicability
 
@@ -23,6 +23,8 @@
 - Text-based formats (CSV, XML, JSON)
 - ZIP files (iterates over contents)
 - Image files (PNG, JPG)
+
+The format-specific support needs to be evaluated for the specific reader you are using, 
 
 ### How does it work?
 
@@ -50,8 +52,8 @@ graph LR
 
 ```mermaid
 graph LR
-2(Input File) -->  3[markitdown]
-3[markitdown] -->  4[Markdown content]
+2(Input File) -->  3[markitdown / LlamaParse / Docling]
+3[markitdown / LlamaParse / Docling] -->  4[Markdown content]
 4[Markdown content] --> 5[markdown-pdf]
 5[markdown-pdf] --> 6(PDF file)
 ```
@@ -67,7 +69,7 @@ python3 -m pip install pdfitdown
 You can now use the **command line tool**:
 
 ```
-usage: pdfitdown_cli.py [-h] [-i INPUTFILE] [-o OUTPUTFILE] [-t TITLE] [-d DIRECTORY]
+usage: pdfitdown [-h] [-i INPUTFILE] [-o OUTPUTFILE] [-t TITLE] [-d DIRECTORY] [-r READER] [-k API_KEY]
 
 options:
   -h, --help            show this help message and exit
@@ -83,6 +85,9 @@ options:
   -d, --directory DIRECTORY
                         Directory whose files you want to bulk-convert to PDF. If the --inputfile argument is also
                         provided, it will be ignored. Defaults to None.
+  -r, --reader READER   Reader to extract text from files, must be one of 'markitdown', 'llamaparse', 'docling'
+  -k, --api_key API_KEY
+                        API key for LlamaCloud services, required only with 'llamaparse' as reader. Defaults to None.
 ```
 
 An example usage can be:
@@ -96,10 +101,10 @@ Or you can use it **inside your python scripts**:
 ```python
 from pdfitdown.pdfconversion import Converter
 
-converter = Converter()
+converter = Converter(reader="docling")
 converter.convert(file_path = "business_grow.md", output_path = "business_growth.pdf", title="Business Growth for Q3 in 2024")
 converter.convert(file_path = "logo.png", output_path = "logo.pdf")
-converter.convert(file_path = "users.csv", output_path = "users.pdf")
+converter.convert(file_path = "users.xlsx", output_path = "users.pdf")
 ```
 
 You can also convert **multiple files at once**:
@@ -108,9 +113,9 @@ You can also convert **multiple files at once**:
 
 ```bash
 # with custom output paths
-pdfitdown_cli -i "test0.png,test1.csv" -o "testoutput0.pdf,testoutput1.pdf"
+pdfitdown -i "test0.png,test1.csv" -o "testoutput0.pdf,testoutput1.pdf" -r "llamaparse" -k "llx-***"
 # with inferred output paths
-pdfitdown_cli -i "test0.png,test1.csv"
+pdfitdown -i "test0.png,test1.csv" -r "llamaparse" -k "llx-***"
 ```
 
 - In the Python API:
@@ -118,11 +123,11 @@ pdfitdown_cli -i "test0.png,test1.csv"
 ```python
 from pdfitdown.pdfconversion import Converter
 
-converter = Converter()
+converter = Converter(reader="llamaparse", llamacloud_api_key="llx-***")
 # with custom output paths
-converter.multiple_convert(file_paths = ["business_grow.md", "logo.png"], output_paths = ["business_growth.pdf", "logo.pdf"])
+converter.multiple_convert(file_paths = ["business_growth.md", "logo.png"], output_paths = ["business_growth.pdf", "logo.pdf"])
 # with inferred output paths
-converter.multiple_convert(file_paths = ["business_grow.md", "logo.png"])
+converter.multiple_convert(file_paths = ["business_growth.md", "logo.png"])
 ```
 
 You can bulk-convert **all the files in a directory**:
@@ -130,7 +135,7 @@ You can bulk-convert **all the files in a directory**:
 - In the CLI:
 
 ```bash
-pdfitdown_cli -d tests/data/testdir
+pdfitdown -d tests/data/testdir -r markitdown
 ```
 
 - In the Python API:
@@ -138,7 +143,7 @@ pdfitdown_cli -d tests/data/testdir
 ```python
 from pdfitdown.pdfconversion import Converter
 
-converter = Converter()
+converter = Converter(reader="markitdown")
 output_paths = converter.convert_directory(directory_path = "tests/data/testdir")
 print(output_paths)
 ```
