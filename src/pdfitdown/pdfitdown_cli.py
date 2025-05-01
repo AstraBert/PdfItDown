@@ -24,12 +24,20 @@ def main():
     parser.add_argument("-d", "--directory",
                        help="Directory whose files you want to bulk-convert to PDF. If the --inputfile argument is also provided, it will be ignored. Defaults to None.",
                        required=False, default=None, type=str)
+    parser.add_argument("-r", "--reader",
+                       help="Reader to extract text from files, must be one of 'markitdown', 'llamaparse', 'docling'",
+                       required=False, default='markitdown', type=str)
+    parser.add_argument("-k", "--api_key",
+                       help="API key for LlamaCloud services, required only with 'llamaparse' as reader. Defaults to None.",
+                       required=False, default=None, type=str)
     args = parser.parse_args()
     inf = args.inputfile
     outf = args.outputfile
     diri = args.directory
     titl = args.title
-    conv = Converter()
+    rdr = args.reader
+    apk = args.api_key
+    conv = Converter(reader=rdr, llamacloud_api_key=apk)
     try:
         if inf is not None:
             if outf is not None and len(inf.split(",")) > 1:

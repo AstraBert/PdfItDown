@@ -73,7 +73,6 @@ class Converter:
         
         Args:
             reader (Literal["markitdown", "docling", "llamaparse"]): the reader to extract the file text
-            llamacloud_api_key (Optional[str]): LlamaCloud API key, only to specify if the reader is LlamaParse. Defaults to None and looks for the environment variable LLAMACLOUD_API_KEY.
         Returns:
             None
         """

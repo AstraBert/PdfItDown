@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pdfitdown"
-version = "1.3.0.post1"
+version = "1.4.0"
 authors = [
     { name="Clelia (Astra) Bertelli", email="astraberte9@gmail.com" },
 ]
@@ -17,6 +17,8 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
+    'llama-index-readers-docling',
+    'llama_parse',
     'markitdown[all]',
     'markdown-pdf',
     'img2pdf',
@@ -52,7 +54,7 @@ dependencies = [
 ]
 
 [tool.hatch.envs.default.scripts]
-test = "cp src/pdfitdown/pdfconversion.py tests/ && cp src/pdfitdown/pdfitdown_ui.py tests/ && pytest tests/*.py -p no:warnings && rm tests/pdfconversion.py && rm tests/pdfitdown_ui.py"
+test = "cp src/pdfitdown/reader.py tests/ && cp src/pdfitdown/pdfconversion.py tests/ && cp src/pdfitdown/pdfitdown_ui.py tests/ && pytest tests/*.py -p no:warnings && rm tests/pdfconversion.py && rm tests/pdfitdown_ui.py"
 
 [tool.hatch.envs.default.py-version]
 38 = "3.8"
