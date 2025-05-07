@@ -2,6 +2,7 @@ dist/
 src/pdfitdown.egg-info/
 .pytest_cache/
 build/
+.ruff_cache/
 tests/__pycache__/
 tests/data/*.pdf
 .env

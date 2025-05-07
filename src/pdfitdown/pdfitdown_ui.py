@@ -1,11 +1,11 @@
-try:
-    from pdfconversion import Converter
-except ModuleNotFoundError:
-    from .pdfconversion import Converter
 import warnings
+import os
+try:
+    from .pdfconversion import Converter
+except ImportError:
+    from pdfconversion import Converter
 from typing import List
 import gradio as gr
-import os
 
 class FileNotConvertedWarning(Warning):
     """The file was not in one of the specified formats for conversion to PDF,thus it was not converted"""
