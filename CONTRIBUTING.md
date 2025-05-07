@@ -39,7 +39,6 @@ hatch run test
 3. If all the test pass, you can commit your changes.
 4. Submit pull request (make sure to provide a thorough description of the changes)
 
-> [!NOTE]
-> _If you add a new feature, you might need to add new tests!_
+> [!NOTE] > _If you add a new feature, you might need to add new tests!_
 
 ### Thanks for contributing!

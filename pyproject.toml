@@ -1,46 +1,40 @@
 [build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling>=1.0.0"]
+build-backend = "hatchling.build"
+
+[options.package_data]
+pdfitdown = ["*"]
 
 [project]
 name = "pdfitdown"
-version = "1.4.0"
+version = "1.5.0"
 authors = [
-    { name="Clelia (Astra) Bertelli", email="astraberte9@gmail.com" },
+  {name = "Clelia (Astra) Bertelli", email = "astraberte9@gmail.com"}
 ]
 description = "PdfItDown - Convert Everything to PDF"
 readme = "README.md"
 requires-python = ">=3.10,<3.13"
 classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent"
 ]
 dependencies = [
-    'llama-index-readers-docling',
-    'llama_parse',
-    'markitdown[all]',
-    'markdown-pdf',
-    'img2pdf',
-    'pillow',
-    'gradio',
-    'termcolor',
+  'llama-index-readers-markitdown',
+  'markdown-pdf',
+  'img2pdf',
+  'pillow',
+  'gradio',
+  'termcolor'
 ]
-
-[project.urls]
-Homepage = "https://github.com/AstraBert/PdfItDown"
-Issues = "https://github.com/AstraBert/PdfItDown/issues"
-
-[tool.setuptools.packages.find]
-where = ["src"]
-include = ["pdfitdown*"]
-
-[options.package_data]
-pdfitdown = ["*"]
 
 [project.scripts]
 pdfitdown = "pdfitdown.pdfitdown_cli:main"
 pdfitdown_ui = "pdfitdown.pdfitdown_ui:main"
+
+[project.urls]
+Homepage = "https://github.com/AstraBert/PdfItDown"
+Issues = "https://github.com/AstraBert/PdfItDown/issues"
 
 [tool.hatch.build.targets.wheel]
 only-include = ["src/pdfitdown"]
@@ -50,14 +44,18 @@ only-include = ["src/pdfitdown"]
 
 [tool.hatch.envs.default]
 dependencies = [
-    "pytest",
+  "pytest",
+  "llama_parse"
 ]
 
-[tool.hatch.envs.default.scripts]
-test = "cp src/pdfitdown/reader.py tests/ && cp src/pdfitdown/pdfconversion.py tests/ && cp src/pdfitdown/pdfitdown_ui.py tests/ && pytest tests/*.py -p no:warnings && rm tests/pdfconversion.py && rm tests/pdfitdown_ui.py"
-
 [tool.hatch.envs.default.py-version]
-39 = "3.9"
 40 = "3.10"
 41 = "3.11"
 42 = "3.12"
+
+[tool.hatch.envs.default.scripts]
+test = "cp src/pdfitdown/pdfconversion.py tests/ && cp src/pdfitdown/pdfitdown_ui.py tests/ && pytest tests/*.py -p no:warnings && rm tests/pdfconversion.py && rm tests/pdfitdown_ui.py"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["pdfitdown*"]

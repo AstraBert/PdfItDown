@@ -1,5 +1,0 @@
-markdown-pdf
-markitdown[all]
-termcolor
-gradio
-

@@ -1,19 +1,14 @@
-from markitdown import MarkItDown
-from PIL import Image
 import img2pdf
-from markdown_pdf import MarkdownPdf, Section
+import warnings
 import os
+from PIL import Image
+from markdown_pdf import MarkdownPdf, Section
 from pydantic import BaseModel, field_validator, model_validator
 from pathlib import Path
-from typing import List, Optional, Literal
+from typing import List, Optional
 from typing_extensions import Self
-import warnings
-from llama_index.readers.docling import DoclingReader
-from llama_parse import LlamaParse
-try:
-    from reader import MarkItDownReader
-except ModuleNotFoundError:
-    from .reader import MarkItDownReader
+from llama_index.core.readers.base import BaseReader
+from llama_index.readers.markitdown import MarkItDownReader
 
 class FilePath(BaseModel):
     file: str
@@ -67,31 +62,24 @@ class MultipleFileConversion(BaseModel):
 
 class Converter:
     """A class for converting .docx, .html, .xml, .json, .csv, .md, .pptx, .xlsx, .png, .jpg, .png, .zip files into PDF"""
-    def __init__(self, reader: Literal["markitdown", "docling", "llamaparse"] = "markitdown", llamacloud_api_key: Optional[str] = None) -> None:
+    def __init__(self, reader: Optional[BaseReader] = None) -> None:
         """
         Initialize the Converter class.
-        
+
         Args:
-            reader (Literal["markitdown", "docling", "llamaparse"]): the reader to extract the file text
-            llamacloud_api_key (Optional[str]): LlamaCloud API key, only to specify if the reader is LlamaParse. Defaults to None and looks for the environment variable LLAMACLOUD_API_KEY.
+            reader (Optional[BaseReader]): the reader to extract the file text (needs to be LlamaIndex-compatible). Defaults to MarkItDown reader.
         Returns:
             None
         """
-        if reader == "docling":
-            self._reader = DoclingReader()
-        elif reader == "llamaparse":
-            if llamacloud_api_key is None:
-                llamacloud_api_key = os.getenv("LLAMACLOUD_API_KEY")
-            if llamacloud_api_key is None:
-                raise ValueError("LlamaCloud API key is neither set in the environment nor passed at initialization time, cannot use LlamaCloud reader")
-            self._reader = LlamaParse(api_key=llamacloud_api_key, result_type="markdown")
+        if reader is not None:
+            self._reader = reader
         else:
             self._reader = MarkItDownReader()
         return
     def convert(self,  file_path: str, output_path: str, title: str = "File Converted with PdfItDown"):
         """
-        Convert various document types into PDF format (supports .docx, .html, .xml, .json, .csv, .md, .pptx, .xlsx, .png, .jpg, .png, .zip). 
-        
+        Convert various document types into PDF format (supports .docx, .html, .xml, .json, .csv, .md, .pptx, .xlsx, .png, .jpg, .png, .zip).
+
         Args:
             file_path (str): The path to the input file
             output_path (str): The path to the output file
@@ -106,8 +94,8 @@ class Converter:
         self.file_output = OutputPath(file=output_path)
         if os.path.splitext(self.file_input.file)[1] == ".md":
             f = open(self.file_input.file, "r")
-            finstr = f.read()     
-            f.close()       
+            finstr = f.read()
+            f.close()
             pdf = MarkdownPdf(toc_level=0)
             pdf.add_section(Section(finstr))
             pdf.meta["title"] = title
@@ -130,12 +118,12 @@ class Converter:
                 pdf.meta["title"] = title
                 pdf.save(self.file_output.file)
                 return self.file_output.file
-            except Exception as e:
+            except Exception:
                 return None
     def multiple_convert(self,  file_paths: List[str], output_paths: Optional[List[str]] = None):
         """
         Convert various document types into PDF format (supports .docx, .html, .xml, .json, .csv, .md, .pptx, .xlsx, .png, .jpg, .png, .zip). Converts multiple files at once.
-        
+
         Args:
             file_paths (str): The paths to the input files
             output_paths (Optional[str]): The path to the output files
@@ -156,7 +144,7 @@ class Converter:
     def convert_directory(self, directory_path: str):
         """
         Convert various document types into PDF format (supports .docx, .html, .xml, .json, .csv, .md, .pptx, .xlsx, .png, .jpg, .png, .zip). Converts all the files in a directory at once.
-        
+
         Args:
             directory_path (str): The paths to the input files
         Returns:
