@@ -123,7 +123,6 @@ class Converter:
     def multiple_convert(self,  file_paths: List[str], output_paths: Optional[List[str]] = None):
         """
         Convert various document types into PDF format (supports .docx, .html, .xml, .json, .csv, .md, .pptx, .xlsx, .png, .jpg, .png, .zip). Converts multiple files at once.
-
         Args:
             file_paths (str): The paths to the input files
             output_paths (Optional[str]): The path to the output files
@@ -133,18 +132,17 @@ class Converter:
             ValidationError: if the format of the input file is not support or if the format of the output file is not PDF
             FileExistsWarning: if the output PDF path is an existing file, it warns you that the file will be overwritten
         """
-        for file in file_paths:
-            input_files = [FilePath(file=fl) for fl in file_paths]
-            to_convert_list = MultipleFileConversion(input_files=input_files, output_files=output_paths)
-            for i in range(len(to_convert_list.input_files)):
-                result = self.convert(file_path=to_convert_list.input_files[i].file, output_path=to_convert_list.output_files[i].file)
-                if result is None:
-                    to_convert_list.output_files.remove(to_convert_list.output_files[i])
-            return [el.file for el in to_convert_list.output_files]
+        input_files = [FilePath(file=fl) for fl in file_paths]
+        to_convert_list = MultipleFileConversion(input_files=input_files, output_files=output_paths)
+        output_fls: List[OutputPath] = []
+        for i in range(len(to_convert_list.input_files)):
+            result = self.convert(file_path=to_convert_list.input_files[i].file, output_path=to_convert_list.output_files[i].file)
+            if result is not None:
+                output_fls.append(to_convert_list.output_files[i])
+        return [el.file for el in output_fls]
     def convert_directory(self, directory_path: str):
         """
         Convert various document types into PDF format (supports .docx, .html, .xml, .json, .csv, .md, .pptx, .xlsx, .png, .jpg, .png, .zip). Converts all the files in a directory at once.
-
         Args:
             directory_path (str): The paths to the input files
         Returns:
