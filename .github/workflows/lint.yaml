@@ -15,10 +15,10 @@ jobs:
       - name: Set up Python
         run: uv python install 3.12
 
-      - name: Install pre-commit
+      - name: Run formatter
         shell: bash
-        run: uv venv && source .venv/bin/activate && uv pip install pre-commit
+        run: make format-check
 
       - name: Run linter
         shell: bash
-        run: uv run -- pre-commit run -a
+        run: make lint

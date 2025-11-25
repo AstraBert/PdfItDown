@@ -10,8 +10,10 @@ from typing_extensions import Self
 from llama_index.core.readers.base import BaseReader
 from llama_index.readers.markitdown import MarkItDownReader
 
+
 class FilePath(BaseModel):
     file: str
+
     @field_validator("file")
     def is_valid_file(cls, file: str):
         p = Path(file)
@@ -19,11 +21,14 @@ class FilePath(BaseModel):
             raise ValueError(f"{file} is not a file")
         return file
 
+
 class FileExistsWarning(Warning):
     """Warns you that a file exists"""
 
+
 class DirPath(BaseModel):
     path: str
+
     @model_validator(mode="after")
     def validate_dir_path(self) -> Self:
         if Path(self.path).is_dir():
@@ -34,34 +39,52 @@ class DirPath(BaseModel):
         else:
             raise ValueError("You should provide the path for an existing directory")
 
+
 class OutputPath(BaseModel):
     file: str
+
     @field_validator("file")
     def file_exists_warning(cls, file: str):
         if os.path.splitext(file)[1] != ".pdf":
             raise ValueError("Output file must be a PDF")
         p = Path(file)
         if p.is_file():
-            warnings.warn(f"The file {file} already exists, you are about to overwrite it", FileExistsWarning)
+            warnings.warn(
+                f"The file {file} already exists, you are about to overwrite it",
+                FileExistsWarning,
+            )
         return file
+
 
 class MultipleFileConversion(BaseModel):
     input_files: List[FilePath]
     output_files: List[str] | List[OutputPath] | None
+
     @model_validator(mode="after")
     def validate_multiple_file_conversion(self) -> Self:
-        if self.output_files is not None and len(self.input_files) != len(self.output_files):
+        if self.output_files is not None and len(self.input_files) != len(
+            self.output_files
+        ):
             raise ValueError("Input and output files must be lists of the same length")
         else:
             if self.output_files is None:
-                self.output_files = [OutputPath(file=(fl.file.replace(os.path.splitext(fl.file)[1],".pdf"))) for fl in self.input_files]
+                self.output_files = [
+                    OutputPath(
+                        file=(fl.file.replace(os.path.splitext(fl.file)[1], ".pdf"))
+                    )
+                    for fl in self.input_files
+                ]
             else:
                 if isinstance(self.output_files[0], str):
-                    self.output_files = [OutputPath(file=fl) for fl in self.output_files]
+                    self.output_files = [
+                        OutputPath(file=fl) for fl in self.output_files
+                    ]
         return self
+
 
 class Converter:
     """A class for converting .docx, .html, .xml, .json, .csv, .md, .pptx, .xlsx, .png, .jpg, .png, .zip files into PDF"""
+
     def __init__(self, reader: Optional[BaseReader] = None) -> None:
         """
         Initialize the Converter class.
@@ -76,7 +99,13 @@ class Converter:
         else:
             self._reader = MarkItDownReader()
         return
-    def convert(self,  file_path: str, output_path: str, title: str = "File Converted with PdfItDown"):
+
+    def convert(
+        self,
+        file_path: str,
+        output_path: str,
+        title: str = "File Converted with PdfItDown",
+    ):
         """
         Convert various document types into PDF format (supports .docx, .html, .xml, .json, .csv, .md, .pptx, .xlsx, .png, .jpg, .png, .zip).
 
@@ -120,7 +149,10 @@ class Converter:
                 return self.file_output.file
             except Exception:
                 return None
-    def multiple_convert(self,  file_paths: List[str], output_paths: Optional[List[str]] = None):
+
+    def multiple_convert(
+        self, file_paths: List[str], output_paths: Optional[List[str]] = None
+    ):
         """
         Convert various document types into PDF format (supports .docx, .html, .xml, .json, .csv, .md, .pptx, .xlsx, .png, .jpg, .png, .zip). Converts multiple files at once.
         Args:
@@ -133,13 +165,19 @@ class Converter:
             FileExistsWarning: if the output PDF path is an existing file, it warns you that the file will be overwritten
         """
         input_files = [FilePath(file=fl) for fl in file_paths]
-        to_convert_list = MultipleFileConversion(input_files=input_files, output_files=output_paths)
+        to_convert_list = MultipleFileConversion(
+            input_files=input_files, output_files=output_paths
+        )
         output_fls: List[OutputPath] = []
         for i in range(len(to_convert_list.input_files)):
-            result = self.convert(file_path=to_convert_list.input_files[i].file, output_path=to_convert_list.output_files[i].file)
+            result = self.convert(
+                file_path=to_convert_list.input_files[i].file,
+                output_path=to_convert_list.output_files[i].file,
+            )
             if result is not None:
                 output_fls.append(to_convert_list.output_files[i])
         return [el.file for el in output_fls]
+
     def convert_directory(self, directory_path: str):
         """
         Convert various document types into PDF format (supports .docx, .html, .xml, .json, .csv, .md, .pptx, .xlsx, .png, .jpg, .png, .zip). Converts all the files in a directory at once.
@@ -156,6 +194,6 @@ class Converter:
         p = os.walk(dirpath.path)
         for root, parent, file in p:
             for f in file:
-                fls.append(root+"/"+f)
+                fls.append(root + "/" + f)
         output_paths = self.multiple_convert(file_paths=fls)
         return output_paths

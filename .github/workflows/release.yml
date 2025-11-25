@@ -1,4 +1,4 @@
-name: PyPI Release
+name: GitHub Release
 
 on:
   push:
@@ -15,16 +15,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Hatch
-        run: pip install hatch
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
 
-      - name: Publish on PyPi
-        env:
-          HATCH_INDEX_USER: __token__
-          HATCH_INDEX_AUTH: ${{ secrets.PYPI_API_TOKEN }}
-        run: |
-          hatch build
-          hatch publish -y
+      - name: Build
+        run: uv build
+
+      - name: Publish to PyPI
+        run: uv publish --token ${{ secrets.PYPI_TOKEN }}
 
       - name: Create GitHub Release
         uses: ncipollo/release-action@v1

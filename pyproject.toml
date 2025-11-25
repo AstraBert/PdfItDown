@@ -1,19 +1,16 @@
 [build-system]
-requires = ["hatchling>=1.0.0"]
-build-backend = "hatchling.build"
-
-[options.package_data]
-pdfitdown = ["*"]
+requires = ["uv_build>=0.9.10,<0.10.0"]
+build-backend = "uv_build"
 
 [project]
 name = "pdfitdown"
-version = "1.5.1"
+version = "2.0.0-beta"
 authors = [
   {name = "Clelia (Astra) Bertelli", email = "astraberte9@gmail.com"}
 ]
 description = "PdfItDown - Convert Everything to PDF"
 readme = "README.md"
-requires-python = ">=3.10,<3.13"
+requires-python = ">=3.10,<4"
 classifiers = [
   "Programming Language :: Python :: 3",
   "License :: OSI Approved :: MIT License",
@@ -28,34 +25,21 @@ dependencies = [
   'termcolor'
 ]
 
-[project.scripts]
-pdfitdown = "pdfitdown.pdfitdown_cli:main"
-pdfitdown_ui = "pdfitdown.pdfitdown_ui:main"
-
 [project.urls]
 Homepage = "https://github.com/AstraBert/PdfItDown"
 Issues = "https://github.com/AstraBert/PdfItDown/issues"
 
-[tool.hatch.build.targets.wheel]
-only-include = ["src/pdfitdown"]
+[project.scripts]
+pdfitdown = "pdfitdown.pdfitdown_cli:main"
+pdfitdown_ui = "pdfitdown.pdfitdown_ui:main"
 
-[tool.hatch.build.targets.wheel.sources]
-"src" = ""
+[tool.uv.build-backend]
+module-name = "pdfitdown"
 
-[tool.hatch.envs.default]
-dependencies = [
-  "pytest",
-  "llama_parse"
+[dependency-groups]
+dev = [
+    "pre-commit>=4.5.0",
+    "pytest>=9.0.1",
+    "ruff>=0.11.8",
+    "ty>=0.0.1a27",
 ]
-
-[tool.hatch.envs.default.py-version]
-40 = "3.10"
-41 = "3.11"
-42 = "3.12"
-
-[tool.hatch.envs.default.scripts]
-test = "cp src/pdfitdown/pdfconversion.py tests/ && cp src/pdfitdown/pdfitdown_ui.py tests/ && pytest tests/*.py -p no:warnings && rm tests/pdfconversion.py && rm tests/pdfitdown_ui.py"
-
-[tool.setuptools.packages.find]
-where = ["src"]
-include = ["pdfitdown*"]
