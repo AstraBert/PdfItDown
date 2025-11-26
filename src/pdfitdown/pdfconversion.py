@@ -169,7 +169,9 @@ class Converter:
         to_convert_list = MultipleFileConversion(
             input_files=input_files, output_files=output_paths
         )
-        to_convert_list.output_files = cast(list[OutputPath], to_convert_list.output_files)
+        to_convert_list.output_files = cast(
+            list[OutputPath], to_convert_list.output_files
+        )
         output_fls: List[OutputPath] = []
         for i in range(len(to_convert_list.input_files)):
             result = self.convert(
