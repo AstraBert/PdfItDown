@@ -6,3 +6,5 @@ build/
 tests/__pycache__/
 tests/data/*.pdf
 .env
+.venv/
+__pycache__/
