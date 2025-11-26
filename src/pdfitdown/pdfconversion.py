@@ -1,6 +1,7 @@
 import img2pdf
 import warnings
 import os
+from typing import cast
 from PIL import Image
 from markdown_pdf import MarkdownPdf, Section
 from pydantic import BaseModel, field_validator, model_validator
@@ -75,9 +76,9 @@ class MultipleFileConversion(BaseModel):
                     for fl in self.input_files
                 ]
             else:
-                if isinstance(self.output_files[0], str):
+                if all(isinstance(file, str) for file in self.output_files):
                     self.output_files = [
-                        OutputPath(file=fl) for fl in self.output_files
+                        OutputPath(file=cast(str, fl)) for fl in self.output_files
                     ]
         return self
 
@@ -168,6 +169,7 @@ class Converter:
         to_convert_list = MultipleFileConversion(
             input_files=input_files, output_files=output_paths
         )
+        to_convert_list.output_files = cast(list[OutputPath], to_convert_list.output_files)
         output_fls: List[OutputPath] = []
         for i in range(len(to_convert_list.input_files)):
             result = self.convert(
@@ -192,7 +194,7 @@ class Converter:
         dirpath = DirPath(path=directory_path)
         fls = []
         p = os.walk(dirpath.path)
-        for root, parent, file in p:
+        for root, _, file in p:
             for f in file:
                 fls.append(root + "/" + f)
         output_paths = self.multiple_convert(file_paths=fls)
