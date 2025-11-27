@@ -1,6 +1,7 @@
 import pytest
 import os
-from pdfitdown.pdfconversion.models import OsPath
+from pathlib import Path
+from pdfitdown.pdfconversion.models import OsPath, MultipleConversion
 from pdfitdown.pdfconversion.errors import FileExistsWarning
 
 
@@ -40,7 +41,7 @@ def all_files() -> list[str]:
         "test4.docx",
         "test5.zip",
         "test6.xml",
-        "test7.xslx",
+        "test7.xlsx",
     ]
     return [os.path.join("tests/data", file) for file in initial_files]
 
@@ -101,3 +102,94 @@ def test_ospath_validation(to_convert_dir: str, text_file: str, pdf_file: str):
         OsPath(path=text_file, type="outputfile", overwrite=True)
     with pytest.raises(FileExistsError):
         OsPath(path=pdf_file, type="outputfile", overwrite=False)
+
+
+def test_ospath_from_file(
+    text_file: str, pdf_file: str, image_file: str, to_convert_file: str
+) -> None:
+    path = OsPath.from_file(file=text_file, overwrite=True, is_input=True)
+    assert path.file_type == "text"
+    assert path.type == "file"
+    with pytest.raises(ValueError):
+        OsPath.from_file(file=text_file, overwrite=True, is_input=False)
+    path = OsPath.from_file(file=image_file, overwrite=True, is_input=True)
+    assert path.file_type == "image"
+    assert path.type == "file"
+    with pytest.raises(ValueError):
+        OsPath.from_file(file=image_file, overwrite=True, is_input=False)
+    path = OsPath.from_file(file=to_convert_file, overwrite=True, is_input=True)
+    assert path.file_type == "toconvert"
+    assert path.type == "file"
+    with pytest.raises(ValueError):
+        OsPath.from_file(file=to_convert_file, overwrite=True, is_input=False)
+    path = OsPath.from_file(file=pdf_file, overwrite=True, is_input=True)
+    assert path.file_type == "pdf"
+    assert path.type == "file"
+    with pytest.warns(FileExistsWarning):
+        path = OsPath.from_file(file=pdf_file, overwrite=True, is_input=False)
+    assert path.type == "outputfile"
+    assert path.file_type == "none"
+    with pytest.raises(FileExistsError):
+        OsPath.from_file(file=pdf_file, overwrite=False, is_input=False)
+
+
+def test_ospath_from_dir(to_convert_dir: str) -> None:
+    path = OsPath.from_dir(to_convert_dir, True)
+    assert path.type == "directory"
+    assert path.file_type == "none"
+    with pytest.raises(FileNotFoundError):
+        path = OsPath.from_dir(to_convert_dir[:-2], True)
+    os.makedirs("tests/data/empty", exist_ok=True)
+    with pytest.raises(ValueError):
+        path = OsPath.from_dir("tests/data/empty", True)
+
+
+def test_multipleconversion_validation(all_files: list[str]) -> None:
+    all_files_input = [
+        OsPath.from_file(file, overwrite=True, is_input=True) for file in all_files
+    ]
+    all_files_output = [
+        OsPath.from_file(
+            file.replace(Path(file).suffix, ".pdf"), overwrite=True, is_input=False
+        )
+        for file in all_files
+    ]
+    mc = MultipleConversion(input_files=all_files_input, output_files=all_files_output)
+    assert mc.input_files == all_files_input
+    assert mc.output_files == all_files_output
+    with pytest.raises(ValueError):
+        mc = MultipleConversion(
+            input_files=all_files_input, output_files=all_files_output[:2]
+        )
+
+
+def test_multipleconversion_from_list(all_files: list[str]) -> None:
+    mc = MultipleConversion.from_input_files(all_files, True)
+    all_files_input = [
+        OsPath.from_file(file, overwrite=True, is_input=True) for file in all_files
+    ]
+    all_files_output = [
+        OsPath.from_file(
+            file.replace(Path(file).suffix, ".pdf"), overwrite=True, is_input=False
+        )
+        for file in all_files
+    ]
+    assert mc.input_files == all_files_input
+    assert mc.output_files == all_files_output
+    with pytest.raises(FileNotFoundError):
+        MultipleConversion.from_input_files([all_files[0] + "t", *all_files[1:]], True)
+
+
+def test_multipleconversion_from_dir(
+    to_convert_dir: str, pdf_file: str, all_files: str
+) -> None:
+    mc = MultipleConversion.from_directory(
+        directory=OsPath.from_dir(to_convert_dir, True), recursive=True
+    )
+    for fl in mc.input_files:
+        assert pdf_file not in fl.path
+        assert fl.type == "file"
+    for fl in mc.output_files:
+        assert fl.path.endswith(".pdf")
+        assert fl.type == "outputfile"
+    assert len(mc.input_files) == len(all_files)
