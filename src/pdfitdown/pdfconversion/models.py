@@ -121,8 +121,18 @@ class MultipleConversion:
         else:
             for fl in os.listdir(directory.path):
                 if Path(fl).is_file() and (suffix := Path(fl).suffix) != ".pdf":
-                    inpt_files.append(OsPath.from_file(os.path.join(directory.path, fl), directory.overwrite, True))
-                    outpt_files.append(OsPath.from_file(os.path.join(directory.path, fl.replace(suffix, ".pdf")), directory.overwrite, True))
+                    inpt_files.append(
+                        OsPath.from_file(
+                            os.path.join(directory.path, fl), directory.overwrite, True
+                        )
+                    )
+                    outpt_files.append(
+                        OsPath.from_file(
+                            os.path.join(directory.path, fl.replace(suffix, ".pdf")),
+                            directory.overwrite,
+                            True,
+                        )
+                    )
         return cls(input_files=inpt_files, output_files=outpt_files)
 
     @classmethod
