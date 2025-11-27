@@ -100,23 +100,29 @@ class MultipleConversion:
             )
 
     @classmethod
-    def from_directory(cls, directory: OsPath) -> "MultipleConversion":
+    def from_directory(cls, directory: OsPath, recursive: bool) -> "MultipleConversion":
         inpt_files: list[OsPath] = []
         outpt_files: list[OsPath] = []
-        for root, _, files in os.walk(directory.path):
-            if files:
-                for file in files:
-                    if (suffix := Path(file).suffix) != ".pdf":
-                        ifl = OsPath.from_file(
-                            os.path.join(root, file), directory.overwrite, True
-                        )
-                        ofl = OsPath.from_file(
-                            os.path.join(root, file.replace(suffix, ".pdf")),
-                            directory.overwrite,
-                            False,
-                        )
-                        inpt_files.append(ifl)
-                        outpt_files.append(ofl)
+        if recursive:
+            for root, _, files in os.walk(directory.path):
+                if files:
+                    for file in files:
+                        if (suffix := Path(file).suffix) != ".pdf":
+                            ifl = OsPath.from_file(
+                                os.path.join(root, file), directory.overwrite, True
+                            )
+                            ofl = OsPath.from_file(
+                                os.path.join(root, file.replace(suffix, ".pdf")),
+                                directory.overwrite,
+                                False,
+                            )
+                            inpt_files.append(ifl)
+                            outpt_files.append(ofl)
+        else:
+            for fl in os.listdir(directory.path):
+                if Path(fl).is_file() and (suffix := Path(fl).suffix) != ".pdf":
+                    inpt_files.append(OsPath.from_file(os.path.join(directory.path, fl), directory.overwrite, True))
+                    outpt_files.append(OsPath.from_file(os.path.join(directory.path, fl.replace(suffix, ".pdf")), directory.overwrite, True))
         return cls(input_files=inpt_files, output_files=outpt_files)
 
     @classmethod

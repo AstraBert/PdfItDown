@@ -54,7 +54,8 @@ class Converter:
         self,
         directory_path: str,
         overwrite: bool = True,
+        recursive: bool = True,
     ):
         dirobj = OsPath.from_dir(directory_path, overwrite)
-        multipleconv = MultipleConversion.from_directory(dirobj)
+        multipleconv = MultipleConversion.from_directory(dirobj, recursive)
         return self._multiple_convert(multipleconv, overwrite)
