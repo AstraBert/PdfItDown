@@ -12,6 +12,21 @@ CONVERTER = MarkItDown(enable_builtins=True)
 def convert_file(
     input_file: str, output_fle: str, title: str | None = None, overwrite: bool = False
 ) -> str | None:
+    """
+    Converts an input file to a PDF file, supporting image, PDF, text, and convertible file types.
+
+    Args:
+        input_file (str): Path to the input file to be converted.
+        output_fle (str): Path where the output PDF file will be saved.
+        title (str | None): Title for the PDF document. If None, a default title is used.
+        overwrite (bool): Whether to overwrite the output file if it exists. Defaults to False.
+
+    Returns:
+        str | None: The path to the output PDF file if conversion is successful, otherwise None.
+
+    Raises:
+        EmptyImageError: If the input image file is empty or cannot be read.
+    """
     title = title or f"{input_file} - Converted with PdfItDown"
     inpt = OsPath.from_file(input_file, overwrite=overwrite, is_input=True)
     outpt = OsPath.from_file(output_fle, overwrite=overwrite, is_input=False)
