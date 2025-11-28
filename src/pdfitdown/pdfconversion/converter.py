@@ -10,6 +10,7 @@ class Converter:
         conversion_callback (ConversionCallback | None): Optional callback function for conversion.
             If not provided, defaults to `pdfitdown.pdfconversion._default_callback.convert_file`.
     """
+
     def __init__(self, conversion_callback: ConversionCallback | None = None):
         self._conversion_callback: ConversionCallback = (
             conversion_callback or convert_file

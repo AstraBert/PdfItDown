@@ -7,6 +7,7 @@ from .errors import FileExistsWarning
 
 ConversionCallback: TypeAlias = Callable[[str, str, str | None, bool], str | None]
 
+
 @dataclass
 class OsPath:
     """
@@ -17,6 +18,7 @@ class OsPath:
         type (Literal["file", "directory", "outputfile"]): The type of path, defaults to "file".
         overwrite (bool): Whether to overwrite an existing file, defaults to False.
     """
+
     path: str
     type: Literal["file", "directory", "outputfile"] = field(default="file")
     overwrite: bool = field(default=False)
@@ -155,6 +157,7 @@ class MultipleConversion:
         input_files (list[OsPath]): List of input file paths to be converted.
         output_files (list[OsPath]): List of output file paths for the converted PDFs.
     """
+
     input_files: list[OsPath]
     output_files: list[OsPath]
 
