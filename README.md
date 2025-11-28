@@ -11,7 +11,7 @@
     <img src="https://raw.githubusercontent.com/AstraBert/PdfItDown/main/img/logo.png" alt="PdfItDown Logo">
 </div>
 
-**PdfItDown** is a python package that relies on [`markitdown` by Microsoft](https://github.com/microsoft/markitdown/), [`markdown_pdf`](https://github.com/vb64/markdown-pdf), [img2pdf](https://pypi.org/project/img2pdf/) and [`LlamaIndex`](https://www.llamaindex.ai/). Visit us on our [documentation website](https://pdfitdown.eu)!
+**PdfItDown** is a python package that relies on [`markitdown` by Microsoft](https://github.com/microsoft/markitdown/), [`markdown_pdf`](https://github.com/vb64/markdown-pdf) and [img2pdf](https://pypi.org/project/img2pdf/). Visit us on our [documentation website](https://pdfitdown.eu)!
 
 ### Applicability
 
@@ -121,14 +121,8 @@ pdfitdown -i "test0.png,test1.csv"
 
 ```python
 from pdfitdown.pdfconversion import Converter
-from llama_parse import LlamaParse
-from dotenv import load_dotenv
-import os
 
-load_dotenv()
-
-reader = LlamaParse(api_key=os.getenv("llamacloud_api_key"), result_type="markdown")
-converter = Converter(reader=reader)
+converter = Converter()
 # with custom output paths
 converter.multiple_convert(file_paths = ["business_growth.md", "logo.png"], output_paths = ["business_growth.pdf", "logo.pdf"])
 # with inferred output paths
@@ -152,18 +146,6 @@ converter = Converter()
 output_paths = converter.convert_directory(directory_path = "tests/data/testdir")
 print(output_paths)
 ```
-
-Or you can just launch a [Gradio](https://gradio.app)-based user interface:
-
-```bash
-pdfitdown_ui
-```
-
-You will be able to see the application running on `http://localhost:7860` within seconds!
-
-Watch the demo here:
-
-[![Watch the video demo!](https://raw.githubusercontent.com/AstraBert/PdfItDown/main/img/thumbnail.png)](https://raw.githubusercontent.com/AstraBert/PdfItDown/main/img/pdfitdown_ui_demo.mp4)
 
 ### Contributing
 

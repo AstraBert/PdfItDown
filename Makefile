@@ -1,4 +1,4 @@
-.PHONY: test lint format format-check typecheck
+.PHONY: test lint format format-check typecheck build
 
 all: test lint format typecheck
 
@@ -7,8 +7,10 @@ test:
 	uv run pytest tests
 
 lint:
-	$(info ****************** linting ******************)
+	$(info ****************** running pre-commit ******************)
 	uv run pre-commit run -a
+	$(info ****************** running ruff check ******************)
+	uv run ruff check
 
 format:
 	$(info ****************** formatting ******************)

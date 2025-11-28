@@ -17,12 +17,12 @@ classifiers = [
   "Operating System :: OS Independent"
 ]
 dependencies = [
-  'llama-index-readers-markitdown',
   'markdown-pdf',
   'img2pdf',
   'pillow',
   'gradio',
-  'termcolor'
+  'termcolor',
+  "markitdown[docx,pdf,pptx,xls,xlsx]>=0.1.0,<0.2",
 ]
 
 [project.urls]
