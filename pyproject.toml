@@ -30,8 +30,7 @@ Homepage = "https://github.com/AstraBert/PdfItDown"
 Issues = "https://github.com/AstraBert/PdfItDown/issues"
 
 [project.scripts]
-pdfitdown = "pdfitdown.pdfitdown_cli:main"
-pdfitdown_ui = "pdfitdown.pdfitdown_ui:main"
+pdfitdown = "pdfitdown.cli.app:pdfitdown_cli"
 
 [tool.uv.build-backend]
 module-name = "pdfitdown"
