@@ -32,7 +32,7 @@ The format-specific support needs to be evaluated for the specific reader you ar
 
 **PdfItDown** works in a very simple way:
 
-- From **markdown** to PDF
+- From **markdown** to PDF (default)
 
 ```mermaid
 graph LR
@@ -41,7 +41,7 @@ graph LR
 4[markdown-pdf] --> 5(PDF file)
 ```
 
-- From **image** to PDF
+- From **image** to PDF (default)
 
 ```mermaid
 graph LR
@@ -50,14 +50,22 @@ graph LR
 4[img2pdf] --> 5(PDF file)
 ```
 
-- From other **text-based** file formats to PDF
+- From other **text-based** file formats or **unstructured** file formats to PDF (default)
 
 ```mermaid
 graph LR
-2(Input File) -->  3[LlamaIndex-compatible Reader - defaults to MarkItDown]
-3[LlamaIndex-compatible Reader - defaults to MarkItDown] -->  4[Markdown content]
+2(Input File) -->  3[MarkitDown]
+3[MarkitDown] -->  4[Markdown content]
 4[Markdown content] --> 5[markdown-pdf]
 5[markdown-pdf] --> 6(PDF file)
+```
+
+- Using a **custom conversion callback**
+
+```mermaid
+graph LR
+2(Input File) -->  3[Conversion Callback]
+3[Conversion Callback] --> 4(PDF file)
 ```
 
 ### Installation and Usage
@@ -65,28 +73,29 @@ graph LR
 To install **PdfItDown**, just run:
 
 ```bash
-python3 -m pip install pdfitdown
+pip install pdfitdown
 ```
 
 You can now use the **command line tool**:
 
 ```
-usage: pdfitdown [-h] [-i INPUTFILE] [-o OUTPUTFILE] [-t TITLE] [-d DIRECTORY]
+Usage: pdfitdown [OPTIONS]
 
-options:
-  -h, --help            show this help message and exit
-  -i, --inputfile INPUTFILE
-                        Path to the input file(s) that need to be converted to PDF. The path should be comma
-                        separated: input1.csv,input2.md,...,inputN.xml.
-  -o, --outputfile OUTPUTFILE
-                        Path to the output PDF file(s). If more than one input file is provided, you should provide an
-                        equally long list of output files. The path should be comma separated:
-                        output1.pdf,output2.pdf,...,outputN.pdf. Defaults to 'None'
-  -t, --title TITLE     Title to include in the PDF metadata. Default: 'File Converted with PdfItDown'. If more than
-                        one file is provided, it will be ignored.
-  -d, --directory DIRECTORY
-                        Directory whose files you want to bulk-convert to PDF. If the --inputfile argument is also
-                        provided, it will be ignored. Defaults to None.
+  Convert (almost) everything to PDF
+
+Options:
+  -i, --inputfile TEXT   Path to the input file(s) that need to be converted
+                         to PDF. Can be used multiple times.
+  -o, --outputfile TEXT  Path to the output PDF file(s). If more than one
+                         input file is provided, you should provide an equal
+                         number of output files.
+  -t, --title TEXT       Title to include in the PDF metadata. Default: 'File
+                         Converted with PdfItDown'. If more than one file is
+                         provided, it will be ignored.
+  -d, --directory TEXT   Directory whose files you want to bulk-convert to
+                         PDF. If `--inputfile` is also provided, this option
+                         will be ignored. Defaults to None.
+  --help                 Show this message and exit.
 ```
 
 An example usage can be:
@@ -112,9 +121,9 @@ You can also convert **multiple files at once**:
 
 ```bash
 # with custom output paths
-pdfitdown -i "test0.png,test1.csv" -o "testoutput0.pdf,testoutput1.pdf"
+pdfitdown -i test0.png -i test1.md -o testoutput0.pdf -o testoutput1.pdf
 # with inferred output paths
-pdfitdown -i "test0.png,test1.csv"
+pdfitdown -i test0.png -i test1.csv
 ```
 
 - In the Python API:
@@ -145,6 +154,32 @@ from pdfitdown.pdfconversion import Converter
 converter = Converter()
 output_paths = converter.convert_directory(directory_path = "tests/data/testdir")
 print(output_paths)
+```
+
+In the python API you can also define a **custom callback for the conversion**. In this example, we use Google Gemini to summarize a file and save its content as a PDF:
+
+```python
+from pdfitdown.pdfconversion import Converter
+from markdown_pdf import MarkdownPdf, Section
+from google import genai
+
+client = genai.Client()
+
+def conversion_callback(input_file: str, output_file: str, title: str | None = None, overwrite: bool = True)
+    uploaded_file = client.files.upload(file=media / input_file)
+    response = client.models.generate_content(
+        model="gemini-2.0-flash",
+        contents=["Give me a summary of this file.", uploaded_file],
+    )
+    content = response.text
+    pdf = MarkdownPdf(toc_level=0)
+    pdf.add_section(Section(content))
+    pdf.meta["title"] = title or "Summary by Gemini"
+    pdf.save(output_file)
+    return output_fle
+
+converter = Converter(conversion_callback=conversion_callback)
+converter.convert(file_path = "business_growth.md", output_path = "business_growth.pdf", title="Business Growth for Q3 in 2024")
 ```
 
 ### Contributing
