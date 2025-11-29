@@ -5,6 +5,7 @@ from pathlib import Path
 from click.testing import CliRunner
 from pdfitdown.cli.app import pdfitdown_cli
 
+
 @pytest.fixture()
 def to_convert_file() -> str:
     return os.path.join("tests/data", "test1.pptx")
@@ -13,6 +14,7 @@ def to_convert_file() -> str:
 @pytest.fixture()
 def to_convert_dir() -> str:
     return "tests/data"
+
 
 @pytest.fixture()
 def all_files() -> list[str]:
@@ -29,9 +31,11 @@ def all_files() -> list[str]:
     ]
     return [os.path.join("tests/data", file) for file in initial_files]
 
+
 @pytest.fixture(scope="module")
 def runner() -> CliRunner:
     return CliRunner()
+
 
 def test_cli_single_conversion(to_convert_file: str, runner: CliRunner) -> None:
     result = runner.invoke(pdfitdown_cli, ["--inputfile", to_convert_file])
@@ -39,14 +43,38 @@ def test_cli_single_conversion(to_convert_file: str, runner: CliRunner) -> None:
     assert result.output == "Conversion successful!🎉\n"
     assert Path(to_convert_file.replace(Path(to_convert_file).suffix, ".pdf")).exists()
     os.remove(to_convert_file.replace(Path(to_convert_file).suffix, ".pdf"))
-    result = runner.invoke(pdfitdown_cli, ["--inputfile", to_convert_file, "--outputfile", to_convert_file.replace(Path(to_convert_file).suffix, ".1.pdf")])
+    result = runner.invoke(
+        pdfitdown_cli,
+        [
+            "--inputfile",
+            to_convert_file,
+            "--outputfile",
+            to_convert_file.replace(Path(to_convert_file).suffix, ".1.pdf"),
+        ],
+    )
     assert result.return_value is None
     assert result.output == "Conversion successful!🎉\n"
-    assert Path(to_convert_file.replace(Path(to_convert_file).suffix, ".1.pdf")).exists()
+    assert Path(
+        to_convert_file.replace(Path(to_convert_file).suffix, ".1.pdf")
+    ).exists()
     os.remove(to_convert_file.replace(Path(to_convert_file).suffix, ".1.pdf"))
-    result = runner.invoke(pdfitdown_cli, ["--inputfile", to_convert_file, "--outputfile", to_convert_file.replace(Path(to_convert_file).suffix, ".1.pdf"), "--directory", "hello"])
-    assert result.output == "WARNING: `--directory` will be ignored since `--inputfile` has been provided\nConversion successful!🎉\n"
+    result = runner.invoke(
+        pdfitdown_cli,
+        [
+            "--inputfile",
+            to_convert_file,
+            "--outputfile",
+            to_convert_file.replace(Path(to_convert_file).suffix, ".1.pdf"),
+            "--directory",
+            "hello",
+        ],
+    )
+    assert (
+        result.output
+        == "WARNING: `--directory` will be ignored since `--inputfile` has been provided\nConversion successful!🎉\n"
+    )
     os.remove(to_convert_file.replace(Path(to_convert_file).suffix, ".1.pdf"))
+
 
 def test_cli_multiple_conversion(all_files: list[str], runner: CliRunner) -> None:
     all_files_args = []
@@ -70,46 +98,78 @@ def test_cli_multiple_conversion(all_files: list[str], runner: CliRunner) -> Non
         if file != "--outputfile":
             assert Path(file).exists()
             os.remove(file)
-    result = runner.invoke(pdfitdown_cli, all_files_args + output_files_args + ["--title", "hello"])
+    result = runner.invoke(
+        pdfitdown_cli, all_files_args + output_files_args + ["--title", "hello"]
+    )
     assert result.return_value is None
-    assert result.output == "WARNING: `--title` will be ignored since more than one `--inputfile` has been provided\nConversion successful!🎉\n"
+    assert (
+        result.output
+        == "WARNING: `--title` will be ignored since more than one `--inputfile` has been provided\nConversion successful!🎉\n"
+    )
     for file in output_files_args:
         if file != "--outputfile":
             os.remove(file)
     result = runner.invoke(pdfitdown_cli, all_files_args + output_files_args[:-2])
-    assert result.output == "ERROR! `--inputfile` and `--outputfile` should be the same number\n"
+    assert (
+        result.output
+        == "ERROR! `--inputfile` and `--outputfile` should be the same number\n"
+    )
     assert result.exit_code == 1
 
-def test_cli_directory(to_convert_dir: str, runner: CliRunner, all_files: list[str]) -> None:
+
+def test_cli_directory(
+    to_convert_dir: str, runner: CliRunner, all_files: list[str]
+) -> None:
     result = runner.invoke(pdfitdown_cli, ["--directory", to_convert_dir])
     assert result.return_value is None
     assert result.output == "Conversion successful!🎉\n"
     for file in all_files:
         assert Path(file.replace(Path(file).suffix, ".pdf")).exists()
         os.remove(file.replace(Path(file).suffix, ".pdf"))
-    result = runner.invoke(pdfitdown_cli, ["--directory", to_convert_dir, "--outputfile", "hello"])
-    assert result.output == "WARNING: `--outputfile` will be ignored since  `--inputfile` has not been provided\nConversion successful!🎉\n"
+    result = runner.invoke(
+        pdfitdown_cli, ["--directory", to_convert_dir, "--outputfile", "hello"]
+    )
+    assert (
+        result.output
+        == "WARNING: `--outputfile` will be ignored since  `--inputfile` has not been provided\nConversion successful!🎉\n"
+    )
     for file in all_files:
         os.remove(file.replace(Path(file).suffix, ".pdf"))
-    result = runner.invoke(pdfitdown_cli, ["--directory", to_convert_dir, "--title", "hello"])
-    assert result.output == "WARNING: `--title` will be ignored since `--directory` has been provided\nConversion successful!🎉\n"
+    result = runner.invoke(
+        pdfitdown_cli, ["--directory", to_convert_dir, "--title", "hello"]
+    )
+    assert (
+        result.output
+        == "WARNING: `--title` will be ignored since `--directory` has been provided\nConversion successful!🎉\n"
+    )
     for file in all_files:
         os.remove(file.replace(Path(file).suffix, ".pdf"))
 
-def test_cli_errors(runner: CliRunner, to_convert_file: str, to_convert_dir: str) -> None:
+
+def test_cli_errors(
+    runner: CliRunner, to_convert_file: str, to_convert_dir: str
+) -> None:
     result = runner.invoke(pdfitdown_cli, [])
     assert result.exit_code == 1
-    assert result.output == "ERROR! You should provide one of `--inputfile` or `--directory`\n"
+    assert (
+        result.output
+        == "ERROR! You should provide one of `--inputfile` or `--directory`\n"
+    )
     result = runner.invoke(pdfitdown_cli, ["--directory", "doesnotexist"])
     assert result.exit_code == 2
     assert "ERROR during the conversion: " in result.output
     os.makedirs(os.path.join(to_convert_dir, "empty"), exist_ok=True)
-    result = runner.invoke(pdfitdown_cli, ["--directory", os.path.join(to_convert_dir, "empty")])
+    result = runner.invoke(
+        pdfitdown_cli, ["--directory", os.path.join(to_convert_dir, "empty")]
+    )
     assert result.exit_code == 2
     assert "ERROR during the conversion: " in result.output
     result = runner.invoke(pdfitdown_cli, ["--inputfile", "doesnotexist.txt"])
     assert result.exit_code == 2
     assert "ERROR during the conversion: " in result.output
-    result = runner.invoke(pdfitdown_cli, ["--inputfile", to_convert_file, "--inputfile", "doesnotexist.txt"])
+    result = runner.invoke(
+        pdfitdown_cli,
+        ["--inputfile", to_convert_file, "--inputfile", "doesnotexist.txt"],
+    )
     assert result.exit_code == 2
     assert "ERROR during the conversion: " in result.output

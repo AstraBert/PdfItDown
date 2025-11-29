@@ -5,6 +5,7 @@ from termcolor import cprint
 from typing import cast
 from ..pdfconversion.converter import Converter
 
+
 @click.command(
     help="Convert (almost) everything to PDF",
 )
@@ -45,7 +46,9 @@ def pdfitdown_cli(
     directory: str | None,
 ):
     c = Converter()
-    if (inputfile is None or (inputfile is not None and len(inputfile) == 0)) and directory is None:
+    if (
+        inputfile is None or (inputfile is not None and len(inputfile) == 0)
+    ) and directory is None:
         cprint(
             "ERROR! You should provide one of `--inputfile` or `--directory`",
             attrs=["bold"],
