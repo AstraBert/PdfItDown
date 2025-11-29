@@ -1151,6 +1151,9 @@ dev = [
     { name = "ruff" },
     { name = "ty" },
 ]
+server = [
+    { name = "starlette" },
+]
 
 [package.metadata]
 requires-dist = [
@@ -1169,6 +1172,7 @@ dev = [
     { name = "ruff", specifier = ">=0.11.8" },
     { name = "ty", specifier = ">=0.0.1a27" },
 ]
+server = [{ name = "starlette", specifier = ">=0.46.2" }]
 
 [[package]]
 name = "pdfminer-six"
