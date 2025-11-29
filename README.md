@@ -182,6 +182,44 @@ converter = Converter(conversion_callback=conversion_callback)
 converter.convert(file_path = "business_growth.md", output_path = "business_growth.pdf", title="Business Growth for Q3 in 2024")
 ```
 
+Moreover, the python API provides you with the possibility of mounting PdfItDown conversion features into a backend server built with Starlette and Starlette-compatible frameworks (such as FastAPI):
+
+```python
+from starlette.applications import Starlette
+from starlette.requests import Request
+from startlette.responses import PlainTextResponse
+from starlette.routing import Route
+from pdfitdown.pdfconversion import Converter
+from pdfitdown.server import mount
+
+async def hello_world(request: Request) -> PlainTextResponse:
+    return PlainTextResponse(content="hello world!")
+
+routes = Route("/helloworld", hello_world)
+app = Starlette(routes=routes)
+
+app = mount(app, converter=Converter(), path="/conversions/pdf", name="pdfitdown")
+```
+
+Now you can send file payloads to the `/conversions/pdf` endpoint through POST requests and get the content of the converted file back, in the response content:
+
+```python
+import httpx
+
+with open("file.txt", "rb") as f:
+    content = f.read()
+
+files = {"file_upload": ("file.txt", content, "text/plain")}
+
+with httpx.Client() as client:
+    response = client.post("http://localhost:80/conversions/pdf", files=files)
+
+    assert response.status_code == 200
+    with open("file.pdf", "wb") as f:
+        f.write(response.content)
+```
+
+
 ### Contributing
 
 Contributions are always welcome!
