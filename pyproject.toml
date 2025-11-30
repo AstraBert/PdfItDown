@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "pdfitdown"
-version = "2.0.0-beta.1"
+version = "2.0.0-beta.2"
 authors = [
   {name = "Clelia Astra Bertelli", email = "astraberte9@gmail.com"}
 ]
@@ -34,15 +34,17 @@ pdfitdown = "pdfitdown.cli.app:pdfitdown_cli"
 [tool.uv.build-backend]
 module-name = "pdfitdown"
 
+[project.optional-dependencies]
+server = [
+    "httpx>=0.28.1,<1",
+    "python-multipart>=0.0.20",
+    "starlette>=0.46.2",
+]
+
 [dependency-groups]
 dev = [
     "pre-commit>=4.5.0",
     "pytest>=9.0.1",
     "ruff>=0.11.8",
     "ty>=0.0.1a27",
-]
-server = [
-    "httpx>=0.28.1,<1",
-    "python-multipart>=0.0.20",
-    "starlette>=0.46.2",
 ]
