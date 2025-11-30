@@ -11,7 +11,7 @@
     <img src="https://raw.githubusercontent.com/AstraBert/PdfItDown/main/img/logo.png" alt="PdfItDown Logo">
 </div>
 
-**PdfItDown** is a python package that relies on [`markitdown` by Microsoft](https://github.com/microsoft/markitdown/), [`markdown_pdf`](https://github.com/vb64/markdown-pdf), [img2pdf](https://pypi.org/project/img2pdf/) and [`LlamaIndex`](https://www.llamaindex.ai/). Visit us on our [documentation website](https://pdfitdown.eu)!
+**PdfItDown** is a python package that relies on [`markitdown` by Microsoft](https://github.com/microsoft/markitdown/), [`markdown_pdf`](https://github.com/vb64/markdown-pdf) and [img2pdf](https://pypi.org/project/img2pdf/). Visit us on our [documentation website](https://pdfitdown.eu)!
 
 ### Applicability
 
@@ -32,7 +32,7 @@ The format-specific support needs to be evaluated for the specific reader you ar
 
 **PdfItDown** works in a very simple way:
 
-- From **markdown** to PDF
+- From **markdown** to PDF (default)
 
 ```mermaid
 graph LR
@@ -41,7 +41,7 @@ graph LR
 4[markdown-pdf] --> 5(PDF file)
 ```
 
-- From **image** to PDF
+- From **image** to PDF (default)
 
 ```mermaid
 graph LR
@@ -50,14 +50,22 @@ graph LR
 4[img2pdf] --> 5(PDF file)
 ```
 
-- From other **text-based** file formats to PDF
+- From other **text-based** file formats or **unstructured** file formats to PDF (default)
 
 ```mermaid
 graph LR
-2(Input File) -->  3[LlamaIndex-compatible Reader - defaults to MarkItDown]
-3[LlamaIndex-compatible Reader - defaults to MarkItDown] -->  4[Markdown content]
+2(Input File) -->  3[MarkitDown]
+3[MarkitDown] -->  4[Markdown content]
 4[Markdown content] --> 5[markdown-pdf]
 5[markdown-pdf] --> 6(PDF file)
+```
+
+- Using a **custom conversion callback**
+
+```mermaid
+graph LR
+2(Input File) -->  3[Conversion Callback]
+3[Conversion Callback] --> 4(PDF file)
 ```
 
 ### Installation and Usage
@@ -65,28 +73,29 @@ graph LR
 To install **PdfItDown**, just run:
 
 ```bash
-python3 -m pip install pdfitdown
+pip install pdfitdown
 ```
 
 You can now use the **command line tool**:
 
 ```
-usage: pdfitdown [-h] [-i INPUTFILE] [-o OUTPUTFILE] [-t TITLE] [-d DIRECTORY]
+Usage: pdfitdown [OPTIONS]
 
-options:
-  -h, --help            show this help message and exit
-  -i, --inputfile INPUTFILE
-                        Path to the input file(s) that need to be converted to PDF. The path should be comma
-                        separated: input1.csv,input2.md,...,inputN.xml.
-  -o, --outputfile OUTPUTFILE
-                        Path to the output PDF file(s). If more than one input file is provided, you should provide an
-                        equally long list of output files. The path should be comma separated:
-                        output1.pdf,output2.pdf,...,outputN.pdf. Defaults to 'None'
-  -t, --title TITLE     Title to include in the PDF metadata. Default: 'File Converted with PdfItDown'. If more than
-                        one file is provided, it will be ignored.
-  -d, --directory DIRECTORY
-                        Directory whose files you want to bulk-convert to PDF. If the --inputfile argument is also
-                        provided, it will be ignored. Defaults to None.
+  Convert (almost) everything to PDF
+
+Options:
+  -i, --inputfile TEXT   Path to the input file(s) that need to be converted
+                         to PDF. Can be used multiple times.
+  -o, --outputfile TEXT  Path to the output PDF file(s). If more than one
+                         input file is provided, you should provide an equal
+                         number of output files.
+  -t, --title TEXT       Title to include in the PDF metadata. Default: 'File
+                         Converted with PdfItDown'. If more than one file is
+                         provided, it will be ignored.
+  -d, --directory TEXT   Directory whose files you want to bulk-convert to
+                         PDF. If `--inputfile` is also provided, this option
+                         will be ignored. Defaults to None.
+  --help                 Show this message and exit.
 ```
 
 An example usage can be:
@@ -112,23 +121,17 @@ You can also convert **multiple files at once**:
 
 ```bash
 # with custom output paths
-pdfitdown -i "test0.png,test1.csv" -o "testoutput0.pdf,testoutput1.pdf"
+pdfitdown -i test0.png -i test1.md -o testoutput0.pdf -o testoutput1.pdf
 # with inferred output paths
-pdfitdown -i "test0.png,test1.csv"
+pdfitdown -i test0.png -i test1.csv
 ```
 
 - In the Python API:
 
 ```python
 from pdfitdown.pdfconversion import Converter
-from llama_parse import LlamaParse
-from dotenv import load_dotenv
-import os
 
-load_dotenv()
-
-reader = LlamaParse(api_key=os.getenv("llamacloud_api_key"), result_type="markdown")
-converter = Converter(reader=reader)
+converter = Converter()
 # with custom output paths
 converter.multiple_convert(file_paths = ["business_growth.md", "logo.png"], output_paths = ["business_growth.pdf", "logo.pdf"])
 # with inferred output paths
@@ -153,17 +156,69 @@ output_paths = converter.convert_directory(directory_path = "tests/data/testdir"
 print(output_paths)
 ```
 
-Or you can just launch a [Gradio](https://gradio.app)-based user interface:
+In the python API you can also define a **custom callback for the conversion**. In this example, we use Google Gemini to summarize a file and save its content as a PDF:
 
-```bash
-pdfitdown_ui
+```python
+from pdfitdown.pdfconversion import Converter
+from markdown_pdf import MarkdownPdf, Section
+from google import genai
+
+client = genai.Client()
+
+def conversion_callback(input_file: str, output_file: str, title: str | None = None, overwrite: bool = True)
+    uploaded_file = client.files.upload(file=media / input_file)
+    response = client.models.generate_content(
+        model="gemini-2.0-flash",
+        contents=["Give me a summary of this file.", uploaded_file],
+    )
+    content = response.text
+    pdf = MarkdownPdf(toc_level=0)
+    pdf.add_section(Section(content))
+    pdf.meta["title"] = title or "Summary by Gemini"
+    pdf.save(output_file)
+    return output_fle
+
+converter = Converter(conversion_callback=conversion_callback)
+converter.convert(file_path = "business_growth.md", output_path = "business_growth.pdf", title="Business Growth for Q3 in 2024")
 ```
 
-You will be able to see the application running on `http://localhost:7860` within seconds!
+Moreover, the python API provides you with the possibility of mounting PdfItDown conversion features into a backend server built with Starlette and Starlette-compatible frameworks (such as FastAPI):
 
-Watch the demo here:
+```python
+from starlette.applications import Starlette
+from starlette.requests import Request
+from startlette.responses import PlainTextResponse
+from starlette.routing import Route
+from pdfitdown.pdfconversion import Converter
+from pdfitdown.server import mount
 
-[![Watch the video demo!](https://raw.githubusercontent.com/AstraBert/PdfItDown/main/img/thumbnail.png)](https://raw.githubusercontent.com/AstraBert/PdfItDown/main/img/pdfitdown_ui_demo.mp4)
+async def hello_world(request: Request) -> PlainTextResponse:
+    return PlainTextResponse(content="hello world!")
+
+routes = Route("/helloworld", hello_world)
+app = Starlette(routes=routes)
+
+app = mount(app, converter=Converter(), path="/conversions/pdf", name="pdfitdown")
+```
+
+Now you can send file payloads to the `/conversions/pdf` endpoint through POST requests and get the content of the converted file back, in the response content:
+
+```python
+import httpx
+
+with open("file.txt", "rb") as f:
+    content = f.read()
+
+files = {"file_upload": ("file.txt", content, "text/plain")}
+
+with httpx.Client() as client:
+    response = client.post("http://localhost:80/conversions/pdf", files=files)
+
+    assert response.status_code == 200
+    with open("file.pdf", "wb") as f:
+        f.write(response.content)
+```
+
 
 ### Contributing
 
