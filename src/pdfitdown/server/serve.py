@@ -27,6 +27,20 @@ if STARLETTE_AVAILABLE:
         name: str | None = None,
         uploaded_file_field: str = "file_upload",
     ) -> Route:
+        """
+        Build a Starlette route for PDF conversion using PdfItDown.
+
+        Args:
+            converter (Converter): The PdfItDown converter instance.
+            path (str): The route path to mount.
+            middleware (list[Middleware] | None): Optional list of Starlette middleware.
+            name (str | None): Optional route name.
+            uploaded_file_field (str): The form field name for the uploaded file.
+
+        Returns:
+            Route: A Starlette Route configured for PDF conversion.
+        """
+
         async def pdfitdown_route(request: Request) -> StreamingResponse:
             if request.method.lower() != "post":
                 raise HTTPException(
@@ -88,6 +102,20 @@ if STARLETTE_AVAILABLE:
         name: str | None = None,
         uploaded_file_field: str = "file_upload",
     ) -> Starlette:
+        """
+        Mount the PdfItDown PDF conversion route to a Starlette app.
+
+        Args:
+            app (Starlette): The Starlette application instance.
+            converter (Converter): The PdfItDown converter instance.
+            path (str): The route path to mount.
+            middleware (list[Middleware] | None): Optional list of Starlette middleware.
+            name (str | None): Optional route name.
+            uploaded_file_field (str): The form field name for the uploaded file.
+
+        Returns:
+            Starlette: The Starlette app with the PDF conversion route mounted.
+        """
         app.routes.append(
             _build_pdfitdown_route(
                 converter, path, middleware, name, uploaded_file_field
@@ -97,11 +125,38 @@ if STARLETTE_AVAILABLE:
 else:
 
     def _build_pdfitdown_route(*args, **kwargs):
+        """
+        Build a Starlette route for PDF conversion using PdfItDown.
+
+        Args:
+            converter (Converter): The PdfItDown converter instance.
+            path (str): The route path to mount.
+            middleware (list[Middleware] | None): Optional list of Starlette middleware.
+            name (str | None): Optional route name.
+            uploaded_file_field (str): The form field name for the uploaded file.
+
+        Returns:
+            Route: A Starlette Route configured for PDF conversion.
+        """
         raise NotImplementedError(
             "You need to install the 'server' dependency group for this function to work: `pip install pdfitdown[server]`. Alternatively, you can install 'startlette' directly: `pip install starlette`"
         )
 
     def mount(*args, **kwargs):
+        """
+        Mount the PdfItDown PDF conversion route to a Starlette app.
+
+        Args:
+            app (Starlette): The Starlette application instance.
+            converter (Converter): The PdfItDown converter instance.
+            path (str): The route path to mount.
+            middleware (list[Middleware] | None): Optional list of Starlette middleware.
+            name (str | None): Optional route name.
+            uploaded_file_field (str): The form field name for the uploaded file.
+
+        Returns:
+            Starlette: The Starlette app with the PDF conversion route mounted.
+        """
         raise NotImplementedError(
             "You need to install the 'server' dependency group for this function to work: `pip install pdfitdown[server]`. Alternatively, you can install 'startlette' directly: `pip install starlette`"
         )
