@@ -810,7 +810,7 @@ wheels = [
 
 [[package]]
 name = "pdfitdown"
-version = "2.0.0b1"
+version = "2.0.0b2"
 source = { editable = "." }
 dependencies = [
     { name = "img2pdf" },
@@ -820,6 +820,13 @@ dependencies = [
     { name = "termcolor" },
 ]
 
+[package.optional-dependencies]
+server = [
+    { name = "httpx" },
+    { name = "python-multipart" },
+    { name = "starlette" },
+]
+
 [package.dev-dependencies]
 dev = [
     { name = "pre-commit" },
@@ -827,20 +834,19 @@ dev = [
     { name = "ruff" },
     { name = "ty" },
 ]
-server = [
-    { name = "httpx" },
-    { name = "python-multipart" },
-    { name = "starlette" },
-]
 
 [package.metadata]
 requires-dist = [
+    { name = "httpx", marker = "extra == 'server'", specifier = ">=0.28.1,<1" },
     { name = "img2pdf", specifier = ">=0.6.3,<1" },
     { name = "markdown-pdf", specifier = ">=1.7,<1.8" },
     { name = "markitdown", extras = ["docx", "pdf", "pptx", "xls", "xlsx"], specifier = ">=0.1.0,<0.2" },
     { name = "pillow", specifier = ">=11.2.1,<12" },
+    { name = "python-multipart", marker = "extra == 'server'", specifier = ">=0.0.20" },
+    { name = "starlette", marker = "extra == 'server'", specifier = ">=0.46.2" },
     { name = "termcolor", specifier = ">=3.2.0,<4" },
 ]
+provides-extras = ["server"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -848,11 +854,6 @@ dev = [
     { name = "pytest", specifier = ">=9.0.1" },
     { name = "ruff", specifier = ">=0.11.8" },
     { name = "ty", specifier = ">=0.0.1a27" },
-]
-server = [
-    { name = "httpx", specifier = ">=0.28.1" },
-    { name = "python-multipart", specifier = ">=0.0.20" },
-    { name = "starlette", specifier = ">=0.46.2" },
 ]
 
 [[package]]
