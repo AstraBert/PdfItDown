@@ -42,5 +42,7 @@ dev = [
     "ty>=0.0.1a27",
 ]
 server = [
+    "httpx>=0.28.1,<1",
+    "python-multipart>=0.0.20",
     "starlette>=0.46.2",
 ]
