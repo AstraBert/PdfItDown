@@ -159,6 +159,7 @@ print(output_paths)
 In the python API you can also define a **custom callback for the conversion**. In this example, we use Google Gemini to summarize a file and save its content as a PDF:
 
 ```python
+from pathlib import Path
 from pdfitdown.pdfconversion import Converter
 from markdown_pdf import MarkdownPdf, Section
 from google import genai
@@ -166,7 +167,7 @@ from google import genai
 client = genai.Client()
 
 def conversion_callback(input_file: str, output_file: str, title: str | None = None, overwrite: bool = True)
-    uploaded_file = client.files.upload(file=media / input_file)
+    uploaded_file = client.files.upload(file=Path(input_file))
     response = client.models.generate_content(
         model="gemini-2.0-flash",
         contents=["Give me a summary of this file.", uploaded_file],

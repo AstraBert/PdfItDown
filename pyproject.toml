@@ -4,9 +4,9 @@ build-backend = "uv_build"
 
 [project]
 name = "pdfitdown"
-version = "2.0.0-beta"
+version = "2.0.0-beta.1"
 authors = [
-  {name = "Clelia (Astra) Bertelli", email = "astraberte9@gmail.com"}
+  {name = "Clelia Astra Bertelli", email = "astraberte9@gmail.com"}
 ]
 description = "PdfItDown - Convert Everything to PDF"
 readme = "README.md"
@@ -17,11 +17,10 @@ classifiers = [
   "Operating System :: OS Independent"
 ]
 dependencies = [
-  'markdown-pdf',
-  'img2pdf',
-  'pillow',
-  'gradio',
-  'termcolor',
+  'markdown-pdf>=1.7,<1.8',
+  'img2pdf>=0.6.3,<1',
+  'pillow>=11.2.1,<12',
+  'termcolor>=3.2.0,<4',
   "markitdown[docx,pdf,pptx,xls,xlsx]>=0.1.0,<0.2",
 ]
 
