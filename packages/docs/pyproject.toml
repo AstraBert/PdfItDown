@@ -1,0 +1,21 @@
+[build-system]
+requires = ["uv_build>=0.9.10,<0.10.0"]
+build-backend = "uv_build"
+
+[project]
+name = "pdfitdown-docs"
+version = "0.1.0"
+description = "Package to manage PdfItDown docs"
+requires-python = ">=3.10,<3.14"
+dependencies = [
+    "pdfitdown[server]",
+]
+
+[tool.uv.sources]
+pdfitdown = {workspace = true}
+
+[project.scripts]
+api-docs = "pdfitdown_docs.api_reference:main"
+
+[tool.uv.build-backend]
+module-name = "pdfitdown_docs"

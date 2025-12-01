@@ -1,0 +1,68 @@
+---
+title: API Reference - Models
+description: API reference for data models
+---
+
+## Classes
+
+### `OsPath`
+
+
+Represents a filesystem path with type and overwrite options.
+
+Attributes:
+    path (str): The filesystem path.
+    type (Literal["file", "directory", "outputfile"]): The type of path, defaults to "file".
+    overwrite (bool): Whether to overwrite an existing file, defaults to False.
+
+
+**Methods**
+
+1. `read_file`
+
+
+
+Reads the file content based on its type.
+
+
+
+_Returns_:
+
+    str | bytes | None: The content of the file as `string (for text)` or `bytes (for PDF)`, or None if not readable.
+
+
+
+2. `write_file`
+
+
+
+Writes content to the output file if overwrite is enabled.
+
+
+
+_Args_:
+
+    `content (bytes)`: The content to write.
+
+
+
+_Raises_:
+
+    FileExistsError: If the file exists and overwrite is False.
+
+
+
+
+
+### `MultipleConversion`
+
+
+Represents a batch conversion process for multiple files to PDF format.
+
+Attributes:
+    input_files (list[OsPath]): List of input file paths to be converted.
+    output_files (list[OsPath]): List of output file paths for the converted PDFs.
+
+
+
+

@@ -1,0 +1,24 @@
+name: Check API Reference Docs
+
+on:
+  pull_request:
+
+jobs:
+  check_docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          working-directory: packages/docs
+
+      - name: Set up Python
+        run: uv python install 3.13
+        working-directory: packages/docs
+
+      - name: Check Docs
+        shell: bash
+        run: make docs-check
+        working-directory: packages/docs
