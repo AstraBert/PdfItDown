@@ -11,11 +11,21 @@ from typing import Callable, TypeVar, Type, TypedDict, Any
 
 T = TypeVar("T")
 
+
 def fn_to_markdown(fn: Callable) -> str:
     name = fn.__name__
-    description = replace_regex(r"([A-Za-z0-9_]*)\s+\([A-Za-z0-9\[\]\|\s\,]*\)", r"`\g<0>`", (fn.__doc__ or "").replace("\n", "\n\n").replace("Args", "_Args_").replace("Returns", "_Returns_").replace("Raises", "_Raises_"))
+    description = replace_regex(
+        r"([A-Za-z0-9_]*)\s+\([A-Za-z0-9\[\]\|\s\,]*\)",
+        r"`\g<0>`",
+        (fn.__doc__ or "")
+        .replace("\n", "\n\n")
+        .replace("Args", "_Args_")
+        .replace("Returns", "_Returns_")
+        .replace("Raises", "_Raises_"),
+    )
 
     return f"### `{name}`\n\n{description}\n\n"
+
 
 def class_to_markdown(cls: Type[T]) -> str:
     cls_name = cls.__name__
@@ -28,18 +38,25 @@ def class_to_markdown(cls: Type[T]) -> str:
     for name, method in getmembers(cls, predicate=isfunction):
         if name.startswith("_"):
             continue
-        method_des = replace_regex(r"([A-Za-z0-9_]*)\s+\([A-Za-z0-9\[\]\|\s\,]*\)", r"`\g<0>`", (method.__doc__ or "").replace("\n", "\n\n").replace("Args", "_Args_").replace("Returns", "_Returns_").replace("Raises", "_Raises_"))
-        methods.append(
-            f"{i}. `{name}`\n\n{method_des}\n\n"
+        method_des = replace_regex(
+            r"([A-Za-z0-9_]*)\s+\([A-Za-z0-9\[\]\|\s\,]*\)",
+            r"`\g<0>`",
+            (method.__doc__ or "")
+            .replace("\n", "\n\n")
+            .replace("Args", "_Args_")
+            .replace("Returns", "_Returns_")
+            .replace("Raises", "_Raises_"),
         )
-        i+=1
+        methods.append(f"{i}. `{name}`\n\n{method_des}\n\n")
+        i += 1
 
-    doc =  f"### `{cls_name}`\n\n{cls_description}\n\n"
+    doc = f"### `{cls_name}`\n\n{cls_description}\n\n"
     if len(methods) > 0:
         doc += "**Methods**\n\n"
         for m in methods:
             doc += m
     return doc + "\n\n"
+
 
 class ModuleRepr(TypedDict):
     title: str
@@ -47,31 +64,42 @@ class ModuleRepr(TypedDict):
     functions: list[Callable]
     classes: list[Any]
 
+
 class DocumentationPiece(TypedDict):
     files: dict[str, ModuleRepr]
+
 
 if __name__ == "__main__":
     parser = ArgumentParser()
 
-    parser.add_argument(
-        "--check",
-        action="store_true",
-        required=False,
-        default=False
-    )
+    parser.add_argument("--check", action="store_true", required=False, default=False)
 
     args = parser.parse_args()
 
     DOCS_TO_FNS: DocumentationPiece = {
         "files": {
-            "api-reference/server.mdx": {"title": "API Reference - Server", "description": "API reference for server-related functions", "functions": [mount], "classes": []},
-            "api-reference/converter.mdx": {"title": "API Reference - Conversion", "description": "AP reference for conversion-related functions and classes", "functions": [convert_file], "classes": [Converter]},
-            "api-reference/models.mdx": {"title": "API Reference - Models", "description": "API reference for data models", "functions": [], "classes": [OsPath, MultipleConversion]}
+            "api-reference/server.mdx": {
+                "title": "API Reference - Server",
+                "description": "API reference for server-related functions",
+                "functions": [mount],
+                "classes": [],
+            },
+            "api-reference/converter.mdx": {
+                "title": "API Reference - Conversion",
+                "description": "AP reference for conversion-related functions and classes",
+                "functions": [convert_file],
+                "classes": [Converter],
+            },
+            "api-reference/models.mdx": {
+                "title": "API Reference - Models",
+                "description": "API reference for data models",
+                "functions": [],
+                "classes": [OsPath, MultipleConversion],
+            },
         }
     }
 
     would_be_changed = False
-
 
     for doc in DOCS_TO_FNS["files"]:
         content = f"---\ntitle: {DOCS_TO_FNS['files'][doc]['title']}\ndescription: {DOCS_TO_FNS['files'][doc]['description']}\n---\n\n"
@@ -103,5 +131,3 @@ if __name__ == "__main__":
         print("API reference docs are not up-to-date, please run `make docs`.")
         exit_with_code(1)
     exit_with_code(0)
-            
-
