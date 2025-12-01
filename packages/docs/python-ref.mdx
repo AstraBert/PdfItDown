@@ -1,0 +1,262 @@
+---
+title: 'Python API Usage'
+description: 'Use PdfItDown in your Python script, customize as much as you want, deploy to production'
+---
+
+**PdfItDown** is designed to be flexible and highly customizable, while also providing a ready-to-use solution that you can employ in your code immediately without any modifications.
+
+Additionally, you can easily mount PdfItDown into a Starlette-based server, allowing you to go from local development to deployment in just a few lines of code!
+
+Let's explore three levels of usage:
+
+## Level 1: Use PdfItDown as-is
+
+To use the conversion features of PdfItDown, import the `Converter` class from the `pdfconversion` module:
+
+```python
+from pdfitdown.pdfconversion import Converter
+
+converter = Converter()
+```
+
+Once you have a `Converter` instance, you can convert single or multiple files, as well as all files within a directory:
+
+<CodeGroup>
+
+```python Single File
+converter.convert(
+  file_path="business_grow.md",
+  output_path="business_growth.pdf",
+  title="Business Growth for Q3 in 2024"
+)
+converter.convert(
+  file_path="logo.png",
+  output_path="logo.pdf"
+)
+converter.convert(
+  file_path="users.xlsx",
+  output_path="users.pdf"
+)
+```
+
+```python Multiple Files
+# With custom output paths
+converter.multiple_convert(
+  file_paths=["business_growth.md", "logo.png"],
+  output_paths=["business_growth.pdf", "logo.pdf"]
+)
+# With inferred output paths
+converter.multiple_convert(
+  file_paths=["business_growth.md", "logo.png"]
+)
+```
+
+```python Directory
+output_paths = converter.convert_directory(
+  directory_path="tests/data/testdir"
+)
+print(output_paths)
+```
+
+</CodeGroup>
+
+Each conversion operation returns the path(s) to the converted file(s).
+
+## Level 2: Customize
+
+Once you are comfortable with the basics, you may want more control within your application. PdfItDown offers the perfect solution: **custom callbacks for conversion**.
+
+Instead of using the default callback, which can convert almost any file format to PDF, you can provide your own logic to the `Converter` class, focusing on specific document types.
+
+<Warning>
+The `conversion_callback` must follow a specific function signature:
+
+```python
+def conversion_callback(
+  input_file: str,
+  output_file: str,
+  title: str | None,
+  overwrite: bool
+) -> str:
+  ...
+```
+
+While parameter names can vary, the order must remain the same.
+</Warning>
+
+Here are a couple of examples of what you can do:
+
+<CodeGroup>
+
+```python Convert markdown docs to PDF material for learning
+from pathlib import Path
+from pdfitdown.pdfconversion import Converter
+from markdown_pdf import MarkdownPdf, Section
+from google import genai
+
+client = genai.Client()
+
+def conversion_callback(input_file: str, output_file: str, title: str | None = None, overwrite: bool = True):
+    uploaded_file = client.files.upload(file=Path(input_file))
+    response = client.models.generate_content(
+        model="gemini-2.0-flash",
+        contents=["Based on the attached documentation piece, please provide a summary for educational purposes that can be used as material for our developer community to grow and learn", uploaded_file],
+    )
+    content = response.text
+    pdf = MarkdownPdf(toc_level=0)
+    pdf.add_section(Section(content))
+    pdf.meta["title"] = title or f"{input_file} - Summary"
+    pdf.save(output_file)
+    return output_file
+
+converter = Converter(conversion_callback=conversion_callback)
+converter.convert_directory(directory="docs/", recursive=True)
+```
+
+</CodeGroup>
+
+<CodeGroup>
+
+```python Turn OpenAPI specs into PDF docs for your company
+from pdfitdown.pdfconversion import Converter
+from markdown_pdf import MarkdownPdf, Section
+from google import genai
+from pathlib import Path
+
+client = genai.Client()
+
+def conversion_callback(input_file: str, output_file: str, title: str | None = None, overwrite: bool = True):
+    if Path(input_file).suffix not in [".json", ".yaml", ".yml"]:
+        raise ValueError("File is not an OpenAPI spec document")
+    uploaded_file = client.files.upload(file=Path(input_file))
+    response = client.models.generate_content(
+        model="gemini-2.0-flash",
+        contents=["Can you please provide a human-readable and elegant description of the attached OpenAPI spec, with routes and associated names, paths, and request/response formats?", uploaded_file],
+    )
+    content = response.text
+    pdf = MarkdownPdf(toc_level=0)
+    pdf.add_section(Section(content))
+    pdf.meta["title"] = title or f"{input_file} - OpenAPI Spec"
+    pdf.save(output_file)
+    return output_file
+
+converter = Converter(conversion_callback=conversion_callback)
+converter.convert(file_path="openapi.json", output_path="openapi_spec.pdf")
+```
+
+</CodeGroup>
+
+For more examples, check out the [cookbooks](https://github.com/AstraBert/PdfItDown/tree/main/cookbooks) in the GitHub repository!
+
+## Level 3: Deploy
+
+After defining your own logic, you can easily attach the PDF converter to any [Starlette](https://starlette.dev) or Starlette-based application (such as a [FastAPI](https://fastapi.tiangolo.com) app).
+
+<Warning>
+
+To use this feature, you need to install the `server` variant of PdfItDown:
+
+```bash
+pip install pdfitdown[server]
+```
+
+Or, alternatively, install `starlette`:
+
+```bash
+pip install starlette
+```
+
+</Warning>
+
+Here's how you can mount a PdfItDown-based route for file conversion to an existing server app. Let's start by defining an application:
+
+<CodeGroup>
+
+```python Starlette
+from starlette.applications import Starlette
+from starlette.requests import Request
+from starlette.responses import PlainTextResponse
+from starlette.routing import Route
+
+async def hello_world(request: Request) -> PlainTextResponse:
+    return PlainTextResponse(content="hello world!")
+
+routes = [
+    Route(path="/hello", endpoint=hello_world, methods=["GET"], name="hello_world")
+]
+
+app = Starlette(routes=routes)
+```
+
+```python FastAPI
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+app = FastAPI()
+
+class HelloWorldRequest(BaseModel):
+    name: str
+
+class HelloWorldResponse(BaseModel):
+    content: str
+
+@app.get("/hello")
+async def hello_world(request: HelloWorldRequest) -> HelloWorldResponse:
+    return HelloWorldResponse(content=f"Hello, {request.name}!")
+```
+
+</CodeGroup>
+
+Now that the app is defined, let's add our `Converter` instance:
+
+```python
+from pdfitdown.pdfconversion import Converter
+
+converter = Converter()
+```
+
+Mounting the converter into your application is extremely simple:
+
+```python
+from pdfitdown.server import mount
+
+app = mount(
+    app=app,
+    converter=converter,
+    path="/conversions/pdf",
+    name="pdfitdown",
+    uploaded_file_field="file"
+)
+```
+
+Now, run your application with `uvicorn` (assuming you saved it as `api.py`):
+
+```bash
+uvicorn api:app --host 0.0.0.0 --port 80
+```
+
+The `/conversions/pdf` route (mounted with PdfItDown conversion features) accepts one or more files as `multipart/form-data`.
+
+If the request is successful, the response consists of a stream of the PDF content bytes.
+
+Here is an example of how to call the API endpoint:
+
+```python
+import httpx
+
+with open("file.txt", "rb") as f:
+    content = f.read()
+
+# The field name must match the `uploaded_file_field` parameter
+# used in the `mount` function
+files = {"file": ("file.txt", content, "text/plain")}
+
+with httpx.Client() as client:
+    response = client.post("http://localhost:80/conversions/pdf", files=files)
+
+    response.raise_for_status()
+    with open("file.pdf", "wb") as f:
+        f.write(response.content)
+```
+
+With this, you have completed the third and final level of PdfItDown mastery!

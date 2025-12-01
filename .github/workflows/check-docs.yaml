@@ -12,13 +12,13 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v6
         with:
-          working-directory: docs
+          working-directory: packages/docs
 
       - name: Set up Python
         run: uv python install 3.13
-        working-directory: docs
+        working-directory: packages/docs
 
       - name: Check Docs
         shell: bash
         run: make docs-check
-        working-directory: docs
+        working-directory: packages/docs
