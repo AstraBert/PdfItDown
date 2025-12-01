@@ -1,7 +1,7 @@
 .PHONY: docs docs-check
 
 docs:
-	uv run python3 scripts/generate_api_reference.py
+	uv run api-docs
 
 docs-check:
-	uv run python3 scripts/generate_api_reference.py --check
+	uv run api-docs --check

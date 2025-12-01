@@ -69,7 +69,7 @@ class DocumentationPiece(TypedDict):
     files: dict[str, ModuleRepr]
 
 
-if __name__ == "__main__":
+def main() -> None:
     parser = ArgumentParser()
 
     parser.add_argument("--check", action="store_true", required=False, default=False)
