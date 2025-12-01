@@ -1,0 +1,37 @@
+---
+title: API Reference - Server
+description: API reference for server-related functions
+---
+
+## Functions
+
+### `mount`
+
+
+
+Mount the PdfItDown PDF conversion route to a Starlette app.
+
+
+
+_Args_:
+
+    `app (Starlette)`: The Starlette application instance.
+
+    `converter (Converter)`: The PdfItDown converter instance.
+
+    `path (str)`: The route path to mount.
+
+    `middleware (list[Middleware] | None)`: Optional list of Starlette middleware.
+
+    `name (str | None)`: Optional route name.
+
+    `uploaded_file_field (str)`: The form field name for the uploaded file.
+
+
+
+_Returns_:
+
+    Starlette: The Starlette app with the PDF conversion route mounted.
+
+
+

@@ -1,0 +1,129 @@
+---
+title: API Reference - Conversion
+description: AP reference for conversion-related functions and classes
+---
+
+## Classes
+
+### `Converter`
+
+
+Converter class for handling file and directory conversions using a customizable callback.
+
+Args:
+    conversion_callback (ConversionCallback | None): Optional callback function for conversion.
+        If not provided, defaults to `pdfitdown.pdfconversion._default_callback.convert_file`.
+
+
+**Methods**
+
+1. `convert`
+
+
+
+Converts a file to PDF format using the specified conversion callback.
+
+
+
+_Args_:
+
+    `file_path (str)`: The path to the input file.
+
+    `output_path (str)`: The path where the converted PDF file will be saved.
+
+    `title (str | None, optional)`: An optional title for the converted PDF file. Defaults to None.
+
+    `overwrite (bool, optional)`: Whether to overwrite the output file if it already exists. Defaults to True.
+
+
+
+_Returns_:
+
+    str | None: The path to the converted file if successful, otherwise None.
+
+
+
+2. `convert_directory`
+
+
+
+Converts all files in the specified directory to the desired format.
+
+
+
+_Args_:
+
+    `directory_path (str)`: The path to the directory containing files to convert.
+
+    `overwrite (bool, optional)`: Whether to overwrite existing converted files. Defaults to True.
+
+    `recursive (bool, optional)`: Whether to include files in subdirectories recursively. Defaults to True.
+
+
+
+_Returns_:
+
+    Result of the multiple file conversion process.
+
+
+
+3. `multiple_convert`
+
+
+
+Converts multiple input files using the specified conversion logic.
+
+
+
+_Args_:
+
+    `file_paths (list[str])`: List of input file paths to be converted.
+
+    `output_paths (list[str] | None, optional)`: List of output file paths. If None, output paths are determined automatically. Defaults to None.
+
+    `overwrite (bool, optional)`: Whether to overwrite existing output files. Defaults to True.
+
+
+
+_Returns_:
+
+    list[str]: List of output file paths after conversion.
+
+
+
+
+
+## Functions
+
+### `convert_file`
+
+
+
+Converts an input file to a PDF file, supporting image, PDF, text, and convertible file types.
+
+
+
+_Args_:
+
+    `input_file (str)`: Path to the input file to be converted.
+
+    `output_fle (str)`: Path where the output PDF file will be saved.
+
+    `title (str | None)`: Title for the PDF document. If None, a default title is used.
+
+    `overwrite (bool)`: Whether to overwrite the output file if it exists. Defaults to False.
+
+
+
+_Returns_:
+
+    str | None: The path to the output PDF file if conversion is successful, otherwise None.
+
+
+
+_Raises_:
+
+    EmptyImageError: If the input image file is empty or cannot be read.
+
+
+

@@ -1,0 +1,87 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "maple",
+  "name": "PdfItDown Docs",
+  "colors": {
+    "primary": "#ff4d4d",
+    "light": "#ffb3b3",
+    "dark": "#e60000"
+  },
+  "icons": {
+    "library": "lucide"
+  },
+  "favicon": "/favicon.svg",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "PdfItDown",
+        "groups": [
+          {
+            "group": "Documentation",
+            "pages": [
+              "introduction",
+              "python-ref",
+              "cli"
+            ]
+          },
+          {
+            "group": "API Reference",
+            "pages": [
+              "api-reference/converter",
+              "api-reference/models",
+              "api-reference/server"
+            ]
+          }
+        ]
+      }
+    ],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "GitHub Repository",
+          "href": "https://github.com/AstraBert/PdfItDown",
+          "icon": "github"
+        },
+        {
+          "anchor": "Donate",
+          "href": "https://github.com/sponsors/AstraBert",
+          "icon": "heart"
+        },
+        {
+          "anchor": "Community",
+          "href": "https://discord.gg/qxzFz9VE",
+          "icon": "discord"
+        },
+        {
+          "anchor": "PdfItDown Maintainer",
+          "href": "https://clelia.dev",
+          "icon": "user-star"
+        }
+      ]
+    }
+  },
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Reach out to us",
+        "href": "mailto:me@clelia.dev"
+      },
+      {
+        "label": "Donate",
+        "href": "https://github.com/sponsors/AstraBert"
+      }
+    ]
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/AstraBert/PdfItDown",
+      "linkedin": "https://www.linkedin.com/in/clelia-astra-bertelli-583904297/",
+      "discord": "https://discord.gg/qxzFz9VE",
+      "bluesky": "https://bsky.app/profile/cle-does-things.bsky.social"
+    }
+  }
+}

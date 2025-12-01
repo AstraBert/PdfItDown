@@ -1,0 +1,77 @@
+---
+title: Intro to PdfItDown
+description: "Welcome to our documentation!"
+---
+
+<img
+  className="block dark:hidden"
+  src="/images/hero-light.svg"
+  alt="Hero Light"
+/>
+<img
+  className="hidden dark:block"
+  src="/images/hero-dark.svg"
+  alt="Hero Dark"
+/>
+
+## What is PdfItDown?
+
+**PdfItDown** is a python package that relies on [`markitdown` by Microsoft](https://github.com/microsoft/markitdown/), [`markdown_pdf`](https://github.com/vb64/markdown-pdf) and [`img2pdf`](https://pypi.org/project/img2pdf/) to carry out the conversion of text-based files, images and unstructured documents to PDF. **PdfItDown** is applicable to the following file formats:
+
+- Markdown
+- PowerPoint
+- Word
+- Excel
+- HTML
+- Text-based formats (CSV, XML, JSON)
+- ZIP files (iterates over contents)
+- Image files (PNG, JPG)
+
+
+## Setting up
+
+To set uo PdfItDown, it is good practice to create an isolated development environment
+
+<CodeGroup>
+
+  ```bash uv (recommended)
+  # you can use all python versions above 3.10 and below 3.14
+  uv venv -p 3.13
+  uv add pdfitdown
+  ```
+
+  ```bash venv
+  python3 -m venv .venv
+  source .venv/bin/activate
+  pip install pdfitdown
+  ```
+
+</CodeGroup>
+
+## Choose how to use it
+
+Once you have PdfItDown set up, you can choose how to use it:
+
+<CardGroup cols={3}>
+  <Card
+    title="In Python Scripts"
+    icon="code"
+    href="/python-ref"
+  >
+    Adapt PdfItDown to your pipelines by coding it yourself!
+  </Card>
+  <Card
+    title="In the CLI"
+    icon="terminal"
+    href="/cli"
+  >
+    If you're a terminal lover, this is perfect for you :)
+  </Card>
+  <Card
+    title="As an API endpoint"
+    icon="server"
+    href="/python-ref#level-3:-deploy"
+  >
+    Deploy PdfItDown as an API endpoint in your Starlette-compatible backend server.
+  </Card>
+</CardGroup>
