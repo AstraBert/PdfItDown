@@ -4,5 +4,8 @@ version = "0.1.0"
 description = "Add your description here"
 requires-python = ">=3.13"
 dependencies = [
-    "pdfitdown[server]==2.0.0b2",
+    "pdfitdown[server]",
 ]
+
+[tool.uv.sources]
+pdfitdown = {workspace = true}

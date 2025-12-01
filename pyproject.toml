@@ -51,6 +51,7 @@ dev = [
 
 [tool.uv.sources]
 pdfitdown-docs = {workspace = true}
+pdfitdown = {workspace = true}
 
 [tool.uv.workspace]
 members = ["packages/*"]
