@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "pdfitdown"
-version = "2.0.0-beta.2"
+version = "2.0.1-beta"
 authors = [
   {name = "Clelia Astra Bertelli", email = "astraberte9@gmail.com"}
 ]
@@ -20,8 +20,8 @@ dependencies = [
   'markdown-pdf>=1.7,<1.8',
   'img2pdf>=0.6.3,<1',
   'pillow>=11.2.1,<12',
-  'termcolor>=3.2.0,<4',
   "markitdown[docx,pdf,pptx,xls,xlsx]>=0.1.0,<0.2",
+  "typer>=0.20.0",
 ]
 
 [project.urls]
@@ -29,7 +29,7 @@ Homepage = "https://github.com/AstraBert/PdfItDown"
 Issues = "https://github.com/AstraBert/PdfItDown/issues"
 
 [project.scripts]
-pdfitdown = "pdfitdown.cli.app:pdfitdown_cli"
+pdfitdown = "pdfitdown.cli.app:app"
 
 [tool.uv.build-backend]
 module-name = "pdfitdown"
