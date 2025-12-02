@@ -6,31 +6,32 @@ from ..pdfconversion.converter import Converter
 
 app = Typer()
 
+
 @app.command()
 def main(
     inputfile: Annotated[
-        list[str], 
+        list[str],
         Option(
-            "--inputfile", 
-            "-i", 
-            help="Path to the input file(s) that need to be converted to PDF. Can be used multiple times."
-        )
+            "--inputfile",
+            "-i",
+            help="Path to the input file(s) that need to be converted to PDF. Can be used multiple times.",
+        ),
     ] = [],
     outputfile: Annotated[
-        list[str], 
+        list[str],
         Option(
-            "--outputfile", 
-            "-o", 
-            help="Path to the output PDF file(s). If more than one input file is provided, you should provide an equal number of output files."
-        )
+            "--outputfile",
+            "-o",
+            help="Path to the output PDF file(s). If more than one input file is provided, you should provide an equal number of output files.",
+        ),
     ] = [],
     title: Annotated[
         str | None,
         Option(
-             "-t",
+            "-t",
             "--title",
             help="Title to include in the PDF metadata. Default: 'File Converted with PdfItDown'. If more than one file is provided, it will be ignored.",
-        )
+        ),
     ] = None,
     directory: Annotated[
         str | None,
@@ -38,8 +39,8 @@ def main(
             "-d",
             "--directory",
             help="Directory whose files you want to bulk-convert to PDF. If `--inputfile` is also provided, this option will be ignored. Defaults to None.",
-        )
-    ] = None
+        ),
+    ] = None,
 ):
     c = Converter()
     if len(inputfile) == 0 and directory is None:
@@ -108,4 +109,3 @@ def main(
         rprint(
             "[bold green]Conversion successful![/]🎉",
         )
-    

@@ -135,9 +135,7 @@ def test_cli_directory(
     )
     for file in all_files:
         os.remove(file.replace(Path(file).suffix, ".pdf"))
-    result = runner.invoke(
-        app, ["--directory", to_convert_dir, "--title", "hello"]
-    )
+    result = runner.invoke(app, ["--directory", to_convert_dir, "--title", "hello"])
     assert (
         result.output.replace("\n", "")
         == "WARNING: `--title` will be ignored since `--directory` has been providedConversion successful!🎉"
@@ -159,9 +157,7 @@ def test_cli_errors(
     assert result.exit_code == 2
     assert "ERROR during the conversion: " in result.output
     os.makedirs(os.path.join(to_convert_dir, "empty"), exist_ok=True)
-    result = runner.invoke(
-        app, ["--directory", os.path.join(to_convert_dir, "empty")]
-    )
+    result = runner.invoke(app, ["--directory", os.path.join(to_convert_dir, "empty")])
     assert result.exit_code == 2
     assert "ERROR during the conversion: " in result.output
     result = runner.invoke(app, ["--inputfile", "doesnotexist.txt"])
