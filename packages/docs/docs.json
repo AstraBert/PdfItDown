@@ -21,6 +21,7 @@
             "pages": [
               "introduction",
               "python-ref",
+              "tutorials",
               "cli"
             ]
           },
