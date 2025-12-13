@@ -1,4 +1,3 @@
-from ._default_callback import convert_file
 from .models import ConversionCallback, MultipleConversion, OsPath
 
 
@@ -12,9 +11,12 @@ class Converter:
     """
 
     def __init__(self, conversion_callback: ConversionCallback | None = None):
-        self._conversion_callback: ConversionCallback = (
-            conversion_callback or convert_file
-        )
+        if conversion_callback is None:
+            from ._default_callback import convert_file
+
+            self._conversion_callback: ConversionCallback = convert_file
+        else:
+            self._conversion_callback = conversion_callback
 
     def convert(
         self,
