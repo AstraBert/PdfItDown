@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "pdfitdown"
-version = "2.0.2-beta.1"
+version = "2.0.3"
 authors = [
   {name = "Clelia Astra Bertelli", email = "astraberte9@gmail.com"}
 ]
