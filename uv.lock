@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.10, <3.14"
 resolution-markers = [
     "python_full_version >= '3.13' and sys_platform == 'win32'",
@@ -587,7 +587,7 @@ wheels = [
 
 [[package]]
 name = "markitdown"
-version = "0.1.3"
+version = "0.1.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "beautifulsoup4" },
@@ -598,9 +598,9 @@ dependencies = [
     { name = "onnxruntime", marker = "sys_platform == 'win32'" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/87/31/90cef2bc8ecd85c200ed3b3d1e20fc7a724213502685c4b05b5431e02668/markitdown-0.1.3.tar.gz", hash = "sha256:b0d9127c3373a68274dede6af6c9bb0684b78ce364c727c4c304da97a20d6fd9", size = 40039, upload-time = "2025-08-26T22:37:04.4Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/f3/4d/06567465c1886c2ea47bac24eab0c96bb6b4ecea47224323409dc9cbb614/markitdown-0.1.4.tar.gz", hash = "sha256:e72a481d1a50c82ff744e85e3289f79a940c5d0ad5ffa2b37c33de814c195bb1", size = 39951, upload-time = "2025-12-01T18:20:30.937Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/97/83/7b47d2ecbf58650a03aeeb21ba2d59175f202bf4fb81d44f40f1deb82bc0/markitdown-0.1.3-py3-none-any.whl", hash = "sha256:08d9a25770979d78f60dcc0afcb868de6799608e4db65342b2e03304fb091251", size = 58391, upload-time = "2025-08-26T22:37:02.924Z" },
+    { url = "https://files.pythonhosted.org/packages/9f/b3/6138d2b23d5b534b0fa3736987a2e11bcef5419cbc9286c8afd229d21558/markitdown-0.1.4-py3-none-any.whl", hash = "sha256:d7f3805716b22545f693d355e28e89584226c0614b3b80b7c4a3f825f068492d", size = 58314, upload-time = "2025-12-01T18:20:32.345Z" },
 ]
 
 [package.optional-dependencies]
@@ -819,7 +819,7 @@ wheels = [
 
 [[package]]
 name = "pdfitdown"
-version = "2.0.1b0"
+version = "2.0.2b1"
 source = { editable = "." }
 dependencies = [
     { name = "img2pdf" },
@@ -849,7 +849,7 @@ requires-dist = [
     { name = "httpx", marker = "extra == 'server'", specifier = ">=0.28.1,<1" },
     { name = "img2pdf", specifier = ">=0.6.3,<1" },
     { name = "markdown-pdf", specifier = ">=1.7,<1.8" },
-    { name = "markitdown", extras = ["docx", "pdf", "pptx", "xls", "xlsx"], specifier = ">=0.1.0,<0.2" },
+    { name = "markitdown", extras = ["docx", "pdf", "pptx", "xls", "xlsx"], specifier = ">=0.1.4,<0.2" },
     { name = "pillow", specifier = ">=11.2.1,<12" },
     { name = "python-multipart", marker = "extra == 'server'", specifier = ">=0.0.20" },
     { name = "starlette", marker = "extra == 'server'", specifier = ">=0.46.2" },

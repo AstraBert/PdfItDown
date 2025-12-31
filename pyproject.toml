@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "pdfitdown"
-version = "2.0.2-beta"
+version = "2.0.2-beta.1"
 authors = [
   {name = "Clelia Astra Bertelli", email = "astraberte9@gmail.com"}
 ]
@@ -20,7 +20,7 @@ dependencies = [
   'markdown-pdf>=1.7,<1.8',
   'img2pdf>=0.6.3,<1',
   'pillow>=11.2.1,<12',
-  "markitdown[docx,pdf,pptx,xls,xlsx]>=0.1.0,<0.2",
+  "markitdown[docx,pdf,pptx,xls,xlsx]>=0.1.4,<0.2",
   "typer>=0.20.0",
 ]
 
