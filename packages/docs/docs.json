@@ -22,7 +22,8 @@
               "introduction",
               "python-ref",
               "tutorials",
-              "cli"
+              "cli",
+              "mcp-server"
             ]
           },
           {
@@ -30,7 +31,8 @@
             "pages": [
               "api-reference/converter",
               "api-reference/models",
-              "api-reference/server"
+              "api-reference/server",
+              "api-reference/mcp-server"
             ]
           }
         ]

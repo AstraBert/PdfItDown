@@ -1,0 +1,52 @@
+---
+title: API Reference - PdfItDown MCP Server
+description: Metadata related to PdfItDown MCP Server
+---
+
+
+## MCP Server Details
+
+**Name**
+
+pdfitdown
+
+**Instructions**
+
+
+This MCP server is based on [PdfItDown](https://pdfitdown.eu), a python-native library and CLI tool to convert files to PDF.
+This MCP server should be used to convert local files to PDF.
+Supported file formats for conversion:
+- Markdown
+- PowerPoint
+- Word
+- Excel
+- HTML
+- Text-based formats (CSV, XML, JSON)
+- ZIP files (iterates over contents)
+- Image files (PNG, JPG)
+
+
+**Version**
+
+0.1.0
+
+## Tools
+**convert-to-pdf**
+
+
+Converts one or more files to PDF.
+Supported formats:
+- Markdown
+- PowerPoint
+- Word
+- Excel
+- HTML
+- Text-based formats (CSV, XML, JSON)
+- ZIP files (iterates over contents)
+- Image files (PNG, JPG)
+
+The tool receives, as input, a list of files to convert and return, as output, a list of path for the converted files.
+It can optionally be specified whether or not files should be overwritten (by default, they are overwritten).
+The tool returns the list of file paths to which the converted files have been saved.
+The output paths are provided in the same order as the input paths.
+
