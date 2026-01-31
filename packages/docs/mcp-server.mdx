@@ -1,0 +1,43 @@
+---
+title: 'PdfItDown MCP Server'
+description: 'Connect PdfItDown MCP server to your agents to get native PDF-conversion capabilities'
+---
+
+PdfItDown has an MCP server, built on top of [FastMCP](https://gofastmcp.com/getting-started/welcome) and running over `stdio` transport.
+
+Install the server with:
+
+<CodeGroup>
+
+  ```bash uv (recommended)
+  # you can use all python versions above 3.10 and below 3.14
+  uv tool install pdfitdown-mcp-server
+  ```
+
+  ```bash pip
+  pip install pdfitdown-mcp-server
+  ```
+
+</CodeGroup>
+
+You can run the server with:
+
+```bash
+pdfitdown-mcp run
+```
+
+Here are the options for the `run` command:
+
+- `--show-banner`/`--no-show-banner`: show the FastMCP banner on startup (defaults to false)
+- `--log-level`: set a log level for the MCP server (defaults to unset)
+
+You can take a look at details about the server itself with:
+
+```bash
+# print as markdown (default)
+pdfitdown-mcp metadata
+# print as JSON
+pdfitdown-mcp metadata --no-pretty
+```
+
+See the full MCP server spec [on the dedicate page](/api-reference/mcp-server)

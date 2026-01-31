@@ -5,3 +5,6 @@ docs:
 
 docs-check:
 	uv run api-docs --check
+
+preview:
+	mintlify dev

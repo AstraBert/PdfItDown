@@ -1,0 +1,31 @@
+[build-system]
+requires = ["uv_build>=0.9.10,<0.10.0"]
+build-backend = "uv_build"
+
+[project]
+name = "pdfitdown-mcp-server"
+version = "0.1.0"
+description = "MCP Server for PdfItDown"
+readme = "README.md"
+requires-python = ">=3.10, <3.14"
+dependencies = [
+    "fastmcp>=2.14.4",
+    "pdfitdown[server]",
+]
+
+[tool.uv.sources]
+pdfitdown = {workspace = true}
+
+[tool.uv.build-backend]
+module-name = "mcp_server"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.1",
+    "pytest-asyncio>=1.3.0",
+    "ruff>=0.11.8",
+    "ty>=0.0.1a27",
+]
+
+[project.scripts]
+pdfitdown-mcp = "mcp_server.cli:app"

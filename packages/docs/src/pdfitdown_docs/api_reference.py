@@ -1,13 +1,16 @@
+from argparse import ArgumentParser
+from inspect import getmembers, isfunction
+from pathlib import Path
 from re import sub as replace_regex
 from sys import exit as exit_with_code
-from pathlib import Path
-from inspect import getmembers, isfunction
+from typing import Any, Callable, Type, TypedDict, TypeVar
+
+from mcp_server.metadata import get_metadata
+
 from pdfitdown.pdfconversion import Converter
 from pdfitdown.pdfconversion._default_callback import convert_file
-from pdfitdown.pdfconversion.models import OsPath, MultipleConversion
+from pdfitdown.pdfconversion.models import MultipleConversion, OsPath
 from pdfitdown.server import mount
-from argparse import ArgumentParser
-from typing import Callable, TypeVar, Type, TypedDict, Any
 
 T = TypeVar("T")
 
@@ -58,6 +61,14 @@ def class_to_markdown(cls: Type[T]) -> str:
     return doc + "\n\n"
 
 
+def mcp_server_to_document() -> tuple[str, str]:
+    title = "API Reference - PdfItDown MCP Server"
+    description = "Metadata related to PdfItDown MCP Server"
+    file = "api-reference/mcp-server.mdx"
+    content = f"---\ntitle: {title}\ndescription: {description}\n---\n\n{get_metadata(pretty=True)}"
+    return file, content
+
+
 class ModuleRepr(TypedDict):
     title: str
     description: str
@@ -86,7 +97,7 @@ def main() -> None:
             },
             "api-reference/converter.mdx": {
                 "title": "API Reference - Conversion",
-                "description": "AP reference for conversion-related functions and classes",
+                "description": "API reference for conversion-related functions and classes",
                 "functions": [convert_file],
                 "classes": [Converter],
             },
@@ -127,6 +138,22 @@ def main() -> None:
             else:
                 print(f"File {doc} does not exist and would be written")
                 exit_with_code(1)
+    mcp_file, mcp_content = mcp_server_to_document()
+    if not args.check:
+        with open(mcp_file, "w") as f:
+            f.write(mcp_content)
+    else:
+        if Path(mcp_file).exists():
+            with open(mcp_file, "r") as f:
+                original_content = f.read()
+            if original_content != mcp_content:
+                print(f"File {mcp_file} would be changed")
+                would_be_changed = True
+            else:
+                print(f"File {mcp_file} is up to date!")
+        else:
+            print(f"File {mcp_file} does not exist and would be written")
+            exit_with_code(1)
     if would_be_changed:
         print("API reference docs are not up-to-date, please run `make docs`.")
         exit_with_code(1)
