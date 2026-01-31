@@ -35,4 +35,4 @@ jobs:
 
       - name: Run Mypy
         run: make typecheck
-        working-directory: packages/mcp
+        working-directory: packages/mcp-server
