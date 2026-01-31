@@ -1,4 +1,4 @@
-name: GitHub Release
+name: GitHub Release MCP
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - "mcp@v[0-9].[0-9]+.[0-9]+*"
 
 jobs:
-  release:
+  release-mcp:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -19,7 +19,7 @@ jobs:
         uses: astral-sh/setup-uv@v6
 
       - name: Build
-        run: uv build
+        run: uv build -o dist
         working-directory: packages/mcp-server
 
       - name: Publish to PyPI
@@ -29,5 +29,5 @@ jobs:
       - name: Create GitHub Release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "dist/*"
+          artifacts: "packages/mcp-server/dist/*"
           generateReleaseNotes: true
