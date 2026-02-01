@@ -220,6 +220,23 @@ with httpx.Client() as client:
         f.write(response.content)
 ```
 
+### MCP Server
+
+PdfItDown has an MCP server, [`pdfitdown-mcp-server`](./packages/mcp-server), built on top of [FastMCP](https://gofastmcp.com/getting-started/welcome) and running over `stdio` transport.
+
+Install with:
+
+```bash
+uv tool install pdfitdown-mcp-server
+```
+
+And run with:
+
+```bash
+pdfitdown-mcp run
+```
+
+For more details, visit the [documentation page](https://pdfitdown.eu/mcp-server) and the [server specs](https://pdfitdown.eu/api-reference/mcp-server).
 
 ### Contributing
 

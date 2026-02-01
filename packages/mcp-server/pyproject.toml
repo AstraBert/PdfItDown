@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "pdfitdown-mcp-server"
-version = "0.1.0"
+version = "0.1.0-post.1"
 description = "MCP Server for PdfItDown"
 readme = "README.md"
 requires-python = ">=3.10, <3.14"
