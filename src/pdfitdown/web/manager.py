@@ -71,9 +71,16 @@ class ConversionManager:
         if not task:
             return None
         
+        if not file_content or len(file_content) == 0:
+            logger.error(f"Empty file content received: {original_name}")
+            return None
+        
+        if len(file_content) != file_size:
+            logger.warning(f"File size mismatch: expected {file_size}, got {len(file_content)}")
+        
         uploaded_file = UploadedFile(
             original_name=original_name,
-            file_size=file_size,
+            file_size=len(file_content),
             status=FileStatus.UPLOADED,
             upload_progress=100.0
         )
@@ -81,19 +88,38 @@ class ConversionManager:
         task_upload_dir = self._upload_dir / task_id
         task_upload_dir.mkdir(parents=True, exist_ok=True)
         
-        safe_filename = self._safe_filename(original_name)
+        suffix = Path(original_name).suffix
+        safe_base = self._safe_filename(Path(original_name).stem)
+        safe_filename = f"{safe_base}{suffix}" if suffix else safe_base
+        
         upload_path = task_upload_dir / f"{uploaded_file.id}_{safe_filename}"
         uploaded_file._upload_path = str(upload_path)
         
         with open(upload_path, "wb") as f:
             f.write(file_content)
         
+        actual_size = os.path.getsize(upload_path)
+        if actual_size != len(file_content):
+            logger.error(f"File write failed: expected {len(file_content)} bytes, wrote {actual_size} bytes")
+            return None
+        
         task.files.append(uploaded_file)
-        logger.info(f"Added file {uploaded_file.id} to task {task_id}")
+        logger.info(f"Added file {uploaded_file.id} ({original_name}) to task {task_id}, saved to {upload_path}, size: {actual_size} bytes")
         return uploaded_file
 
     def _safe_filename(self, filename: str) -> str:
-        return "".join(c for c in filename if c.isalnum() or c in "._- ")
+        safe_chars = []
+        for c in filename:
+            if c.isalnum() or c in "._- ":
+                safe_chars.append(c)
+            elif ord(c) > 127:
+                safe_chars.append(c)
+            else:
+                safe_chars.append("_")
+        result = "".join(safe_chars).strip()
+        if not result or result.startswith("."):
+            result = "file_" + result.lstrip(".")
+        return result if result else "unnamed_file"
 
     async def convert_task(
         self, 
@@ -190,10 +216,19 @@ class ConversionManager:
         with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zf:
             for file in completed_files:
                 if file.output_path and os.path.exists(file.output_path):
-                    arcname = self._safe_filename(
-                        Path(file.original_name).stem + ".pdf"
-                    )
-                    zf.write(file.output_path, arcname=arcname)
+                    base_name = Path(file.original_name).stem
+                    if not base_name or base_name.isspace():
+                        base_name = f"file_{file.id[:8]}"
+                    arcname = f"{base_name}.pdf"
+                    
+                    zip_info = zipfile.ZipInfo(arcname)
+                    zip_info.compress_type = zipfile.ZIP_DEFLATED
+                    zip_info.create_system = 3
+                    
+                    with open(file.output_path, 'rb') as f:
+                        zf.writestr(zip_info, f.read())
+                    
+                    logger.info(f"Added to ZIP: {arcname}")
         
         task.zip_path = str(zip_path)
         logger.info(f"Created ZIP for task {task_id}: {zip_path}")

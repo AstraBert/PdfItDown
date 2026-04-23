@@ -120,7 +120,7 @@ class OsPath:
             str | bytes | None: The content of the file as string (for text) or bytes (for PDF), or None if not readable.
         """
         if self.file_type == "text":
-            with open(self.path, "r") as f:
+            with open(self.path, "r", encoding="utf-8") as f:
                 return f.read()
         elif self.file_type == "pdf":
             with open(self.path, "rb") as f:

@@ -310,7 +310,7 @@
 
     function showPreview(fileId, fileName) {
         elements.previewTitle.textContent = fileName;
-        elements.previewIframe.src = `/api/tasks/${state.taskId}/download/${fileId}`;
+        elements.previewIframe.src = `/api/tasks/${state.taskId}/preview/${fileId}`;
         elements.previewModal.style.display = 'flex';
     }
 
@@ -333,6 +333,7 @@
         elements.resultsSection.style.display = 'none';
         elements.pdfTitle.value = '';
         elements.fileInput.value = '';
+        elements.startConvertBtn.disabled = false;
     }
 
     function removeFile(index) {

@@ -151,6 +151,27 @@ def create_app() -> FastAPI:
             filename=download_name
         )
     
+    @app.get("/api/tasks/{task_id}/preview/{file_id}")
+    async def preview_file(task_id: str, file_id: str):
+        task = conversion_manager.get_task(task_id)
+        if not task:
+            raise HTTPException(status_code=404, detail="Task not found")
+        
+        file = next((f for f in task.files if f.id == file_id), None)
+        if not file:
+            raise HTTPException(status_code=404, detail="File not found")
+        
+        if file.status != FileStatus.COMPLETED or not file.output_path:
+            raise HTTPException(status_code=400, detail="File not ready for preview")
+        
+        if not os.path.exists(file.output_path):
+            raise HTTPException(status_code=404, detail="Output file not found")
+        
+        return FileResponse(
+            path=file.output_path,
+            media_type="application/pdf"
+        )
+    
     @app.get("/api/tasks/{task_id}/download/zip")
     async def download_zip(task_id: str):
         task = conversion_manager.get_task(task_id)
