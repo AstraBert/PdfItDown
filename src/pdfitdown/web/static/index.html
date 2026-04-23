@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PdfItDown - 文件转PDF在线转换</title>
+    <title>PdfItDown - PDF 全能处理工具</title>
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
@@ -20,79 +20,196 @@
                     </svg>
                     PdfItDown
                 </h1>
-                <p class="tagline">将任何文件一键转换为PDF</p>
+                <p class="tagline">简单、快速、免费的PDF全能处理工具</p>
             </div>
         </header>
 
+        <nav class="feature-nav">
+            <div class="feature-tabs">
+                <button class="feature-tab active" data-feature="convert">
+                    <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    转换PDF
+                </button>
+                <button class="feature-tab" data-feature="merge">
+                    <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="12" y1="8" x2="12" y2="16"/>
+                        <line x1="8" y1="12" x2="16" y2="12"/>
+                    </svg>
+                    合并PDF
+                </button>
+                <button class="feature-tab" data-feature="split">
+                    <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="18" rx="1" ry="1"/>
+                        <rect x="14" y="3" width="7" height="18" rx="1" ry="1"/>
+                        <line x1="12" y1="1" x2="12" y2="23" stroke-dasharray="2 2"/>
+                    </svg>
+                    拆分PDF
+                </button>
+                <button class="feature-tab" data-feature="compress">
+                    <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="8 17 12 21 16 17"/>
+                        <line x1="12" y1="12" x2="12" y2="21"/>
+                        <path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/>
+                    </svg>
+                    压缩PDF
+                </button>
+            </div>
+        </nav>
+
         <main class="main">
-            <section class="upload-section" id="uploadSection">
-                <div class="upload-area" id="uploadArea">
-                    <input type="file" id="fileInput" multiple accept=".docx,.xlsx,.xls,.pptx,.jpg,.jpeg,.png,.txt,.md,.html,.xml,.json,.csv" hidden>
-                    <div class="upload-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                        <polyline points="17 8 12 3 7 8"/>
-                        <line x1="12" y1="3" x2="12" y2="15"/>
-                        </svg>
-                    </div>
-                    <p class="upload-text">拖拽文件到此处，或点击选择文件</p>
-                    <p class="upload-hint">支持格式：DOCX, XLSX, PPTX, JPG, PNG, TXT, MD, HTML 等</p>
-                    <button class="btn btn-primary" id="selectFilesBtn">选择文件</button>
-                </div>
-            </section>
-
-            <section class="options-section" id="optionsSection" style="display: none;">
-                <div class="options-card">
-                    <h3 class="options-title">转换选项</h3>
-                    <div class="options-form">
-                        <div class="form-group">
-                            <label for="pdfTitle">PDF 标题</label>
-                            <input type="text" id="pdfTitle" placeholder="留空则使用文件名" class="form-input">
-                        </div>
-                    </div>
-                    <button class="btn btn-success btn-lg" id="startConvertBtn">开始转换</button>
-                </div>
-            </section>
-
-            <section class="file-list-section" id="fileListSection" style="display: none;">
-                <div class="file-list-header">
-                    <h3 class="file-list-title">文件列表</h3>
-                    <button class="btn btn-outline" id="clearFilesBtn">清空列表</button>
-                </div>
-                <div class="file-list" id="fileList">
-                </div>
-            </section>
-
-            <section class="progress-section" id="progressSection" style="display: none;">
-                <div class="progress-card">
-                    <div class="progress-header">
-                        <h3 class="progress-title">转换进度</h3>
-                        <span class="progress-status" id="progressStatus">准备中...</span>
-                    </div>
-                    <div class="progress-bar-container">
-                        <div class="progress-bar" id="totalProgressBar">
-                            <div class="progress-bar-fill" id="totalProgressFill"></div>
-                        </div>
-                        <span class="progress-percent" id="totalProgressPercent">0%</span>
-                    </div>
-                    <div class="progress-stats" id="progressStats">
-                    </div>
-                </div>
-            </section>
-
-            <section class="results-section" id="resultsSection" style="display: none;">
-                <div class="results-header">
-                    <h3 class="results-title">转换结果</h3>
-                    <div class="results-actions">
-                        <button class="btn btn-primary" id="downloadAllBtn">
-                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                <polyline points="7 10 12 15 17 10"/>
-                                <line x1="12" y1="15" x2="12" y2="3"/>
+            <div id="convertFeature" class="feature-content">
+                <section class="upload-section" id="convertUploadSection">
+                    <div class="upload-area" id="convertUploadArea">
+                        <input type="file" id="convertFileInput" multiple accept=".docx,.xlsx,.xls,.pptx,.jpg,.jpeg,.png,.txt,.md,.html,.xml,.json,.csv" hidden>
+                        <div class="upload-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
                             </svg>
-                            打包下载 ZIP
-                        </button>
-                        <button class="btn btn-outline" id="newTaskBtn">
+                        </div>
+                        <p class="upload-text">拖拽文件到此处，或点击选择文件</p>
+                        <p class="upload-hint">支持格式：DOCX, XLSX, PPTX, JPG, PNG, TXT, MD, HTML 等</p>
+                        <button class="btn btn-primary" id="convertSelectFilesBtn">选择文件</button>
+                    </div>
+                </section>
+
+                <section class="options-section" id="convertOptionsSection" style="display: none;">
+                    <div class="options-card">
+                        <h3 class="options-title">转换选项</h3>
+                        <div class="options-form">
+                            <div class="form-group">
+                                <label for="convertPdfTitle">PDF 标题</label>
+                                <input type="text" id="convertPdfTitle" placeholder="留空则使用文件名" class="form-input">
+                            </div>
+                        </div>
+                        <button class="btn btn-success btn-lg" id="convertStartBtn">开始转换</button>
+                    </div>
+                </section>
+
+                <section class="file-list-section" id="convertFileListSection" style="display: none;">
+                    <div class="file-list-header">
+                        <h3 class="file-list-title">文件列表</h3>
+                        <button class="btn btn-outline" id="convertClearBtn">清空列表</button>
+                    </div>
+                    <div class="file-list" id="convertFileList">
+                    </div>
+                </section>
+
+                <section class="progress-section" id="convertProgressSection" style="display: none;">
+                    <div class="progress-card">
+                        <div class="progress-header">
+                            <h3 class="progress-title">转换进度</h3>
+                            <span class="progress-status" id="convertProgressStatus">准备中...</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="convertProgressBar">
+                                <div class="progress-bar-fill" id="convertProgressFill"></div>
+                            </div>
+                            <span class="progress-percent" id="convertProgressPercent">0%</span>
+                        </div>
+                        <div class="progress-stats" id="convertProgressStats">
+                        </div>
+                    </div>
+                </section>
+
+                <section class="results-section" id="convertResultsSection" style="display: none;">
+                    <div class="results-header">
+                        <h3 class="results-title">转换结果</h3>
+                        <div class="results-actions">
+                            <button class="btn btn-primary" id="convertDownloadAllBtn">
+                                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="7 10 12 15 17 10"/>
+                                    <line x1="12" y1="15" x2="12" y2="3"/>
+                                </svg>
+                                打包下载 ZIP
+                            </button>
+                            <button class="btn btn-outline" id="convertNewTaskBtn">
+                                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="5" x2="12" y2="19"/>
+                                    <line x1="5" y1="12" x2="19" y2="12"/>
+                                </svg>
+                                新建任务
+                            </button>
+                        </div>
+                    </div>
+                    <div class="results-list" id="convertResultsList">
+                    </div>
+                </section>
+            </div>
+
+            <div id="mergeFeature" class="feature-content" style="display: none;">
+                <section class="feature-intro">
+                    <div class="intro-card">
+                        <div class="intro-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="18" rx="1" ry="1"/>
+                                <rect x="9" y="1" width="7" height="18" rx="1" ry="1"/>
+                                <rect x="15" y="5" width="7" height="18" rx="1" ry="1"/>
+                            </svg>
+                        </div>
+                        <div class="intro-content">
+                            <h3 class="intro-title">PDF 合并</h3>
+                            <p class="intro-desc">将多个 PDF 文件按指定顺序合并为一个 PDF 文件。支持拖拽调整顺序、一键清空、立即合并。</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="upload-section" id="mergeUploadSection">
+                    <div class="upload-area" id="mergeUploadArea">
+                        <input type="file" id="mergeFileInput" multiple accept=".pdf" hidden>
+                        <div class="upload-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                        </div>
+                        <p class="upload-text">拖拽PDF文件到此处，或点击选择文件</p>
+                        <p class="upload-hint">支持格式：PDF（至少需要2个文件）</p>
+                        <button class="btn btn-primary" id="mergeSelectFilesBtn">选择PDF文件</button>
+                    </div>
+                </section>
+
+                <section class="file-list-section" id="mergeFileListSection" style="display: none;">
+                    <div class="file-list-header">
+                        <h3 class="file-list-title">合并顺序 <span class="hint-text">(拖拽调整顺序)</span></h3>
+                        <div class="header-actions">
+                            <button class="btn btn-outline" id="mergeClearBtn">清空列表</button>
+                            <button class="btn btn-success btn-lg" id="mergeStartBtn">开始合并</button>
+                        </div>
+                    </div>
+                    <div class="file-list sortable-list" id="mergeFileList">
+                    </div>
+                    <div class="merge-info" id="mergeInfo" style="display: none;">
+                        <span class="info-text">已选择 <strong id="mergeFileCount">0</strong> 个 PDF 文件</span>
+                    </div>
+                </section>
+
+                <section class="progress-section" id="mergeProgressSection" style="display: none;">
+                    <div class="progress-card">
+                        <div class="progress-header">
+                            <h3 class="progress-title">合并进度</h3>
+                            <span class="progress-status" id="mergeProgressStatus">准备中...</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="mergeProgressBar">
+                                <div class="progress-bar-fill" id="mergeProgressFill"></div>
+                            </div>
+                            <span class="progress-percent" id="mergeProgressPercent">0%</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="results-section" id="mergeResultsSection" style="display: none;">
+                    <div class="results-header">
+                        <h3 class="results-title">合并结果</h3>
+                        <button class="btn btn-outline" id="mergeNewTaskBtn">
                             <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <line x1="12" y1="5" x2="12" y2="19"/>
                                 <line x1="5" y1="12" x2="19" y2="12"/>
@@ -100,14 +217,298 @@
                             新建任务
                         </button>
                     </div>
-                </div>
-                <div class="results-list" id="resultsList">
-                </div>
-            </section>
+                    <div class="results-list" id="mergeResultsList">
+                    </div>
+                </section>
+            </div>
+
+            <div id="splitFeature" class="feature-content" style="display: none;">
+                <section class="feature-intro">
+                    <div class="intro-card">
+                        <div class="intro-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="18" rx="1" ry="1"/>
+                                <rect x="14" y="3" width="7" height="18" rx="1" ry="1"/>
+                                <line x1="12" y1="1" x2="12" y2="23" stroke-dasharray="2 2"/>
+                            </svg>
+                        </div>
+                        <div class="intro-content">
+                            <h3 class="intro-title">PDF 拆分</h3>
+                            <p class="intro-desc">将单个 PDF 文件按页码范围拆分为多个 PDF 文件。支持按范围、按页码、每N页拆分。</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="upload-section" id="splitUploadSection">
+                    <div class="upload-area" id="splitUploadArea">
+                        <input type="file" id="splitFileInput" accept=".pdf" hidden>
+                        <div class="upload-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                        </div>
+                        <p class="upload-text">拖拽PDF文件到此处，或点击选择文件</p>
+                        <p class="upload-hint">支持格式：PDF（仅支持单个文件）</p>
+                        <button class="btn btn-primary" id="splitSelectFilesBtn">选择PDF文件</button>
+                    </div>
+                </section>
+
+                <section class="options-section" id="splitOptionsSection" style="display: none;">
+                    <div class="options-card">
+                        <h3 class="options-title">PDF 信息</h3>
+                        <div class="pdf-info" id="splitPdfInfo">
+                            <div class="info-item">
+                                <span class="info-label">文件名称</span>
+                                <span class="info-value" id="splitFileName">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">文件大小</span>
+                                <span class="info-value" id="splitFileSize">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">总页数</span>
+                                <span class="info-value" id="splitPageCount">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">页面尺寸</span>
+                                <span class="info-value" id="splitPageSize">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="options-card">
+                        <h3 class="options-title">拆分方式</h3>
+                        <div class="split-modes">
+                            <label class="split-mode-item active">
+                                <input type="radio" name="splitMode" value="range" checked>
+                                <span class="mode-label">按范围拆分</span>
+                                <span class="mode-desc">如: 1-5, 6-10</span>
+                            </label>
+                            <label class="split-mode-item">
+                                <input type="radio" name="splitMode" value="pages">
+                                <span class="mode-label">按页码拆分</span>
+                                <span class="mode-desc">如: 1, 3, 5</span>
+                            </label>
+                            <label class="split-mode-item">
+                                <input type="radio" name="splitMode" value="every_n">
+                                <span class="mode-label">每N页拆分</span>
+                                <span class="mode-desc">如: 每2页拆分为一个文件</span>
+                            </label>
+                        </div>
+
+                        <div class="split-options">
+                            <div class="split-option" id="splitRangeOption">
+                                <div class="form-group">
+                                    <label>拆分范围</label>
+                                    <div class="range-inputs" id="splitRangeInputs">
+                                        <div class="range-input-row">
+                                            <input type="number" class="form-input range-start" placeholder="起始页" min="1">
+                                            <span class="range-separator">-</span>
+                                            <input type="number" class="form-input range-end" placeholder="结束页" min="1">
+                                            <button class="btn btn-outline remove-range" type="button">-</button>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-outline add-range" id="splitAddRange" type="button">+ 添加范围</button>
+                                </div>
+                            </div>
+
+                            <div class="split-option" id="splitPagesOption" style="display: none;">
+                                <div class="form-group">
+                                    <label for="splitPagesInput">页码列表（用逗号分隔）</label>
+                                    <input type="text" id="splitPagesInput" class="form-input" placeholder="如: 1, 3, 5, 7-10">
+                                </div>
+                            </div>
+
+                            <div class="split-option" id="splitEveryNOption" style="display: none;">
+                                <div class="form-group">
+                                    <label for="splitEveryNInput">每N页拆分</label>
+                                    <input type="number" id="splitEveryNInput" class="form-input" placeholder="输入数字" min="1" value="1">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="splitOutputPrefix">输出文件名前缀（可选）</label>
+                                <input type="text" id="splitOutputPrefix" class="form-input" placeholder="如: document">
+                            </div>
+                        </div>
+
+                        <button class="btn btn-success btn-lg" id="splitStartBtn">开始拆分</button>
+                    </div>
+                </section>
+
+                <section class="progress-section" id="splitProgressSection" style="display: none;">
+                    <div class="progress-card">
+                        <div class="progress-header">
+                            <h3 class="progress-title">拆分进度</h3>
+                            <span class="progress-status" id="splitProgressStatus">准备中...</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="splitProgressBar">
+                                <div class="progress-bar-fill" id="splitProgressFill"></div>
+                            </div>
+                            <span class="progress-percent" id="splitProgressPercent">0%</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="results-section" id="splitResultsSection" style="display: none;">
+                    <div class="results-header">
+                        <h3 class="results-title">拆分结果</h3>
+                        <div class="results-actions">
+                            <button class="btn btn-primary" id="splitDownloadAllBtn">
+                                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="7 10 12 15 17 10"/>
+                                    <line x1="12" y1="15" x2="12" y2="3"/>
+                                </svg>
+                                打包下载 ZIP
+                            </button>
+                            <button class="btn btn-outline" id="splitNewTaskBtn">
+                                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="5" x2="12" y2="19"/>
+                                    <line x1="5" y1="12" x2="19" y2="12"/>
+                                </svg>
+                                新建任务
+                            </button>
+                        </div>
+                    </div>
+                    <div class="results-list" id="splitResultsList">
+                    </div>
+                </section>
+            </div>
+
+            <div id="compressFeature" class="feature-content" style="display: none;">
+                <section class="feature-intro">
+                    <div class="intro-card">
+                        <div class="intro-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="8 17 12 21 16 17"/>
+                                <line x1="12" y1="12" x2="12" y2="21"/>
+                                <path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/>
+                            </svg>
+                        </div>
+                        <div class="intro-content">
+                            <h3 class="intro-title">PDF 压缩</h3>
+                            <p class="intro-desc">减小 PDF 文件体积，同时保持良好的清晰度。支持低、中、高三种压缩等级。</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="upload-section" id="compressUploadSection">
+                    <div class="upload-area" id="compressUploadArea">
+                        <input type="file" id="compressFileInput" accept=".pdf" hidden>
+                        <div class="upload-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                        </div>
+                        <p class="upload-text">拖拽PDF文件到此处，或点击选择文件</p>
+                        <p class="upload-hint">支持格式：PDF（仅支持单个文件）</p>
+                        <button class="btn btn-primary" id="compressSelectFilesBtn">选择PDF文件</button>
+                    </div>
+                </section>
+
+                <section class="options-section" id="compressOptionsSection" style="display: none;">
+                    <div class="options-card">
+                        <h3 class="options-title">PDF 信息</h3>
+                        <div class="pdf-info" id="compressPdfInfo">
+                            <div class="info-item">
+                                <span class="info-label">文件名称</span>
+                                <span class="info-value" id="compressFileName">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">当前大小</span>
+                                <span class="info-value" id="compressFileSize">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">总页数</span>
+                                <span class="info-value" id="compressPageCount">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="options-card">
+                        <h3 class="options-title">压缩等级</h3>
+                        <div class="compress-levels">
+                            <label class="compress-level-item">
+                                <input type="radio" name="compressLevel" value="low">
+                                <span class="level-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <polyline points="8 12 11 15 16 9"/>
+                                    </svg>
+                                </span>
+                                <span class="level-label">低压缩</span>
+                                <span class="level-desc">体积减小约10-30%<br>画质几乎无损</span>
+                            </label>
+                            <label class="compress-level-item active">
+                                <input type="radio" name="compressLevel" value="medium" checked>
+                                <span class="level-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                        <line x1="3" y1="9" x2="21" y2="9"/>
+                                        <line x1="9" y1="21" x2="9" y2="9"/>
+                                    </svg>
+                                </span>
+                                <span class="level-label">中压缩</span>
+                                <span class="level-desc">体积减小约30-60%<br>画质良好（推荐）</span>
+                            </label>
+                            <label class="compress-level-item">
+                                <input type="radio" name="compressLevel" value="high">
+                                <span class="level-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                                        <path d="M2 17l10 5 10-5"/>
+                                        <path d="M2 12l10 5 10-5"/>
+                                    </svg>
+                                </span>
+                                <span class="level-label">高压缩</span>
+                                <span class="level-desc">体积减小约50-80%<br>画质有所降低</span>
+                            </label>
+                        </div>
+
+                        <button class="btn btn-success btn-lg" id="compressStartBtn">开始压缩</button>
+                    </div>
+                </section>
+
+                <section class="progress-section" id="compressProgressSection" style="display: none;">
+                    <div class="progress-card">
+                        <div class="progress-header">
+                            <h3 class="progress-title">压缩进度</h3>
+                            <span class="progress-status" id="compressProgressStatus">准备中...</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="compressProgressBar">
+                                <div class="progress-bar-fill" id="compressProgressFill"></div>
+                            </div>
+                            <span class="progress-percent" id="compressProgressPercent">0%</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="results-section" id="compressResultsSection" style="display: none;">
+                    <div class="results-header">
+                        <h3 class="results-title">压缩结果</h3>
+                        <button class="btn btn-outline" id="compressNewTaskBtn">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"/>
+                                <line x1="5" y1="12" x2="19" y2="12"/>
+                            </svg>
+                            新建任务
+                        </button>
+                    </div>
+                    <div class="results-list" id="compressResultsList">
+                    </div>
+                </section>
+            </div>
         </main>
 
         <footer class="footer">
-            <p class="footer-text">PdfItDown - 简单、快速、免费的文件转换工具</p>
+            <p class="footer-text">PdfItDown - 简单、快速、免费的PDF处理工具</p>
         </footer>
     </div>
 
