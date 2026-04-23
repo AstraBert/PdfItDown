@@ -1,6 +1,7 @@
 import asyncio
 import os
 import shutil
+import tempfile
 import uuid
 import zipfile
 from datetime import datetime
@@ -17,6 +18,20 @@ from .models import (
 logger = logging.getLogger(__name__)
 
 
+def get_default_work_dir() -> str:
+    env_dir = os.environ.get("PDFITDOWN_WORK_DIR")
+    if env_dir:
+        return env_dir
+    
+    try:
+        project_dir = Path(__file__).parent.parent.parent.parent.parent
+        work_dir = project_dir / ".pdfitdown_web"
+        work_dir.mkdir(parents=True, exist_ok=True)
+        return str(work_dir)
+    except Exception:
+        return os.path.join(tempfile.gettempdir(), "pdfitdown_web")
+
+
 class ConversionManager:
     def __init__(self, work_dir: Optional[str] = None):
         self.tasks: Dict[str, ConversionTask] = {}
@@ -24,7 +39,7 @@ class ConversionManager:
         self.executor = ThreadPoolExecutor(max_workers=4)
         
         if work_dir is None:
-            work_dir = os.path.join(os.path.expanduser("~"), ".pdfitdown_web")
+            work_dir = get_default_work_dir()
         self.work_dir = Path(work_dir)
         self.work_dir.mkdir(parents=True, exist_ok=True)
         
