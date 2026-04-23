@@ -1,0 +1,117 @@
+Metadata-Version: 2.4
+Name: markitdown
+Version: 0.1.5
+Summary: Utility tool for converting various files to Markdown
+Project-URL: Documentation, https://github.com/microsoft/markitdown#readme
+Project-URL: Issues, https://github.com/microsoft/markitdown/issues
+Project-URL: Source, https://github.com/microsoft/markitdown
+Author-email: Adam Fourney <adamfo@microsoft.com>
+License-Expression: MIT
+Classifier: Development Status :: 4 - Beta
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Programming Language :: Python :: 3.13
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Programming Language :: Python :: Implementation :: PyPy
+Requires-Python: >=3.10
+Requires-Dist: beautifulsoup4
+Requires-Dist: charset-normalizer
+Requires-Dist: defusedxml
+Requires-Dist: magika~=0.6.1
+Requires-Dist: markdownify
+Requires-Dist: requests
+Provides-Extra: all
+Requires-Dist: azure-ai-documentintelligence; extra == 'all'
+Requires-Dist: azure-identity; extra == 'all'
+Requires-Dist: lxml; extra == 'all'
+Requires-Dist: mammoth~=1.11.0; extra == 'all'
+Requires-Dist: olefile; extra == 'all'
+Requires-Dist: openpyxl; extra == 'all'
+Requires-Dist: pandas; extra == 'all'
+Requires-Dist: pdfminer-six>=20251230; extra == 'all'
+Requires-Dist: pdfplumber>=0.11.9; extra == 'all'
+Requires-Dist: pydub; extra == 'all'
+Requires-Dist: python-pptx; extra == 'all'
+Requires-Dist: speechrecognition; extra == 'all'
+Requires-Dist: xlrd; extra == 'all'
+Requires-Dist: youtube-transcript-api~=1.0.0; extra == 'all'
+Provides-Extra: audio-transcription
+Requires-Dist: pydub; extra == 'audio-transcription'
+Requires-Dist: speechrecognition; extra == 'audio-transcription'
+Provides-Extra: az-doc-intel
+Requires-Dist: azure-ai-documentintelligence; extra == 'az-doc-intel'
+Requires-Dist: azure-identity; extra == 'az-doc-intel'
+Provides-Extra: docx
+Requires-Dist: lxml; extra == 'docx'
+Requires-Dist: mammoth~=1.11.0; extra == 'docx'
+Provides-Extra: outlook
+Requires-Dist: olefile; extra == 'outlook'
+Provides-Extra: pdf
+Requires-Dist: pdfminer-six>=20251230; extra == 'pdf'
+Requires-Dist: pdfplumber>=0.11.9; extra == 'pdf'
+Provides-Extra: pptx
+Requires-Dist: python-pptx; extra == 'pptx'
+Provides-Extra: xls
+Requires-Dist: pandas; extra == 'xls'
+Requires-Dist: xlrd; extra == 'xls'
+Provides-Extra: xlsx
+Requires-Dist: openpyxl; extra == 'xlsx'
+Requires-Dist: pandas; extra == 'xlsx'
+Provides-Extra: youtube-transcription
+Requires-Dist: youtube-transcript-api; extra == 'youtube-transcription'
+Description-Content-Type: text/markdown
+
+# MarkItDown
+
+> [!IMPORTANT]
+> MarkItDown is a Python package and command-line utility for converting various files to Markdown (e.g., for indexing, text analysis, etc). 
+>
+> For more information, and full documentation, see the project [README.md](https://github.com/microsoft/markitdown) on GitHub.
+
+## Installation
+
+From PyPI:
+
+```bash
+pip install markitdown[all]
+```
+
+From source:
+
+```bash
+git clone git@github.com:microsoft/markitdown.git
+cd markitdown
+pip install -e packages/markitdown[all]
+```
+
+## Usage
+
+### Command-Line
+
+```bash
+markitdown path-to-file.pdf > document.md
+```
+
+### Python API
+
+```python
+from markitdown import MarkItDown
+
+md = MarkItDown()
+result = md.convert("test.xlsx")
+print(result.text_content)
+```
+
+### More Information
+
+For more information, and full documentation, see the project [README.md](https://github.com/microsoft/markitdown) on GitHub.
+
+## Trademarks
+
+This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft
+trademarks or logos is subject to and must follow
+[Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general).
+Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship.
+Any use of third-party trademarks or logos are subject to those third-party's policies.

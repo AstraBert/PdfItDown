@@ -1,0 +1,6 @@
+[console_scripts]
+img2pdf=img2pdf:main
+
+[gui_scripts]
+img2pdf-gui=img2pdf:gui
+

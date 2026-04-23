@@ -1,3 +1,5 @@
+import subprocess
+import sys
 from typer import Typer, Option, Exit
 from typing import Annotated, cast
 from rich import print as rprint
@@ -109,3 +111,60 @@ def main(
         rprint(
             "[bold green]Conversion successful![/]🎉",
         )
+
+
+@app.command()
+def web(
+    host: Annotated[
+        str,
+        Option(
+            "--host",
+            "-H",
+            help="绑定的主机地址 (默认: 0.0.0.0)",
+        ),
+    ] = "0.0.0.0",
+    port: Annotated[
+        int,
+        Option(
+            "--port",
+            "-p",
+            help="服务端口 (默认: 8000)",
+        ),
+    ] = 8000,
+    reload: Annotated[
+        bool,
+        Option(
+            "--reload",
+            "-r",
+            help="启用自动重载模式 (开发模式)",
+        ),
+    ] = False,
+):
+    """
+    启动 Web 可视化转换服务
+    """
+    try:
+        import uvicorn
+        from pdfitdown.web.app import app as web_app
+    except ImportError as e:
+        rprint(f"[bold red]ERROR: 缺少 Web 服务依赖: {e}[/]")
+        rprint("[bold yellow]请运行: pip install pdfitdown[web][/]")
+        raise Exit(1)
+    
+    rprint("=" * 60)
+    rprint("[bold cyan]  PdfItDown Web - 文件转PDF在线转换服务[/]")
+    rprint("=" * 60)
+    rprint(f"  服务地址: http://{host}:{port}")
+    rprint(f"  本地访问: http://localhost:{port}")
+    rprint("=" * 60)
+    rprint()
+    rprint("[bold green]请在浏览器中打开上述地址开始使用。[/]")
+    rprint("[bold yellow]按 Ctrl+C 停止服务。[/]")
+    rprint()
+    
+    uvicorn.run(
+        "pdfitdown.web.app:app",
+        host=host,
+        port=port,
+        reload=reload,
+    )

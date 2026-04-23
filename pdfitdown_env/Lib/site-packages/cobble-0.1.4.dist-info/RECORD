@@ -1,0 +1,9 @@
+cobble-0.1.4.dist-info/INSTALLER,sha256=zuuue4knoyJ-UwPPXg8fezS7VCrXJQrAP7zeNuwvFQg,4
+cobble-0.1.4.dist-info/METADATA,sha256=brLPiM-zm4hK3eHv99j4n4CyVlcusMbBZNb5mUPb1J8,2698
+cobble-0.1.4.dist-info/RECORD,,
+cobble-0.1.4.dist-info/WHEEL,sha256=GJ7t_kWBFywbagK5eo9IoUwLW6oyOeTKmQ-9iHFVNxQ,92
+cobble-0.1.4.dist-info/top_level.txt,sha256=EwHagn77PwzebcGClTlhfxs-dstld25WDeFslM1ST3w,7
+cobble/__init__.py,sha256=b0K9tEJxkMMKBIQKCxcqHvUtcI9J86xukldF61fI-DY,4807
+cobble/__pycache__/__init__.cpython-311.pyc,,
+cobble/__pycache__/inflection.cpython-311.pyc,,
+cobble/inflection.py,sha256=GWeiNC364YEmNtbkG4Y2OY8vuU2WwgoQVA-q-UHZvsE,799

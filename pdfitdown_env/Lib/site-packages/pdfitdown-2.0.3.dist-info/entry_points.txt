@@ -1,0 +1,3 @@
+[console_scripts]
+pdfitdown = pdfitdown.cli.app:app
+
