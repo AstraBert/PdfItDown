@@ -22,6 +22,21 @@ logger = logging.getLogger(__name__)
 STATIC_DIR = Path(__file__).parent / "static"
 
 
+def sanitize_filename(filename: str) -> str:
+    safe_chars = []
+    for c in filename:
+        if c.isalnum() or c in "._- ":
+            safe_chars.append(c)
+        elif ord(c) > 127:
+            safe_chars.append(c)
+        else:
+            safe_chars.append("_")
+    result = "".join(safe_chars).strip()
+    if not result or result.startswith("."):
+        result = "file_" + result.lstrip(".")
+    return result if result else "unnamed_file"
+
+
 def create_app() -> FastAPI:
     app = FastAPI(
         title="PdfItDown Web",
@@ -124,20 +139,45 @@ def create_app() -> FastAPI:
             "message": "Conversion started"
         }
     
-    def sanitize_filename(filename: str) -> str:
-        safe_chars = []
-        for c in filename:
-            if c.isalnum() or c in "._- ":
-                safe_chars.append(c)
-            elif ord(c) > 127:
-                safe_chars.append(c)
-            else:
-                safe_chars.append("_")
-        result = "".join(safe_chars).strip()
-        if not result or result.startswith("."):
-            result = "file_" + result.lstrip(".")
-        return result if result else "unnamed_file"
-
+    @app.get("/api/tasks/{task_id}/download/zip")
+    async def download_zip(task_id: str):
+        task = conversion_manager.get_task(task_id)
+        if not task:
+            raise HTTPException(status_code=404, detail="Task not found")
+        
+        if task.status not in [TaskStatus.COMPLETED, TaskStatus.PARTIAL_FAILED]:
+            raise HTTPException(status_code=400, detail="Task not completed")
+        
+        if not task.zip_path:
+            zip_path = conversion_manager.create_zip(task_id)
+            if not zip_path:
+                raise HTTPException(
+                    status_code=400, 
+                    detail="No completed files to zip"
+                )
+        else:
+            zip_path = task.zip_path
+        
+        if not os.path.exists(zip_path):
+            raise HTTPException(status_code=404, detail="Zip file not found")
+        
+        zip_filename = f"converted_{task_id[:8]}.zip"
+        
+        with open(zip_path, "rb") as f:
+            content = f.read()
+        
+        return Response(
+            content=content,
+            media_type="application/zip",
+            headers={
+                "Content-Disposition": f"attachment; filename=\"{zip_filename}\"",
+                "Content-Length": str(len(content)),
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Pragma": "no-cache",
+                "Expires": "0"
+            }
+        )
+    
     @app.get("/api/tasks/{task_id}/download/{file_id}")
     async def download_file(task_id: str, file_id: str):
         task = conversion_manager.get_task(task_id)
@@ -197,45 +237,6 @@ def create_app() -> FastAPI:
                 "Content-Disposition": "inline",
                 "Content-Length": str(len(content)),
                 "Cache-Control": "no-cache, no-store, must-revalidate"
-            }
-        )
-    
-    @app.get("/api/tasks/{task_id}/download/zip")
-    async def download_zip(task_id: str):
-        task = conversion_manager.get_task(task_id)
-        if not task:
-            raise HTTPException(status_code=404, detail="Task not found")
-        
-        if task.status not in [TaskStatus.COMPLETED, TaskStatus.PARTIAL_FAILED]:
-            raise HTTPException(status_code=400, detail="Task not completed")
-        
-        if not task.zip_path:
-            zip_path = conversion_manager.create_zip(task_id)
-            if not zip_path:
-                raise HTTPException(
-                    status_code=400, 
-                    detail="No completed files to zip"
-                )
-        else:
-            zip_path = task.zip_path
-        
-        if not os.path.exists(zip_path):
-            raise HTTPException(status_code=404, detail="Zip file not found")
-        
-        zip_filename = f"converted_{task_id[:8]}.zip"
-        
-        with open(zip_path, "rb") as f:
-            content = f.read()
-        
-        return Response(
-            content=content,
-            media_type="application/zip",
-            headers={
-                "Content-Disposition": f"attachment; filename=\"{zip_filename}\"",
-                "Content-Length": str(len(content)),
-                "Cache-Control": "no-cache, no-store, must-revalidate",
-                "Pragma": "no-cache",
-                "Expires": "0"
             }
         )
     
