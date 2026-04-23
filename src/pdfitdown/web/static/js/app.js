@@ -3,6 +3,7 @@
 
     let state = {
         taskId: null,
+        lastTaskId: null,
         files: [],
         isConverting: false,
         statusPolling: null
@@ -242,6 +243,9 @@
     function renderResults(statusData) {
         elements.resultsList.innerHTML = '';
         
+        const currentTaskId = statusData.task_id || state.taskId;
+        console.log('renderResults using taskId:', currentTaskId);
+        
         statusData.files.forEach(file => {
             const isSuccess = file.status === 'completed';
             const resultItem = document.createElement('div');
@@ -251,16 +255,16 @@
             const failIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
             
             let actionsHtml = '';
-            if (isSuccess) {
+            if (isSuccess && currentTaskId) {
                 actionsHtml = `
-                    <button class="btn btn-primary" onclick="app.previewFile('${file.id}')" title="预览">
+                    <button class="btn btn-primary" onclick="app.previewFile('${file.id}', '${currentTaskId}')" title="预览">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                             <circle cx="12" cy="12" r="3"/>
                         </svg>
                         预览
                     </button>
-                    <a class="btn btn-success" href="/api/tasks/${state.taskId}/download/${file.id}" download title="下载">
+                    <a class="btn btn-success" href="/api/tasks/${currentTaskId}/download/${file.id}" download title="下载">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                             <polyline points="7 10 12 15 17 10"/>
@@ -312,6 +316,9 @@
     }
 
     function showResults(statusData) {
+        state.lastTaskId = statusData.task_id || state.taskId;
+        console.log('showResults - lastTaskId:', state.lastTaskId);
+        
         elements.progressSection.style.display = 'none';
         elements.resultsSection.style.display = 'block';
         renderResults(statusData);
@@ -328,17 +335,19 @@
         }
     }
 
-    function showPreview(fileId, fileName) {
-        if (!state.taskId) {
+    function showPreview(fileId, fileName, taskId) {
+        const useTaskId = taskId || state.taskId;
+        if (!useTaskId) {
             showToast('任务不存在', 'error');
             return;
         }
         
         elements.previewTitle.textContent = fileName;
-        elements.previewIframe.src = `/api/tasks/${state.taskId}/preview/${fileId}`;
+        const previewUrl = `/api/tasks/${useTaskId}/preview/${fileId}`;
+        elements.previewIframe.src = previewUrl;
         elements.previewModal.style.display = 'flex';
         
-        console.log('Preview URL:', `/api/tasks/${state.taskId}/preview/${fileId}`);
+        console.log('Preview URL:', previewUrl);
     }
 
     function hidePreview() {
@@ -351,6 +360,7 @@
         
         state = {
             taskId: null,
+            lastTaskId: null,
             files: [],
             isConverting: false,
             statusPolling: null
@@ -497,11 +507,14 @@
         });
 
         elements.downloadAllBtn.addEventListener('click', () => {
-            if (!state.taskId) {
+            const currentTaskId = state.lastTaskId || state.taskId;
+            if (!currentTaskId) {
                 showToast('任务不存在', 'error');
                 return;
             }
-            window.location.href = `/api/tasks/${state.taskId}/download/zip`;
+            const zipUrl = `/api/tasks/${currentTaskId}/download/zip`;
+            console.log('Download ZIP URL:', zipUrl);
+            window.location.href = zipUrl;
         });
 
         elements.newTaskBtn.addEventListener('click', () => {
@@ -521,15 +534,12 @@
 
     window.app = {
         removeFile: removeFile,
-        previewFile: function(fileId) {
+        previewFile: function(fileId, taskId) {
             const file = state.files.find(f => f.id === fileId);
-            if (file) {
-                showPreview(fileId, file.original_name.replace(/\.[^.]+$/, '.pdf'));
-            } else {
-                console.log('File not found in state.files, fileId:', fileId);
-                console.log('state.files:', state.files);
-                showPreview(fileId, 'document.pdf');
-            }
+            const useTaskId = taskId || state.taskId || state.lastTaskId;
+            const pdfName = file ? file.original_name.replace(/\.[^.]+$/, '.pdf') : 'document.pdf';
+            console.log('previewFile called with fileId:', fileId, 'taskId:', useTaskId);
+            showPreview(fileId, pdfName, useTaskId);
         }
     };
 

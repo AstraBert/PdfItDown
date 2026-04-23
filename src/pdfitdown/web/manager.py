@@ -34,7 +34,7 @@ def is_zip_format(file_path: str) -> bool:
 def validate_file(file_path: str, original_name: str) -> tuple[bool, str]:
     suffix = Path(original_name).suffix.lower()
     
-    zip_based_extensions = ['.docx', '.xlsx', '.xls', '.pptx', '.zip']
+    zip_based_extensions = ['.docx', '.xlsx', '.pptx', '.zip']
     
     if suffix in zip_based_extensions:
         if not is_zip_format(file_path):
