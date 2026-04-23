@@ -8,6 +8,38 @@ from .errors import FileExistsWarning
 ConversionCallback: TypeAlias = Callable[[str, str, str | None, bool], str | None]
 
 
+def read_file_with_auto_encoding(file_path: str) -> str:
+    encodings = [
+        'utf-8-sig',
+        'utf-8',
+        'gbk',
+        'gb2312',
+        'gb18030',
+        'utf-16',
+        'utf-16-le',
+        'utf-16-be',
+        'cp1252',
+        'latin-1',
+    ]
+    
+    for encoding in encodings:
+        try:
+            with open(file_path, 'r', encoding=encoding) as f:
+                content = f.read()
+                return content
+        except (UnicodeDecodeError, UnicodeError, LookupError):
+            continue
+    
+    try:
+        with open(file_path, 'rb') as f:
+            content = f.read()
+            return content.decode('utf-8', errors='replace')
+    except Exception:
+        with open(file_path, 'rb') as f:
+            content = f.read()
+            return content.decode('latin-1', errors='replace')
+
+
 @dataclass
 class OsPath:
     """
@@ -120,8 +152,7 @@ class OsPath:
             str | bytes | None: The content of the file as string (for text) or bytes (for PDF), or None if not readable.
         """
         if self.file_type == "text":
-            with open(self.path, "r", encoding="utf-8") as f:
-                return f.read()
+            return read_file_with_auto_encoding(self.path)
         elif self.file_type == "pdf":
             with open(self.path, "rb") as f:
                 return f.read()

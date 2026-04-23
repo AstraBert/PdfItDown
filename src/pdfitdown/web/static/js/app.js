@@ -108,17 +108,20 @@
         return texts[status] || '未知';
     }
 
-    async function createTask() {
-        try {
-            const response = await fetch('/api/tasks/create', { method: 'POST' });
-            const data = await response.json();
-            state.taskId = data.task_id;
-            return state.taskId;
-        } catch (error) {
-            console.error('Failed to create task:', error);
-            showToast('创建任务失败', 'error');
-            return null;
+    async function ensureTask() {
+        if (!state.taskId) {
+            try {
+                const response = await fetch('/api/tasks/create', { method: 'POST' });
+                const data = await response.json();
+                state.taskId = data.task_id;
+                console.log('Created new task:', state.taskId);
+            } catch (error) {
+                console.error('Failed to create task:', error);
+                showToast('创建任务失败', 'error');
+                return false;
+            }
         }
+        return true;
     }
 
     async function uploadFile(file) {
@@ -130,17 +133,24 @@
                 method: 'POST',
                 body: formData
             });
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.detail || `Upload failed: ${response.status}`);
+            }
             const data = await response.json();
             return data;
         } catch (error) {
             console.error('Failed to upload file:', error);
-            return null;
+            throw error;
         }
     }
 
     async function getTaskStatus() {
         try {
             const response = await fetch(`/api/tasks/${state.taskId}/status`);
+            if (!response.ok) {
+                throw new Error(`Status check failed: ${response.status}`);
+            }
             const data = await response.json();
             return data;
         } catch (error) {
@@ -162,12 +172,15 @@
                 method: 'POST',
                 body: formData
             });
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.detail || `Conversion failed: ${response.status}`);
+            }
             const data = await response.json();
             return data;
         } catch (error) {
             console.error('Failed to start conversion:', error);
-            showToast('开始转换失败', 'error');
-            return null;
+            throw error;
         }
     }
 
@@ -180,12 +193,12 @@
             fileItem.innerHTML = `
                 <div class="file-icon">${getFileIcon(file.original_name)}</div>
                 <div class="file-info">
-                    <div class="file-name">${file.original_name}</div>
+                    <div class="file-name">${escapeHtml(file.original_name)}</div>
                     <div class="file-size">${formatFileSize(file.file_size)}</div>
                 </div>
                 <span class="file-status ${getStatusBadgeClass(file.status)}">${getStatusText(file.status)}</span>
                 <div class="file-actions">
-                    <button class="btn btn-outline" onclick="app.removeFile(${index})" title="移除">
+                    <button class="btn btn-outline" onclick="app.removeFile(${index})" title="移除" ${state.isConverting ? 'disabled' : ''}>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
                             <line x1="18" y1="6" x2="6" y2="18"/>
                             <line x1="6" y1="6" x2="18" y2="18"/>
@@ -195,6 +208,12 @@
             `;
             elements.fileList.appendChild(fileItem);
         });
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 
     function updateProgress(statusData) {
@@ -218,7 +237,6 @@
         `;
         
         state.files = statusData.files;
-        renderFileList(statusData.files);
     }
 
     function renderResults(statusData) {
@@ -258,8 +276,8 @@
                     ${isSuccess ? successIcon : failIcon}
                 </div>
                 <div class="result-info">
-                    <div class="result-name">${file.original_name}</div>
-                    <div class="result-message">${isSuccess ? '转换成功' : file.error_message || '转换失败'}</div>
+                    <div class="result-name">${escapeHtml(file.original_name)}</div>
+                    <div class="result-message">${isSuccess ? '转换成功' : escapeHtml(file.error_message || '转换失败')}</div>
                 </div>
                 <div class="result-actions">${actionsHtml}</div>
             `;
@@ -275,6 +293,8 @@
                 
                 if (['completed', 'partial_failed', 'failed'].includes(statusData.status)) {
                     stopStatusPolling();
+                    state.isConverting = false;
+                    elements.startConvertBtn.disabled = false;
                     showResults(statusData);
                 }
             }
@@ -309,9 +329,16 @@
     }
 
     function showPreview(fileId, fileName) {
+        if (!state.taskId) {
+            showToast('任务不存在', 'error');
+            return;
+        }
+        
         elements.previewTitle.textContent = fileName;
         elements.previewIframe.src = `/api/tasks/${state.taskId}/preview/${fileId}`;
         elements.previewModal.style.display = 'flex';
+        
+        console.log('Preview URL:', `/api/tasks/${state.taskId}/preview/${fileId}`);
     }
 
     function hidePreview() {
@@ -319,7 +346,9 @@
         elements.previewIframe.src = '';
     }
 
-    function resetState() {
+    function resetForNewTask() {
+        stopStatusPolling();
+        
         state = {
             taskId: null,
             files: [],
@@ -350,13 +379,13 @@
     async function handleFiles(selectedFiles) {
         if (selectedFiles.length === 0) return;
         
-        if (!state.taskId) {
-            const taskId = await createTask();
-            if (!taskId) return;
-        }
+        const taskOk = await ensureTask();
+        if (!taskOk) return;
         
         elements.optionsSection.style.display = 'block';
         elements.fileListSection.style.display = 'block';
+        
+        let successCount = 0;
         
         for (const file of selectedFiles) {
             const fileData = {
@@ -368,18 +397,26 @@
             state.files.push(fileData);
             renderFileList(state.files);
             
-            const uploadResult = await uploadFile(file);
-            if (uploadResult) {
-                fileData.id = uploadResult.file_id;
-                fileData.status = 'uploaded';
-            } else {
+            try {
+                const uploadResult = await uploadFile(file);
+                if (uploadResult) {
+                    fileData.id = uploadResult.file_id;
+                    fileData.status = 'uploaded';
+                    successCount++;
+                } else {
+                    fileData.status = 'failed';
+                    showToast(`上传 ${file.name} 失败`, 'error');
+                }
+            } catch (error) {
                 fileData.status = 'failed';
-                showToast(`上传 ${file.name} 失败`, 'error');
+                showToast(`上传 ${file.name} 失败: ${error.message}`, 'error');
             }
             renderFileList(state.files);
         }
         
-        showToast(`已添加 ${selectedFiles.length} 个文件`, 'success');
+        if (successCount > 0) {
+            showToast(`已添加 ${successCount} 个文件`, 'success');
+        }
     }
 
     function initEventListeners() {
@@ -429,7 +466,10 @@
                 return;
             }
             
-            if (state.isConverting) return;
+            if (state.isConverting) {
+                showToast('正在转换中，请等待', 'warning');
+                return;
+            }
             
             state.isConverting = true;
             elements.startConvertBtn.disabled = true;
@@ -438,25 +478,34 @@
             elements.optionsSection.style.display = 'none';
             elements.progressSection.style.display = 'block';
             
-            const result = await startConversion();
-            if (result) {
-                showToast('开始转换...', 'info');
-                startStatusPolling();
-            } else {
+            try {
+                const result = await startConversion();
+                if (result) {
+                    showToast('开始转换...', 'info');
+                    startStatusPolling();
+                } else {
+                    throw new Error('Unknown error');
+                }
+            } catch (error) {
                 state.isConverting = false;
                 elements.startConvertBtn.disabled = false;
                 elements.fileListSection.style.display = 'block';
                 elements.optionsSection.style.display = 'block';
                 elements.progressSection.style.display = 'none';
+                showToast(`开始转换失败: ${error.message}`, 'error');
             }
         });
 
         elements.downloadAllBtn.addEventListener('click', () => {
+            if (!state.taskId) {
+                showToast('任务不存在', 'error');
+                return;
+            }
             window.location.href = `/api/tasks/${state.taskId}/download/zip`;
         });
 
         elements.newTaskBtn.addEventListener('click', () => {
-            resetState();
+            resetForNewTask();
             showToast('可以开始新任务了', 'info');
         });
 
@@ -476,6 +525,10 @@
             const file = state.files.find(f => f.id === fileId);
             if (file) {
                 showPreview(fileId, file.original_name.replace(/\.[^.]+$/, '.pdf'));
+            } else {
+                console.log('File not found in state.files, fileId:', fileId);
+                console.log('state.files:', state.files);
+                showPreview(fileId, 'document.pdf');
             }
         }
     };

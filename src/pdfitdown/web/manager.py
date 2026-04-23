@@ -1,6 +1,7 @@
 import asyncio
 import os
 import shutil
+import struct
 import tempfile
 import uuid
 import zipfile
@@ -16,6 +17,30 @@ from .models import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+ZIP_SIGNATURE = b'PK\x03\x04'
+
+
+def is_zip_format(file_path: str) -> bool:
+    try:
+        with open(file_path, 'rb') as f:
+            header = f.read(4)
+            return header == ZIP_SIGNATURE
+    except Exception:
+        return False
+
+
+def validate_file(file_path: str, original_name: str) -> tuple[bool, str]:
+    suffix = Path(original_name).suffix.lower()
+    
+    zip_based_extensions = ['.docx', '.xlsx', '.xls', '.pptx', '.zip']
+    
+    if suffix in zip_based_extensions:
+        if not is_zip_format(file_path):
+            return False, f"File {original_name} is not a valid ZIP-based format. Please ensure the file is not corrupted."
+    
+    return True, "OK"
 
 
 def get_default_work_dir() -> str:
@@ -148,6 +173,16 @@ class ConversionManager:
                 if not upload_path or not os.path.exists(upload_path):
                     raise FileNotFoundError(f"Uploaded file not found: {file.id}")
                 
+                file_size = os.path.getsize(upload_path)
+                logger.info(f"Converting file {file.id} ({file.original_name}), path: {upload_path}, size: {file_size} bytes")
+                
+                is_valid, validation_msg = validate_file(upload_path, file.original_name)
+                if not is_valid:
+                    raise ValueError(validation_msg)
+                
+                suffix = Path(file.original_name).suffix.lower()
+                logger.info(f"File {file.id} has suffix: {suffix}")
+                
                 safe_original = self._safe_filename(file.original_name)
                 output_filename = Path(safe_original).stem + ".pdf"
                 output_path = task_output_dir / f"{file.id}_{output_filename}"
@@ -167,6 +202,12 @@ class ConversionManager:
                 if result is None:
                     raise Exception("Conversion returned None")
                 
+                if not os.path.exists(output_path):
+                    raise Exception(f"Output file not created: {output_path}")
+                
+                output_size = os.path.getsize(output_path)
+                logger.info(f"Conversion successful for {file.id}, output size: {output_size} bytes")
+                
                 file.conversion_progress = 100.0
                 file.status = FileStatus.COMPLETED
                 file.output_path = str(output_path)
@@ -175,7 +216,7 @@ class ConversionManager:
             except Exception as e:
                 file.status = FileStatus.FAILED
                 file.error_message = str(e)
-                logger.error(f"Failed to convert file {file.id}: {e}")
+                logger.error(f"Failed to convert file {file.id} ({file.original_name}): {e}")
             
             return file
         
