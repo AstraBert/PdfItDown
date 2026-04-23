@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import Optional, List
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
 import uuid
 
@@ -23,7 +23,7 @@ class TaskStatus(str, Enum):
 
 
 class UploadedFile(BaseModel):
-    id: str = uuid.uuid4().hex
+    id: str = Field(default_factory=lambda: uuid.uuid4().hex)
     original_name: str
     file_size: int
     status: FileStatus = FileStatus.PENDING
@@ -31,15 +31,15 @@ class UploadedFile(BaseModel):
     conversion_progress: float = 0.0
     output_path: Optional[str] = None
     error_message: Optional[str] = None
-    uploaded_at: datetime = datetime.now()
+    uploaded_at: datetime = Field(default_factory=datetime.now)
 
 
 class ConversionTask(BaseModel):
-    id: str = uuid.uuid4().hex
-    files: List[UploadedFile] = []
+    id: str = Field(default_factory=lambda: uuid.uuid4().hex)
+    files: List[UploadedFile] = Field(default_factory=list)
     pdf_title: Optional[str] = None
     status: TaskStatus = TaskStatus.PENDING
-    created_at: datetime = datetime.now()
+    created_at: datetime = Field(default_factory=datetime.now)
     completed_at: Optional[datetime] = None
     zip_path: Optional[str] = None
 

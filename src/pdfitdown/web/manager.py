@@ -1,7 +1,6 @@
 import asyncio
 import os
 import shutil
-import struct
 import tempfile
 import uuid
 import zipfile
@@ -17,30 +16,6 @@ from .models import (
 )
 
 logger = logging.getLogger(__name__)
-
-
-ZIP_SIGNATURE = b'PK\x03\x04'
-
-
-def is_zip_format(file_path: str) -> bool:
-    try:
-        with open(file_path, 'rb') as f:
-            header = f.read(4)
-            return header == ZIP_SIGNATURE
-    except Exception:
-        return False
-
-
-def validate_file(file_path: str, original_name: str) -> tuple[bool, str]:
-    suffix = Path(original_name).suffix.lower()
-    
-    zip_based_extensions = ['.docx', '.xlsx', '.pptx', '.zip']
-    
-    if suffix in zip_based_extensions:
-        if not is_zip_format(file_path):
-            return False, f"File {original_name} is not a valid ZIP-based format. Please ensure the file is not corrupted."
-    
-    return True, "OK"
 
 
 def get_default_work_dir() -> str:
@@ -175,10 +150,6 @@ class ConversionManager:
                 
                 file_size = os.path.getsize(upload_path)
                 logger.info(f"Converting file {file.id} ({file.original_name}), path: {upload_path}, size: {file_size} bytes")
-                
-                is_valid, validation_msg = validate_file(upload_path, file.original_name)
-                if not is_valid:
-                    raise ValueError(validation_msg)
                 
                 suffix = Path(file.original_name).suffix.lower()
                 logger.info(f"File {file.id} has suffix: {suffix}")

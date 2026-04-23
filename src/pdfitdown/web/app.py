@@ -4,19 +4,16 @@ from typing import Optional
 import logging
 
 from fastapi import (
-    FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks,
-    Request
+    FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks
 )
 from fastapi.responses import (
-    HTMLResponse, FileResponse, JSONResponse, StreamingResponse
+    HTMLResponse, Response
 )
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 
 from .models import (
-    UploadResponse, TaskStatusResponse, StartConversionRequest,
-    DownloadInfo, FileStatus, TaskStatus
+    UploadResponse, TaskStatusResponse, FileStatus, TaskStatus
 )
 from .manager import conversion_manager
 
@@ -127,6 +124,20 @@ def create_app() -> FastAPI:
             "message": "Conversion started"
         }
     
+    def sanitize_filename(filename: str) -> str:
+        safe_chars = []
+        for c in filename:
+            if c.isalnum() or c in "._- ":
+                safe_chars.append(c)
+            elif ord(c) > 127:
+                safe_chars.append(c)
+            else:
+                safe_chars.append("_")
+        result = "".join(safe_chars).strip()
+        if not result or result.startswith("."):
+            result = "file_" + result.lstrip(".")
+        return result if result else "unnamed_file"
+
     @app.get("/api/tasks/{task_id}/download/{file_id}")
     async def download_file(task_id: str, file_id: str):
         task = conversion_manager.get_task(task_id)
@@ -143,12 +154,21 @@ def create_app() -> FastAPI:
         if not os.path.exists(file.output_path):
             raise HTTPException(status_code=404, detail="Output file not found")
         
-        download_name = Path(file.original_name).stem + ".pdf"
+        download_name = sanitize_filename(Path(file.original_name).stem) + ".pdf"
         
-        return FileResponse(
-            path=file.output_path,
+        with open(file.output_path, "rb") as f:
+            content = f.read()
+        
+        return Response(
+            content=content,
             media_type="application/pdf",
-            filename=download_name
+            headers={
+                "Content-Disposition": f"attachment; filename=\"{download_name}\"",
+                "Content-Length": str(len(content)),
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Pragma": "no-cache",
+                "Expires": "0"
+            }
         )
     
     @app.get("/api/tasks/{task_id}/preview/{file_id}")
@@ -167,9 +187,17 @@ def create_app() -> FastAPI:
         if not os.path.exists(file.output_path):
             raise HTTPException(status_code=404, detail="Output file not found")
         
-        return FileResponse(
-            path=file.output_path,
-            media_type="application/pdf"
+        with open(file.output_path, "rb") as f:
+            content = f.read()
+        
+        return Response(
+            content=content,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": "inline",
+                "Content-Length": str(len(content)),
+                "Cache-Control": "no-cache, no-store, must-revalidate"
+            }
         )
     
     @app.get("/api/tasks/{task_id}/download/zip")
@@ -194,10 +222,21 @@ def create_app() -> FastAPI:
         if not os.path.exists(zip_path):
             raise HTTPException(status_code=404, detail="Zip file not found")
         
-        return FileResponse(
-            path=zip_path,
+        zip_filename = f"converted_{task_id[:8]}.zip"
+        
+        with open(zip_path, "rb") as f:
+            content = f.read()
+        
+        return Response(
+            content=content,
             media_type="application/zip",
-            filename=f"converted_{task_id[:8]}.zip"
+            headers={
+                "Content-Disposition": f"attachment; filename=\"{zip_filename}\"",
+                "Content-Length": str(len(content)),
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Pragma": "no-cache",
+                "Expires": "0"
+            }
         )
     
     @app.delete("/api/tasks/{task_id}")

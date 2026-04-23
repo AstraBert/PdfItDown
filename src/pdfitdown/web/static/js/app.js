@@ -185,6 +185,116 @@
         }
     }
 
+    async function downloadFile(fileId, taskId, originalName) {
+        const downloadName = originalName.replace(/\.[^.]+$/, '.pdf') || 'document.pdf';
+        const useTaskId = taskId || state.taskId || state.lastTaskId;
+        
+        if (!useTaskId) {
+            showToast('任务不存在', 'error');
+            return;
+        }
+        
+        try {
+            showToast('正在准备下载...', 'info');
+            const response = await fetch(`/api/tasks/${useTaskId}/download/${fileId}`);
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.detail || `下载失败: ${response.status}`);
+            }
+            
+            const blob = await response.blob();
+            
+            if (blob.size === 0) {
+                throw new Error('下载的文件为空');
+            }
+            
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = downloadName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            showToast('下载完成', 'success');
+        } catch (error) {
+            console.error('Download failed:', error);
+            showToast(`下载失败: ${error.message}`, 'error');
+        }
+    }
+
+    async function downloadZip(taskId) {
+        try {
+            showToast('正在准备打包下载...', 'info');
+            const response = await fetch(`/api/tasks/${taskId}/download/zip`);
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.detail || `下载失败: ${response.status}`);
+            }
+            
+            const blob = await response.blob();
+            
+            if (blob.size === 0) {
+                throw new Error('下载的文件为空');
+            }
+            
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `converted_${taskId.slice(0, 8)}.zip`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            showToast('下载完成', 'success');
+        } catch (error) {
+            console.error('ZIP download failed:', error);
+            showToast(`打包下载失败: ${error.message}`, 'error');
+        }
+    }
+
+    async function previewFile(fileId, taskId, originalName) {
+        const pdfName = originalName ? originalName.replace(/\.[^.]+$/, '.pdf') : 'document.pdf';
+        const useTaskId = taskId || state.taskId || state.lastTaskId;
+        
+        if (!useTaskId) {
+            showToast('任务不存在', 'error');
+            return;
+        }
+        
+        try {
+            showToast('正在加载预览...', 'info');
+            const response = await fetch(`/api/tasks/${useTaskId}/preview/${fileId}`);
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.detail || `加载预览失败: ${response.status}`);
+            }
+            
+            const blob = await response.blob();
+            
+            if (blob.size === 0) {
+                throw new Error('预览文件为空');
+            }
+            
+            const url = window.URL.createObjectURL(blob);
+            
+            elements.previewTitle.textContent = pdfName;
+            elements.previewIframe.src = url;
+            elements.previewModal.style.display = 'flex';
+            
+            console.log('Preview URL (blob):', url);
+            showToast('预览加载完成', 'success');
+        } catch (error) {
+            console.error('Preview failed:', error);
+            showToast(`加载预览失败: ${error.message}`, 'error');
+        }
+    }
+
     function renderFileList(files) {
         elements.fileList.innerHTML = '';
         
@@ -243,10 +353,10 @@
     function renderResults(statusData) {
         elements.resultsList.innerHTML = '';
         
-        const currentTaskId = statusData.task_id || state.taskId;
+        const currentTaskId = statusData.task_id || state.taskId || state.lastTaskId;
         console.log('renderResults using taskId:', currentTaskId);
         
-        statusData.files.forEach(file => {
+        statusData.files.forEach((file, index) => {
             const isSuccess = file.status === 'completed';
             const resultItem = document.createElement('div');
             resultItem.className = 'result-item';
@@ -257,21 +367,21 @@
             let actionsHtml = '';
             if (isSuccess && currentTaskId) {
                 actionsHtml = `
-                    <button class="btn btn-primary" onclick="app.previewFile('${file.id}', '${currentTaskId}')" title="预览">
+                    <button class="btn btn-primary" onclick="app.previewFile('${file.id}', '${currentTaskId}', '${escapeHtml(file.original_name)}')" title="预览">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                             <circle cx="12" cy="12" r="3"/>
                         </svg>
                         预览
                     </button>
-                    <a class="btn btn-success" href="/api/tasks/${currentTaskId}/download/${file.id}" download title="下载">
+                    <button class="btn btn-success" onclick="app.downloadFile('${file.id}', '${currentTaskId}', '${escapeHtml(file.original_name)}')" title="下载">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                             <polyline points="7 10 12 15 17 10"/>
                             <line x1="12" y1="15" x2="12" y2="3"/>
                         </svg>
                         下载
-                    </a>
+                    </button>
                 `;
             }
             
@@ -335,23 +445,11 @@
         }
     }
 
-    function showPreview(fileId, fileName, taskId) {
-        const useTaskId = taskId || state.taskId;
-        if (!useTaskId) {
-            showToast('任务不存在', 'error');
-            return;
-        }
-        
-        elements.previewTitle.textContent = fileName;
-        const previewUrl = `/api/tasks/${useTaskId}/preview/${fileId}`;
-        elements.previewIframe.src = previewUrl;
-        elements.previewModal.style.display = 'flex';
-        
-        console.log('Preview URL:', previewUrl);
-    }
-
     function hidePreview() {
         elements.previewModal.style.display = 'none';
+        if (elements.previewIframe.src && elements.previewIframe.src.startsWith('blob:')) {
+            window.URL.revokeObjectURL(elements.previewIframe.src);
+        }
         elements.previewIframe.src = '';
     }
 
@@ -512,9 +610,7 @@
                 showToast('任务不存在', 'error');
                 return;
             }
-            const zipUrl = `/api/tasks/${currentTaskId}/download/zip`;
-            console.log('Download ZIP URL:', zipUrl);
-            window.location.href = zipUrl;
+            downloadZip(currentTaskId);
         });
 
         elements.newTaskBtn.addEventListener('click', () => {
@@ -534,13 +630,8 @@
 
     window.app = {
         removeFile: removeFile,
-        previewFile: function(fileId, taskId) {
-            const file = state.files.find(f => f.id === fileId);
-            const useTaskId = taskId || state.taskId || state.lastTaskId;
-            const pdfName = file ? file.original_name.replace(/\.[^.]+$/, '.pdf') : 'document.pdf';
-            console.log('previewFile called with fileId:', fileId, 'taskId:', useTaskId);
-            showPreview(fileId, pdfName, useTaskId);
-        }
+        previewFile: previewFile,
+        downloadFile: downloadFile
     };
 
     initEventListeners();
