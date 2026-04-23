@@ -150,6 +150,21 @@ class OutputFile(BaseModel):
     def size(self) -> int:
         return self.file_size
 
+    class Config:
+        @staticmethod
+        def json_schema_extra(schema, model):
+            schema['properties']['size'] = {'type': 'integer'}
+
+    def model_dump(self, *args, **kwargs):
+        data = super().model_dump(*args, **kwargs)
+        data['size'] = self.size
+        return data
+
+    def dict(self, *args, **kwargs):
+        data = super().dict(*args, **kwargs)
+        data['size'] = self.size
+        return data
+
 
 class FeatureTask(BaseModel):
     id: str = Field(default_factory=lambda: uuid.uuid4().hex)

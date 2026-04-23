@@ -415,6 +415,7 @@ class PdfProcessor:
         output_path: str,
         level: CompressionLevel
     ) -> str:
+        import pikepdf
         from pikepdf import Pdf, PdfImage
         
         with Pdf.open(input_path) as pdf:
@@ -444,6 +445,7 @@ class PdfProcessor:
         return output_path
 
     def _process_page_images_pikepdf(self, page, level: CompressionLevel):
+        import pikepdf
         from pikepdf import PdfImage
         
         if '/Resources' not in page:

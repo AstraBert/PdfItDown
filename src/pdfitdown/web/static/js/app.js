@@ -1893,6 +1893,8 @@
             
             if (el.progressSection) el.progressSection.style.display = 'none';
             if (el.resultsSection) el.resultsSection.style.display = 'block';
+            if (el.startBtn) el.startBtn.disabled = false;
+            
             this.renderResults(statusData);
             
             if (statusData.status === 'completed') {
@@ -1922,7 +1924,7 @@
                 
                 const successIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="16 8 10 14 8 12"/></svg>';
                 
-                const compressedSize = output.size || 0;
+                const compressedSize = output.file_size || output.size || 0;
                 const savedPercent = originalSize > 0 ? Math.round((1 - compressedSize / originalSize) * 100) : 0;
                 
                 let actionsHtml = '';
