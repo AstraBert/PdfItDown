@@ -291,6 +291,106 @@
             this.bindEvents();
         },
 
+        createTask: async function() {
+            try {
+                const response = await fetch('/api/tasks/create', { method: 'POST' });
+                const data = await response.json();
+                return data.task_id;
+            } catch (error) {
+                console.error('Failed to create convert task:', error);
+                App.showToast('创建任务失败', 'error');
+                return null;
+            }
+        },
+
+        uploadFile: async function(taskId, file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            try {
+                const response = await fetch(`/api/tasks/${taskId}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.detail || `Upload failed: ${response.status}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Failed to upload file:', error);
+                throw error;
+            }
+        },
+
+        getTaskStatus: async function(taskId) {
+            try {
+                const response = await fetch(`/api/tasks/${taskId}/status`);
+                if (!response.ok) {
+                    throw new Error(`Status check failed: ${response.status}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Failed to get task status:', error);
+                return null;
+            }
+        },
+
+        downloadZip: async function(taskId) {
+            try {
+                App.showToast('正在准备打包下载...', 'info');
+                const response = await fetch(`/api/tasks/${taskId}/download/zip`);
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.detail || `下载失败: ${response.status}`);
+                }
+                const blob = await response.blob();
+                if (blob.size === 0) throw new Error('下载的文件为空');
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `converted_${taskId.slice(0, 8)}.zip`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                App.showToast('下载完成', 'success');
+            } catch (error) {
+                console.error('Download failed:', error);
+                App.showToast(`下载失败: ${error.message}`, 'error');
+            }
+        },
+
+        previewFile: function(taskId, fileId, originalName) {
+            const downloadName = originalName || 'document.pdf';
+            window.open(`/api/tasks/${taskId}/preview/${fileId}`, '_blank');
+        },
+
+        downloadFile: async function(taskId, fileId, originalName) {
+            const downloadName = originalName || 'document.pdf';
+            try {
+                App.showToast('正在准备下载...', 'info');
+                const response = await fetch(`/api/tasks/${taskId}/download/${fileId}`);
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.detail || `下载失败: ${response.status}`);
+                }
+                const blob = await response.blob();
+                if (blob.size === 0) throw new Error('下载的文件为空');
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = downloadName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                App.showToast('下载完成', 'success');
+            } catch (error) {
+                console.error('Download failed:', error);
+                App.showToast(`下载失败: ${error.message}`, 'error');
+            }
+        },
+
         cacheElements: function() {
             this.elements = {
                 uploadArea: document.getElementById('convertUploadArea'),
@@ -353,7 +453,7 @@
             if (el.downloadAllBtn) {
                 el.downloadAllBtn.addEventListener('click', () => {
                     const taskId = this.state.lastTaskId || this.state.taskId;
-                    if (taskId) App.downloadZip(taskId);
+                    if (taskId) this.downloadZip(taskId);
                 });
             }
             if (el.newTaskBtn) {
@@ -365,7 +465,7 @@
             if (selectedFiles.length === 0) return;
             
             if (!this.state.taskId) {
-                const taskId = await App.createTask('convert');
+                const taskId = await this.createTask();
                 if (!taskId) return;
                 this.state.taskId = taskId;
             }
@@ -386,7 +486,7 @@
                 this.renderFileList();
 
                 try {
-                    const uploadResult = await App.uploadFile(this.state.taskId, file);
+                    const uploadResult = await this.uploadFile(this.state.taskId, file);
                     if (uploadResult) {
                         fileData.id = uploadResult.file_id;
                         fileData.status = 'uploaded';
@@ -530,7 +630,7 @@
 
         async startStatusPolling() {
             const poll = async () => {
-                const statusData = await App.getTaskStatus(this.state.taskId);
+                const statusData = await this.getTaskStatus(this.state.taskId);
                 if (statusData) {
                     this.updateProgress(statusData);
                     
@@ -620,14 +720,14 @@
                 if (isSuccess && currentTaskId) {
                     const pdfName = file.original_name.replace(/\.[^.]+$/, '.pdf') || 'document.pdf';
                     actionsHtml = `
-                        <button class="btn btn-primary" onclick="App.previewFile('${currentTaskId}', '${file.id}', '${App.escapeHtml(pdfName)}')" title="预览">
+                        <button class="btn btn-primary" onclick="ConvertModule.previewFile('${currentTaskId}', '${file.id}', '${App.escapeHtml(pdfName)}')" title="预览">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                                 <circle cx="12" cy="12" r="3"/>
                             </svg>
                             预览
                         </button>
-                        <button class="btn btn-success" onclick="App.downloadFile('${currentTaskId}', '${file.id}', '${App.escapeHtml(pdfName)}')" title="下载">
+                        <button class="btn btn-success" onclick="ConvertModule.downloadFile('${currentTaskId}', '${file.id}', '${App.escapeHtml(pdfName)}')" title="下载">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                                 <polyline points="7 10 12 15 17 10"/>
@@ -1264,7 +1364,7 @@
             if (!info) return;
 
             if (el.fileName) el.fileName.textContent = info.filename || '-';
-            if (el.fileSize) el.fileSize.textContent = App.formatFileSize(info.size || 0);
+            if (el.fileSize) el.fileSize.textContent = App.formatFileSize(info.file_size || info.size || 0);
             if (el.pageCount) el.pageCount.textContent = info.page_count || '-';
             if (el.pageSize && info.page_size) {
                 el.pageSize.textContent = `${info.page_size.width.toFixed(0)} x ${info.page_size.height.toFixed(0)} pt`;
@@ -1702,7 +1802,7 @@
             if (!info) return;
 
             if (el.fileName) el.fileName.textContent = info.filename || '-';
-            if (el.fileSize) el.fileSize.textContent = App.formatFileSize(info.size || 0);
+            if (el.fileSize) el.fileSize.textContent = App.formatFileSize(info.file_size || info.size || 0);
             if (el.pageCount) el.pageCount.textContent = info.page_count || '-';
         },
 
@@ -1810,7 +1910,10 @@
             el.resultsList.innerHTML = '';
             
             const outputs = statusData.outputs || [];
-            var originalSize = this.state.pdfInfo ? this.state.pdfInfo.size : 0;
+            var originalSize = 0;
+            if (this.state.pdfInfo) {
+                originalSize = this.state.pdfInfo.file_size || this.state.pdfInfo.size || 0;
+            }
             originalSize = originalSize || 0;
             
             outputs.forEach((output) => {

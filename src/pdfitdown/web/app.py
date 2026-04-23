@@ -313,7 +313,7 @@ def create_app() -> FastAPI:
     @app.post("/api/features/tasks/{task_id}/reorder")
     async def reorder_files(
         task_id: str,
-        order: List[int] = Body(..., embed=True)
+        order: List[str] = Body(..., embed=True)
     ):
         task = feature_manager.get_task(task_id)
         if not task:
@@ -325,11 +325,12 @@ def create_app() -> FastAPI:
         if len(order) != len(task.files):
             raise HTTPException(status_code=400, detail="Order list length must match number of files")
         
+        file_id_map = {f.id: f for f in task.files}
         new_files = []
-        for idx in order:
-            if idx < 0 or idx >= len(task.files):
-                raise HTTPException(status_code=400, detail=f"Invalid order index: {idx}")
-            new_files.append(task.files[idx])
+        for file_id in order:
+            if file_id not in file_id_map:
+                raise HTTPException(status_code=400, detail=f"Invalid file ID: {file_id}")
+            new_files.append(file_id_map[file_id])
         
         task.files = new_files
         return {"message": "Files reordered successfully", "order": order}
@@ -375,7 +376,7 @@ def create_app() -> FastAPI:
     async def start_merge(
         task_id: str,
         background_tasks: BackgroundTasks,
-        order: Optional[List[int]] = Body(None, embed=True)
+        order: Optional[List[str]] = Body(None, embed=True)
     ):
         task = feature_manager.get_task(task_id)
         if not task:

@@ -389,7 +389,7 @@ class FeatureManager:
     async def merge_pdfs(
         self,
         task_id: str,
-        order: Optional[List[int]] = None
+        order: Optional[List[str]] = None
     ) -> FeatureTask:
         task = self.get_task(task_id)
         if not task:
@@ -407,6 +407,16 @@ class FeatureManager:
         loop = asyncio.get_event_loop()
         
         try:
+            file_id_map = {f.id: f for f in task.files}
+            
+            if order is not None and len(order) == len(task.files):
+                ordered_files = []
+                for file_id in order:
+                    if file_id in file_id_map:
+                        ordered_files.append(file_id_map[file_id])
+                if len(ordered_files) == len(task.files):
+                    task.files = ordered_files
+            
             input_paths = []
             for file in task.files:
                 upload_path = getattr(file, '_upload_path', None)
@@ -414,8 +424,7 @@ class FeatureManager:
                     raise FileNotFoundError(f"Uploaded file not found: {file.id}")
                 input_paths.append(upload_path)
             
-            if order is None:
-                order = list(range(len(input_paths)))
+            index_order = list(range(len(input_paths)))
             
             output_filename = "merged.pdf"
             output_path = str(task_output_dir / output_filename)
@@ -424,7 +433,7 @@ class FeatureManager:
             
             result = await loop.run_in_executor(
                 self.executor,
-                lambda: pdf_processor.merge_pdfs(input_paths, output_path, order)
+                lambda: pdf_processor.merge_pdfs(input_paths, output_path, index_order)
             )
             
             task.progress = 80.0
