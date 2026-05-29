@@ -150,7 +150,7 @@ def test_multipleconversion_validation(all_files: list[str]) -> None:
     ]
     all_files_output = [
         OsPath.from_file(
-            file.replace(Path(file).suffix, ".pdf"), overwrite=True, is_input=False
+            str(Path(file).with_suffix(".pdf")), overwrite=True, is_input=False
         )
         for file in all_files
     ]
@@ -170,7 +170,7 @@ def test_multipleconversion_from_list(all_files: list[str]) -> None:
     ]
     all_files_output = [
         OsPath.from_file(
-            file.replace(Path(file).suffix, ".pdf"), overwrite=True, is_input=False
+            str(Path(file).with_suffix(".pdf")), overwrite=True, is_input=False
         )
         for file in all_files
     ]
@@ -193,3 +193,23 @@ def test_multipleconversion_from_dir(
         assert fl.path.endswith(".pdf")
         assert fl.type == "outputfile"
     assert len(mc.input_files) == len(all_files)
+
+
+def test_output_path_with_repeated_suffix(tmp_path: Path) -> None:
+    """Ensure output paths handle filenames containing the suffix string multiple times."""
+    # Create an input file with a suffix repeated in its name
+    input_file = tmp_path / "report.docx.backup.docx"
+    input_file.touch()
+
+    # Also create a directory whose name contains the suffix
+    nested_dir = tmp_path / ".docx_configs"
+    nested_dir.mkdir()
+    input_file_in_dir = nested_dir / "data.docx"
+    input_file_in_dir.touch()
+
+    # Test from_input_files
+    mc1 = MultipleConversion.from_input_files([str(input_file)], overwrite=True)
+    assert mc1.output_files[0].path == str(tmp_path / "report.docx.backup.pdf")
+
+    mc2 = MultipleConversion.from_input_files([str(input_file_in_dir)], overwrite=True)
+    assert mc2.output_files[0].path == str(nested_dir / "data.pdf")

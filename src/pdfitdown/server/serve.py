@@ -65,7 +65,7 @@ if STARLETTE_AVAILABLE:
                 tmp = os.path.join(temp_dir, file_name)
                 with open(tmp, "wb") as f:
                     f.write(file_content)
-                output_filename = file_name.replace(Path(file_name).suffix, ".pdf")
+                output_filename = str(Path(file_name).with_suffix(".pdf"))
                 output_path = os.path.join(temp_dir, output_filename)
                 try:
                     converter.convert(tmp, output_path)

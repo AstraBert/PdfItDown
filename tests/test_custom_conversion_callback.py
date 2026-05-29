@@ -91,23 +91,19 @@ def test_conversion_callback_multiple_files(
     converter = Converter(conversion_callback=custom_conversion_callback)
     input_files = [image_file, to_convert_file]
     converter.multiple_convert(file_paths=input_files)
-    assert CONVERTED_FILES[image_file] == image_file.replace(
-        Path(image_file).suffix, ".pdf"
-    )
-    assert CONVERTED_FILES[to_convert_file] == to_convert_file.replace(
-        Path(to_convert_file).suffix, ".pdf"
+    assert CONVERTED_FILES[image_file] == str(Path(image_file).with_suffix(".pdf"))
+    assert CONVERTED_FILES[to_convert_file] == str(
+        Path(to_convert_file).with_suffix(".pdf")
     )
     assert CONVERTED_TITLES.count("No title") == 2
     output_files = [
-        image_file.replace(Path(image_file).suffix, ".1.pdf"),
-        to_convert_file.replace(Path(to_convert_file).suffix, ".1.pdf"),
+        str(Path(image_file).with_suffix(".1.pdf")),
+        str(Path(to_convert_file).with_suffix(".1.pdf")),
     ]
     converter.multiple_convert(file_paths=input_files, output_paths=output_files)
-    assert CONVERTED_FILES[image_file] == image_file.replace(
-        Path(image_file).suffix, ".1.pdf"
-    )
-    assert CONVERTED_FILES[to_convert_file] == to_convert_file.replace(
-        Path(to_convert_file).suffix, ".1.pdf"
+    assert CONVERTED_FILES[image_file] == str(Path(image_file).with_suffix(".1.pdf"))
+    assert CONVERTED_FILES[to_convert_file] == str(
+        Path(to_convert_file).with_suffix(".1.pdf")
     )
     assert CONVERTED_TITLES.count("No title") == 4
     with pytest.raises(FileExistsError, match="Cannot overwrite file"):
@@ -139,6 +135,6 @@ def test_conversion_callback_directory(
         ]
     )
     for file in CONVERTED_FILES:
-        assert CONVERTED_FILES[file] == file.replace(Path(file).suffix, ".pdf")
+        assert CONVERTED_FILES[file] == str(Path(file).with_suffix(".pdf"))
     with pytest.raises(FileExistsError, match="Cannot overwrite file"):
         converter.convert_directory(directory_path=to_convert_dir, overwrite=False)

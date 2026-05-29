@@ -55,7 +55,7 @@ def main(
             )
         if len(inputfile) == 1:
             if len(outputfile) == 0:
-                outputfile = [inputfile[0].replace(Path(inputfile[0]).suffix, ".pdf")]
+                outputfile = [str(Path(inputfile[0]).with_suffix(".pdf"))]
             try:
                 c.convert(inputfile[0], outputfile[0], title, True)
             except Exception as e:
