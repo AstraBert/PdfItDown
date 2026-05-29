@@ -1338,7 +1338,7 @@ wheels = [
 
 [[package]]
 name = "pdfitdown"
-version = "2.0.3"
+version = "2.0.4"
 source = { editable = "." }
 dependencies = [
     { name = "img2pdf" },
@@ -1401,7 +1401,7 @@ requires-dist = [
 
 [[package]]
 name = "pdfitdown-mcp-server"
-version = "0.1.0"
+version = "0.1.0.post1"
 source = { editable = "packages/mcp-server" }
 dependencies = [
     { name = "fastmcp" },
