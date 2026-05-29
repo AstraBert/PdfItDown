@@ -190,12 +190,12 @@ class MultipleConversion:
             for root, _, files in os.walk(directory.path):
                 if files:
                     for file in files:
-                        if (suffix := Path(file).suffix) != ".pdf":
+                        if Path(file).suffix != ".pdf":
                             ifl = OsPath.from_file(
                                 os.path.join(root, file), directory.overwrite, True
                             )
                             ofl = OsPath.from_file(
-                                os.path.join(root, file.replace(suffix, ".pdf")),
+                                str(Path(os.path.join(root, file)).with_suffix(".pdf")),
                                 directory.overwrite,
                                 False,
                             )
@@ -203,7 +203,7 @@ class MultipleConversion:
                             outpt_files.append(ofl)
         else:
             for fl in os.listdir(directory.path):
-                if Path(fl).is_file() and (suffix := Path(fl).suffix) != ".pdf":
+                if Path(fl).is_file() and Path(fl).suffix != ".pdf":
                     inpt_files.append(
                         OsPath.from_file(
                             os.path.join(directory.path, fl), directory.overwrite, True
@@ -211,7 +211,11 @@ class MultipleConversion:
                     )
                     outpt_files.append(
                         OsPath.from_file(
-                            os.path.join(directory.path, fl.replace(suffix, ".pdf")),
+                            str(
+                                Path(os.path.join(directory.path, fl)).with_suffix(
+                                    ".pdf"
+                                )
+                            ),
                             directory.overwrite,
                             True,
                         )
@@ -239,9 +243,11 @@ class MultipleConversion:
         inpt_files: list[OsPath] = []
         outpt_files: list[OsPath] = []
         for file in input_files:
-            if (suffix := Path(file).suffix) != ".pdf":
+            if Path(file).suffix != ".pdf":
                 ifl = OsPath.from_file(file, overwrite, True)
-                ofl = OsPath.from_file(file.replace(suffix, ".pdf"), overwrite, False)
+                ofl = OsPath.from_file(
+                    str(Path(file).with_suffix(".pdf")), overwrite, False
+                )
                 inpt_files.append(ifl)
                 outpt_files.append(ofl)
         return cls(input_files=inpt_files, output_files=outpt_files)
