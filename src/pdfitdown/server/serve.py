@@ -1,18 +1,22 @@
+# pyright: basic, reportUnknownVariableType=false, reportMissingImports = false, reportPossiblyUnboundVariable = false, reportRedeclaration = false, reportAttributeAccessIssue = false
+
+import os
+import shutil
+from mimetypes import guess_extension
+from pathlib import Path
+from tempfile import mkdtemp
+from typing import cast
+
+from ..pdfconversion import Converter
+
 try:
-    import os
-    import shutil
-    from tempfile import mkdtemp
-    from typing import cast
-    from pathlib import Path
-    from mimetypes import guess_extension
     from starlette.applications import Starlette
-    from starlette.responses import StreamingResponse
-    from starlette.exceptions import HTTPException
-    from starlette.requests import Request
-    from starlette.routing import Route
     from starlette.datastructures import UploadFile
+    from starlette.exceptions import HTTPException
     from starlette.middleware import Middleware
-    from ..pdfconversion import Converter
+    from starlette.requests import Request
+    from starlette.responses import StreamingResponse
+    from starlette.routing import Route
 
     STARLETTE_AVAILABLE = True
 except ImportError:
@@ -44,7 +48,8 @@ if STARLETTE_AVAILABLE:
         async def pdfitdown_route(request: Request) -> StreamingResponse:
             if request.method.lower() != "post":
                 raise HTTPException(
-                    status_code=405, detail=f"Method not allowed: {request.method}"
+                    status_code=405,
+                    detail=f"Method not allowed: {request.method}",
                 )
             async with request.form() as form:
                 temp_dir = mkdtemp()
@@ -94,7 +99,7 @@ if STARLETTE_AVAILABLE:
             middleware=middleware,
         )
 
-    def mount(
+    def mount(  # pyright: ignore[reportRedeclaration]
         app: Starlette,
         converter: Converter,
         path: str,

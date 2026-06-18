@@ -1,3 +1,5 @@
+# pyright: basic, reportUnknownVariableType=false, reportMissingImports = false
+
 from argparse import ArgumentParser
 from inspect import getmembers, isfunction
 from pathlib import Path

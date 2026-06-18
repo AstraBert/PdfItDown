@@ -16,7 +16,7 @@ description: "Welcome to our documentation!"
 
 ## What is PdfItDown?
 
-**PdfItDown** is a python package that relies on [`markitdown` by Microsoft](https://github.com/microsoft/markitdown/), [`markdown_pdf`](https://github.com/vb64/markdown-pdf) and [`img2pdf`](https://pypi.org/project/img2pdf/) to carry out the conversion of text-based files, images and unstructured documents to PDF. **PdfItDown** is applicable to the following file formats:
+**PdfItDown** is a python package that relies on [`LiteParse` by LlamaIndex](https://github.com/run-llama/liteparse) (or [`Markitdown` by Microsoft](https://github.com/microsoft/markitdown), optionally), [`markdown_pdf`](https://github.com/vb64/markdown-pdf) and [`img2pdf`](https://pypi.org/project/img2pdf/) to carry out the conversion of text-based files, images and unstructured documents to PDF. **PdfItDown** is applicable to the following file formats:
 
 - Markdown
 - PowerPoint
@@ -37,13 +37,15 @@ To set uo PdfItDown, it is good practice to create an isolated development envir
   ```bash uv (recommended)
   # you can use all python versions above 3.10 and below 3.14
   uv venv -p 3.13
-  uv add pdfitdown
+  uv add pdfitdown # default, LiteParse
+  uv add pdfitdown[markitdown] # Markitdown
   ```
 
   ```bash venv
   python3 -m venv .venv
   source .venv/bin/activate
-  pip install pdfitdown
+  pip install pdfitdown # default, LiteParse
+  pip install pdfitdown[markitdown] # Markitdown
   ```
 
 </CodeGroup>

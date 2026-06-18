@@ -1,6 +1,8 @@
-import pytest
 import os
 from pathlib import Path
+
+import pytest
+
 from pdfitdown.pdfconversion.converter import Converter
 
 

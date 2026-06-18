@@ -1,12 +1,16 @@
-import pytest
+# pyright: basic, reportUnknownVariableType=false, reportMissingImports = false, reportPossiblyUnboundVariable = false, reportRedeclaration = false
+
 import os
+
+import pytest
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse
 from starlette.routing import Route
 from starlette.testclient import TestClient
-from pdfitdown.server import mount
+
 from pdfitdown.pdfconversion import Converter
+from pdfitdown.server import mount
 
 
 @pytest.fixture(scope="module")

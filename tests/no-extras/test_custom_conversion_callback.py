@@ -1,9 +1,13 @@
-import pytest
+# pyright: basic
+
 import os
-from pathlib import Path
 from collections import defaultdict
-from pdfitdown.pdfconversion.models import ConversionCallback
+from pathlib import Path
+
+import pytest
+
 from pdfitdown.pdfconversion.converter import Converter
+from pdfitdown.pdfconversion.models import ConversionCallback
 
 CONVERTED_FILES = defaultdict(str)
 CONVERTED_TITLES = []

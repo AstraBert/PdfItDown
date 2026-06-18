@@ -1,10 +1,11 @@
+# pyright: basic, reportUnknownVariableType=false, reportMissingImports = false
+
 from pathlib import Path
 
 import pytest
 from fastmcp.client.client import Client
 from fastmcp.exceptions import ToolError
 from mcp.types import TextContent
-
 from mcp_server.metadata import TOOL_NAME
 from mcp_server.server import mcp
 

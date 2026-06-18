@@ -1,8 +1,12 @@
-import pytest
-import os
+# pyright: basic, reportAny = false, reportUnknownMemberType = false, reportUnknownArgumentType = false
 
+
+import os
 from pathlib import Path
+
+import pytest
 from typer.testing import CliRunner
+
 from pdfitdown.cli.app import app
 
 

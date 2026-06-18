@@ -1,3 +1,5 @@
+# pyright: basic, reportUnknownVariableType=false, reportMissingImports = false
+
 import json
 from dataclasses import asdict
 

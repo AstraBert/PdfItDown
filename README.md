@@ -11,7 +11,7 @@
     <img src="https://raw.githubusercontent.com/AstraBert/PdfItDown/main/img/logo.png" alt="PdfItDown Logo">
 </div>
 
-**PdfItDown** is a python package that relies on [`markitdown` by Microsoft](https://github.com/microsoft/markitdown/), [`markdown_pdf`](https://github.com/vb64/markdown-pdf) and [img2pdf](https://pypi.org/project/img2pdf/). Visit us on our [documentation website](https://pdfitdown.eu)!
+**PdfItDown** is a python package that relies on [`LiteParse` by LlamaIndex](https://github.com/run-llama/liteparse) (or [`Markitdown` by Microsoft](https://github.com/microsoft/markitdown), optionally), [`markdown_pdf`](https://github.com/vb64/markdown-pdf) and [`img2pdf`](https://pypi.org/project/img2pdf/) to carry out the conversion of text-based files, images and unstructured documents to PDF. Visit us on our [documentation website](https://pdfitdown.eu)!
 
 ### Applicability
 
@@ -55,7 +55,7 @@ graph LR
 ```mermaid
 graph LR
 2(Input File) -->  3[MarkitDown]
-3[MarkitDown] -->  4[Markdown content]
+3[MarkitDown / LiteParse] -->  4[Markdown content]
 4[Markdown content] --> 5[markdown-pdf]
 5[markdown-pdf] --> 6(PDF file)
 ```
