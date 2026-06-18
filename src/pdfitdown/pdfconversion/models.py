@@ -1,8 +1,9 @@
 import os
 import warnings
 from dataclasses import dataclass, field
-from typing import Literal, TypeAlias, Callable
 from pathlib import Path
+from typing import Callable, Literal, TypeAlias
+
 from .errors import FileExistsWarning
 
 ConversionCallback: TypeAlias = Callable[[str, str, str | None, bool], str | None]
@@ -61,22 +62,24 @@ class OsPath:
             return
 
     @property
-    def file_type(self) -> Literal["image", "text", "toconvert", "pdf", "none"]:
+    def file_type(self) -> Literal["image", "text", "toconvert", "zip", "pdf", "none"]:
         """
         Determines the file type based on the file extension.
 
         Returns:
-            Literal["image", "text", "toconvert", "pdf", "none"]: The type of the file.
+            Literal["image", "text", "toconvert", "pdf", "none", "zip"]: The type of the file.
         """
         if self.type != "file":
             return "none"
         suff = Path(self.path).suffix
-        if suff in [".jpg", ".png"]:
+        if suff in [".jpg", ".jpeg", ".png"]:
             return "image"
         elif suff == ".pdf":
             return "pdf"
-        elif suff in [".docx", ".xlsx", ".xls", ".pptx", ".zip"]:
+        elif suff in [".docx", ".xlsx", ".xls", ".pptx"]:
             return "toconvert"
+        elif suff == ".zip":
+            return "zip"
         else:
             return "text"
 

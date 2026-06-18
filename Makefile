@@ -6,6 +6,13 @@ test:
 	$(info ****************** running tests ******************)
 	uv run --all-groups --all-extras pytest tests
 
+test-liteparse:
+	$(info ****************** running tests ******************)
+	rm -rf .venv && \
+    uv sync --all-extras --no-extra markitdown --no-extra server && \
+    uv run pytest tests/no-extras && \
+    uv sync --all-extras --all-groups
+
 lint:
 	$(info ****************** running pre-commit ******************)
 	uv run --all-groups --all-extras pre-commit run -a

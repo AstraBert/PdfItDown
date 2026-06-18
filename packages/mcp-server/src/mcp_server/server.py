@@ -1,8 +1,11 @@
+# pyright: basic, reportUnknownVariableType=false, reportMissingImports = false
+
 import asyncio
 
 from fastmcp import FastMCP
 from fastmcp.tools.tool import ToolResult
 from mcp.types import TextContent
+
 from pdfitdown.pdfconversion import Converter
 
 from .metadata import (

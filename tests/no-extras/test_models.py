@@ -1,13 +1,25 @@
-import pytest
 import os
 from pathlib import Path
-from pdfitdown.pdfconversion.models import OsPath, MultipleConversion
+
+import pytest
+
 from pdfitdown.pdfconversion.errors import FileExistsWarning
+from pdfitdown.pdfconversion.models import MultipleConversion, OsPath
 
 
 @pytest.fixture()
 def text_file() -> str:
     return os.path.join("tests/data", "test.txt")
+
+
+@pytest.fixture()
+def xml_file() -> str:
+    return os.path.join("tests/data", "test6.xml")
+
+
+@pytest.fixture()
+def json_file() -> str:
+    return os.path.join("tests/data", "test3.json")
 
 
 @pytest.fixture()
@@ -46,9 +58,13 @@ def all_files() -> list[str]:
     return [os.path.join("tests/data", file) for file in initial_files]
 
 
-def test_ospath_text(text_file: str) -> None:
+def test_ospath_text(text_file: str, xml_file: str, json_file: str) -> None:
     path = OsPath(path=text_file, type="file", overwrite=True)
+    path_1 = OsPath(path=xml_file, type="file", overwrite=True)
+    path_2 = OsPath(path=json_file, type="file", overwrite=True)
     assert path.file_type == "text"
+    assert path_1.file_type == "text"
+    assert path_2.file_type == "text"
     with open(text_file, "r") as f:
         content = f.read()
     assert content == path.read_file()
