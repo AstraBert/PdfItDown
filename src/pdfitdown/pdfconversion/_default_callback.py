@@ -156,7 +156,9 @@ else:
                     else:
                         continue
 
-                    texts.append(os.path.relpath(f, tmp_dir) + "\n\n" + parsed)  # ty: ignore[invalid-argument-type]
+                    texts.append(
+                        os.path.relpath(f, tmp_dir) + "\n\n" + parsed
+                    )  # ty: ignore[invalid-argument-type]
                 pdf = MarkdownPdf(toc_level=0)
                 _ = pdf.add_section(Section("\n\n---\n\n".join(texts)))
                 pdf.meta["title"] = title
