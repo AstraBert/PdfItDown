@@ -107,6 +107,15 @@ def test_converter_image_file(image_file: str, converter: Converter) -> None:
     os.remove(image_file.replace(Path(image_file).suffix, ".pdf"))
 
 
+def test_converter_unsupported(converter: Converter) -> None:
+    result = converter.convert(
+        file_path="tests/data/test8.ico",
+        output_path="tests/data/test8.pdf",
+    )
+    assert result is None
+    assert not Path("tests/data/test8.pdf").exists()
+
+
 def test_converter_singlefile_erorr(text_file: str, converter: Converter) -> None:
     converter.convert(
         file_path=text_file,
