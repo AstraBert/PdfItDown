@@ -80,6 +80,11 @@ def test_ospath_toconvert(to_convert_file: str) -> None:
     assert path.file_type == "toconvert"
 
 
+def test_ospath_not_supported() -> None:
+    path = OsPath(path="tests/data/test8.ico", type="file", overwrite=True)
+    assert path.file_type == "none"
+
+
 def test_ospath_pdf(pdf_file: str) -> None:
     path = OsPath(path=pdf_file, type="file", overwrite=True)
     assert path.file_type == "pdf"
@@ -208,7 +213,8 @@ def test_multipleconversion_from_dir(
     for fl in mc.output_files:
         assert fl.path.endswith(".pdf")
         assert fl.type == "outputfile"
-    assert len(mc.input_files) == len(all_files)
+    # there is the ico file that is not included in all_files
+    assert len(mc.input_files) == (len(all_files) + 1)
 
 
 def test_output_path_with_repeated_suffix(tmp_path: Path) -> None:

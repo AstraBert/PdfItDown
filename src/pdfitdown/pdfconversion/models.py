@@ -81,6 +81,11 @@ class OsPath:
         elif suff == ".zip":
             return "zip"
         else:
+            try:
+                with open(self.path, "r") as f:
+                    _ = f.read(4096)
+            except (UnicodeDecodeError, UnicodeEncodeError):
+                return "none"
             return "text"
 
     @classmethod
