@@ -82,13 +82,8 @@ class OsPath:
             return "zip"
         else:
             try:
-                else:
-                    try:
-                        with open(self.path, "r") as f:
-                            _ = f.read(4096)
-                    except (UnicodeDecodeError, UnicodeEncodeError):
-                        return "none"
-                    return "text"
+                with open(self.path, "r") as f:
+                    _ = f.read(4096)
             except (UnicodeDecodeError, UnicodeEncodeError):
                 return "none"
             return "text"
