@@ -52,7 +52,8 @@ impl Converter for ImageConverter {
             }
         };
 
-        let img = image::load_from_memory(&data).expect("Failed to open image");
+        let img = image::load_from_memory(&data)
+            .map_err(|e| io::Error::new(io::ErrorKind::Other, e.to_string()))?;
 
         let (width, height) = img.dimensions();
 
