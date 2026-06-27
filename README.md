@@ -73,6 +73,10 @@ graph LR
 To install **PdfItDown**, just run:
 
 ```bash
+# with uv
+uv add pdfitdown
+uv add pdfitdown[markitdown] # with markitdown
+# with pip
 pip install pdfitdown
 ```
 

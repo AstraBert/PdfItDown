@@ -1,25 +1,43 @@
 use std::io;
 
-use libreoffice_pure::{convert_bytes, sniff_format_from_bytes};
-
 use crate::types::{ConversionInput, Converter};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 /// Struct implementing the converter trait for Office documents
 pub struct OfficeConverter {}
 
+impl OfficeConverter {
+    fn to_format(self, extension: &str) -> Option<office2pdf::config::Format> {
+        match extension {
+            "docx" => Some(office2pdf::config::Format::Docx),
+            "pptx" => Some(office2pdf::config::Format::Pptx),
+            "xlsx" => Some(office2pdf::config::Format::Xlsx),
+            _ => None,
+        }
+    }
+}
+
 impl Converter for OfficeConverter {
     fn supported_formats(&self) -> &'static [&'static str] {
-        &[
-            "docx", "xlsx", "pptx", "odt", "ods", "odp", "odg", "odf", "odb", "csv", "txt", "json",
-        ]
+        &["docx", "xlsx", "pptx"]
     }
 
-    fn convert(&self, input: impl Into<ConversionInput>) -> io::Result<Vec<u8>> {
+    /// Convert office files to PDF (migth be unstable)
+    fn convert(&self, input: impl Into<ConversionInput> + Clone) -> io::Result<Vec<u8>> {
         let data;
         match input.into() {
             ConversionInput::Binary(b) => {
-                data = b;
+                let kind = infer::get(&b);
+                if let Some(k) = kind
+                    && self.supported_formats().contains(&k.extension())
+                {
+                    data = b;
+                } else {
+                    return Err(io::Error::new(
+                        io::ErrorKind::InvalidData,
+                        "Inferred file type is not supported",
+                    ));
+                }
             }
             ConversionInput::File(f) => {
                 if let Some(ext) = f.extension() {
@@ -43,12 +61,22 @@ impl Converter for OfficeConverter {
             }
         };
 
-        let format = sniff_format_from_bytes(&data);
+        let format = infer::get(&data);
         if let Some(form) = format {
-            println!("{}", form);
-            let pdf = convert_bytes(&data, &form, "pdf")
+            let office_format = self.to_format(form.extension());
+            if let Some(of) = office_format {
+                let pdf = office2pdf::convert_bytes(
+                    &data,
+                    of,
+                    &office2pdf::config::ConvertOptions::default(),
+                )
                 .map_err(|e| io::Error::new(io::ErrorKind::Other, e.to_string()))?;
-            return Ok(pdf);
+                return Ok(pdf.pdf);
+            }
+            return Err(io::Error::new(
+                io::ErrorKind::Other,
+                "Unsupported office file format",
+            ));
         }
         Err(io::Error::new(
             io::ErrorKind::InvalidInput,

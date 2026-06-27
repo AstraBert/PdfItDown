@@ -1,7 +1,9 @@
-from typer import Typer, Option, Exit
-from typing import Annotated, cast
-from rich import print as rprint
 from pathlib import Path
+from typing import Annotated, cast
+
+from rich import print as rprint
+from typer import Exit, Option, Typer
+
 from ..pdfconversion.converter import Converter
 
 app = Typer()

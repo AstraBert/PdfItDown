@@ -5,7 +5,7 @@ use std::io::{self, Write};
 
 use crate::types::{ConversionInput, Converter};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 /// Struct implementing the Converter trait for images
 pub struct ImageConverter {}
 
@@ -14,11 +14,21 @@ impl Converter for ImageConverter {
         &["png", "jpg", "jpeg", "avif", "tiff", "webp"]
     }
     /// Convert an image to PDF bytes
-    fn convert(&self, input: impl Into<ConversionInput>) -> io::Result<Vec<u8>> {
+    fn convert(&self, input: impl Into<ConversionInput> + Clone) -> io::Result<Vec<u8>> {
         let data;
         match input.into() {
             ConversionInput::Binary(b) => {
-                data = b;
+                let kind = infer::get(&b);
+                if let Some(k) = kind
+                    && self.supported_formats().contains(&k.extension())
+                {
+                    data = b;
+                } else {
+                    return Err(io::Error::new(
+                        io::ErrorKind::InvalidData,
+                        "Inferred file type is not supported",
+                    ));
+                }
             }
             ConversionInput::File(f) => {
                 if let Some(ext) = f.extension() {
