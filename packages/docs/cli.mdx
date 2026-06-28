@@ -1,11 +1,26 @@
 ---
 title: 'Command Line Interface'
-description: 'PdfItDown offers a modern CLI application to convert your files without never leaving your terminal'
+description: 'PdfItDown offers a modern CLI application to convert your files without ever leaving your terminal'
 ---
 
 **PdfItDown** comes with a command line application from which you can comfortably convert all your files without actually touching a single line of code.
 
-Based on [typer](https://typer.tiangolo.com), the CLI is designed to offer a seamless experience, with almost as much control of inputs and outputs as if you were to write the flow in python: it is then the perfect choice if you want an easy and intuitive approach to file conversion, without getting your hands dirty with code.
+Based on [clap](https://github.com/clap-rs/clap), the CLI is designed to offer a seamless experience, with almost as much control of inputs and outputs as if you were to write the flow in Rust: it is then the perfect choice if you want an easy and intuitive approach to file conversion, without getting your hands dirty with code.
+
+## Installation
+
+```bash
+# Install from crates.io
+cargo install pdfitdown
+
+# With parallelization support
+cargo install pdfitdown --features rayon
+
+# Or build from source
+git clone https://github.com/AstraBert/PdfItDown.git
+cd PdfItDown
+cargo install --path crates/pdfitdown
+```
 
 ## Usage
 
@@ -13,14 +28,13 @@ Below are some example commands for using PdfItDown from the terminal, along wit
 
 ### Convert a single file to PDF
 
-Use this command to convert a single file (e.g., a Markdown file) to PDF and set a custom title in the PDF metadata:
+Use this command to convert a single file (e.g., a Markdown file) to PDF:
 
 ```bash
-pdfitdown -i README.md -o README.pdf -t "README"
+pdfitdown -i README.md -o README.pdf
 ```
 - `-i README.md`: Specifies the input file to convert.
 - `-o README.pdf`: Sets the output PDF file path.
-- `-t "README"`: Sets the PDF title metadata.
 
 ### Convert multiple files with custom output paths
 
@@ -32,15 +46,6 @@ pdfitdown -i test0.png -i test1.md -o testoutput0.pdf -o testoutput1.pdf
 - Multiple `-i` flags: List each input file you want to convert.
 - Multiple `-o` flags: Provide an output path for each input file, in the same order.
 
-### Convert multiple files with inferred output paths
-
-If you omit the output file paths, PdfItDown will automatically generate PDF filenames based on your input files:
-
-```bash
-pdfitdown -i test0.png -i test1.csv
-```
-- Output files will be named after the input files, with `.pdf` extensions.
-
 ### Bulk convert all files in a directory
 
 To convert every file in a directory to PDF in one go:
@@ -49,6 +54,24 @@ To convert every file in a directory to PDF in one go:
 pdfitdown -d tests/data/testdir
 ```
 - `-d tests/data/testdir`: Specifies the directory containing files to convert. All supported files in this directory will be converted to PDF.
+
+### Recursive directory conversion
+
+To recursively convert all files in a directory and its subdirectories:
+
+```bash
+pdfitdown -d tests/data/testdir --recursive
+```
+- `--recursive`: Walks through all subdirectories and converts supported files.
+
+### Prevent overwriting existing files
+
+To skip files that would overwrite an existing PDF:
+
+```bash
+pdfitdown -i README.md -o README.pdf --no-overwrite
+```
+- `--no-overwrite`: If the output file already exists, the conversion will fail instead of replacing it.
 
 ---
 

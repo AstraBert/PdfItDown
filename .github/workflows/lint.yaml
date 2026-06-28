@@ -1,45 +1,48 @@
-name: Linting
+name: Lint
 
 on:
   pull_request:
+env:
+  CARGO_TERM_COLOR: always
 
 jobs:
-  lint:
+  clippy:
+    name: Clippy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v6
+      - name: Set up Jake (also sets up Rust)
+        uses: AstraBert/setup-jake@v0.1.0
 
-      - name: Set up Python
-        run: uv python install 3.12
+      - name: Install Clippy
+        run: rustup component add clippy
 
-      - name: Run formatter
-        shell: bash
-        run: make format-check
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-clippy-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Run linter
-        shell: bash
-        run: make lint
+      - name: Run clippy
+        run: jake clippy
 
-  lint-mcp:
+  format:
+    name: Format
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v6
+      - name: Set up Jake (also sets up Rust)
+        uses: AstraBert/setup-jake@v0.1.0
 
-      - name: Set up Python
-        run: uv python install 3.12
+      - name: Install Clippy
+        run: rustup component add rustfmt
 
-      - name: Run formatter
-        shell: bash
-        run: make format-check
-        working-directory: packages/mcp-server
-
-      - name: Run linter
-        shell: bash
-        run: make lint-check
-        working-directory: packages/mcp-server
+      - name: Check formatting
+        run: jake format

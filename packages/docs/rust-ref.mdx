@@ -1,0 +1,136 @@
+---
+title: 'Rust API Usage'
+description: 'Use PdfItDown in your Rust project, customize as much as you want, deploy to production'
+---
+
+**PdfItDown** is designed to be flexible and highly customizable, while also providing a ready-to-use solution that you can employ in your code immediately without any modifications.
+
+Let's explore three levels of usage:
+
+## Level 1: Use PdfItDown as-is
+
+To use the conversion features of PdfItDown, import the `PdfItDownConverter` struct and the `Converter` trait:
+
+```rust
+use pdfitdown::{PdfItDownConverter, types::Converter};
+
+let converter = PdfItDownConverter::new();
+```
+
+Once you have a `PdfItDownConverter` instance, you can convert single or multiple files, as well as all files within a directory:
+
+<CodeGroup>
+
+```rust Single File
+let pdf_bytes = converter.convert("business_growth.md")?;
+std::fs::write("business_growth.pdf", pdf_bytes)?;
+```
+
+```rust From bytes
+let data = std::fs::read("logo.png")?;
+let pdf_bytes = converter.convert(data)?;
+std::fs::write("logo.pdf", pdf_bytes)?;
+```
+
+```rust Multiple Files
+converter.convert_multiple_files(
+    vec!["business_growth.md", "logo.png"],
+    vec!["business_growth.pdf", "logo.pdf"],
+    true, // overwrite
+)?;
+```
+
+```rust Directory
+converter.convert_directory("tests/data/testdir", true, true)?;
+// overwrite = true, recursive = true
+```
+
+</CodeGroup>
+
+Each conversion operation returns the PDF bytes (`Vec<u8>`) or writes directly to a file.
+
+## Level 2: Customize
+
+Once you are comfortable with the basics, you may want more control within your application. PdfItDown offers the perfect solution: **implement your own `Converter` trait**.
+
+Instead of using the default `PdfItDownConverter`, which can convert almost any file format to PDF, you can provide your own logic by implementing the `Converter` trait, focusing on specific document types.
+
+<Warning>
+The `Converter` trait requires two methods:
+
+```rust
+pub trait Converter: Send + Sync {
+    fn convert(&self, input: impl Into<ConversionInput> + Clone) -> io::Result<Vec<u8>>;
+    fn supported_formats(&self) -> &'static [&'static str];
+}
+```
+
+You can also use the provided default methods `convert_to_file`, `convert_multiple_files`, and `convert_directory`.
+</Warning>
+
+Here is an example of a custom converter:
+
+<CodeGroup>
+
+```rust Custom text-only converter
+use pdfitdown::types::{Converter, ConversionInput};
+use std::io;
+
+struct TextOnlyConverter;
+
+impl Converter for TextOnlyConverter {
+    fn supported_formats(&self) -> &'static [&'static str] {
+        &["txt", "md", "csv", "json", "xml"]
+    }
+
+    fn convert(&self, input: impl Into<ConversionInput> + Clone) -> io::Result<Vec<u8>> {
+        // Your custom conversion logic here
+        todo!()
+    }
+}
+```
+
+</CodeGroup>
+
+## Level 3: Deploy
+
+After defining your own logic, you can easily integrate PdfItDown into any Rust-based web framework such as [Axum](https://github.com/tokio-rs/axum), [Actix-web](https://actix.rs), or [Rocket](https://rocket.rs).
+
+<Warning>
+
+To use PdfItDown in a web server, ensure you handle file uploads and pass the bytes or file paths to the converter.
+
+</Warning>
+
+Here's how you can use PdfItDown in an Axum application:
+
+<CodeGroup>
+
+```rust Axum
+use axum::{
+    extract::Multipart,
+    response::IntoResponse,
+    routing::post,
+    Router,
+};
+use pdfitdown::{PdfItDownConverter, types::Converter};
+use std::sync::Arc;
+
+async fn convert_pdf(
+    mut multipart: Multipart,
+) -> Result<impl IntoResponse, impl IntoResponse> {
+    let converter = PdfItDownConverter::new();
+    while let Some(field) = multipart.next_field().await.unwrap() {
+        let data = field.bytes().await.unwrap();
+        let pdf = converter.convert(data).map_err(|e| e.to_string())?;
+        return Ok(pdf);
+    }
+    Err("No file uploaded")
+}
+
+let app = Router::new().route("/convert", post(convert_pdf));
+```
+
+</CodeGroup>
+
+With this, you have completed the third and final level of PdfItDown mastery!

@@ -1,0 +1,8 @@
+build = "cargo build --all-features"
+build-rel = "cargo build --all-features --release"
+clippy = "cargo clippy --all-targets --all-features"
+clippy-fix = "cargo clippy --all-targets --all-features --fix --allow-dirty"
+format = "cargo fmt --all -- --check"
+format-fix = "cargo fmt --all"
+test = "cargo test"
+test-rayon = "cargo test --features rayon -p 'pdfitdown'"

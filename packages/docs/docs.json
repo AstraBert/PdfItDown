@@ -18,22 +18,7 @@
         "groups": [
           {
             "group": "Documentation",
-            "pages": [
-              "introduction",
-              "python-ref",
-              "tutorials",
-              "cli",
-              "mcp-server"
-            ]
-          },
-          {
-            "group": "API Reference",
-            "pages": [
-              "api-reference/converter",
-              "api-reference/models",
-              "api-reference/server",
-              "api-reference/mcp-server"
-            ]
+            "pages": ["introduction", "rust-ref", "cli"]
           }
         ]
       }
