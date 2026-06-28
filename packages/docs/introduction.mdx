@@ -16,36 +16,37 @@ description: "Welcome to our documentation!"
 
 ## What is PdfItDown?
 
-**PdfItDown** is a python package that relies on [`LiteParse` by LlamaIndex](https://github.com/run-llama/liteparse) (or [`Markitdown` by Microsoft](https://github.com/microsoft/markitdown), optionally), [`markdown_pdf`](https://github.com/vb64/markdown-pdf) and [`img2pdf`](https://pypi.org/project/img2pdf/) to carry out the conversion of text-based files, images and unstructured documents to PDF. **PdfItDown** is applicable to the following file formats:
+**PdfItDown** is a Rust-based tool and library that converts text-based files, images, office documents, and markup files to PDF. It is built on top of [`markdown2pdf`](https://crates.io/crates/markdown2pdf), [`office2pdf`](https://crates.io/crates/office2pdf), and [`image`](https://crates.io/crates/image) crates to carry out fast, reliable conversions.
 
-- Markdown
-- PowerPoint
-- Word
-- Excel
-- HTML
-- Text-based formats (CSV, XML, JSON)
-- ZIP files (iterates over contents)
-- Image files (PNG, JPG)
+**PdfItDown** is applicable to the following file formats:
 
+- Markdown (`.md`)
+- HTML (`.html`, `.htm`)
+- PowerPoint (`.pptx`)
+- Word (`.docx`)
+- Excel (`.xlsx`)
+- Text-based formats (`.txt`, `.csv`, `.xml`, `.json`, and more)
+- Image files (`.png`, `.jpg`, `.jpeg`, `.webp`, `.tiff`, `.avif`)
+- PDF (pass-through)
 
 ## Setting up
 
-To set uo PdfItDown, it is good practice to create an isolated development environment
+To set up PdfItDown, you need a working [Rust toolchain](https://rustup.rs).
 
 <CodeGroup>
 
-  ```bash uv (recommended)
-  # you can use all python versions above 3.10 and below 3.14
-  uv venv -p 3.13
-  uv add pdfitdown # default, LiteParse
-  uv add pdfitdown[markitdown] # Markitdown
+  ```bash cargo install (recommended)
+  cargo install pdfitdown
   ```
 
-  ```bash venv
-  python3 -m venv .venv
-  source .venv/bin/activate
-  pip install pdfitdown # default, LiteParse
-  pip install pdfitdown[markitdown] # Markitdown
+  ```bash cargo install with rayon
+  cargo install pdfitdown --features rayon
+  ```
+
+  ```bash build from source
+  git clone https://github.com/AstraBert/PdfItDown.git
+  cd PdfItDown
+  cargo install --path crates/pdfitdown
   ```
 
 </CodeGroup>
@@ -56,9 +57,9 @@ Once you have PdfItDown set up, you can choose how to use it:
 
 <CardGroup cols={3}>
   <Card
-    title="In Python Scripts"
+    title="In Rust Projects"
     icon="code"
-    href="/python-ref"
+    href="/rust-ref"
   >
     Adapt PdfItDown to your pipelines by coding it yourself!
   </Card>
@@ -70,10 +71,10 @@ Once you have PdfItDown set up, you can choose how to use it:
     If you're a terminal lover, this is perfect for you :)
   </Card>
   <Card
-    title="As an API endpoint"
-    icon="server"
-    href="/python-ref#level-3:-deploy"
+    title="Python Legacy"
+    icon="python"
+    href="https://github.com/AstraBert/PdfItDown/tree/v3"
   >
-    Deploy PdfItDown as an API endpoint in your Starlette-compatible backend server.
+    Looking for the legacy Python package? Find it on the v3 branch.
   </Card>
 </CardGroup>

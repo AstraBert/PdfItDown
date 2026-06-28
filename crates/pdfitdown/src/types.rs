@@ -39,7 +39,7 @@ impl From<&str> for ConversionInput {
     }
 }
 
-pub trait Converter {
+pub trait Converter: Send + Sync {
     fn convert(&self, input: impl Into<ConversionInput> + Clone) -> io::Result<Vec<u8>>;
     /// Supported formats for conversion
     fn supported_formats(&self) -> &'static [&'static str];
@@ -90,10 +90,14 @@ pub trait Converter {
         }
 
         #[cfg(feature = "rayon")]
-        input
-            .par_iter()
-            .zip(output.par_iter())
-            .try_for_each(|(i, o)| self.convert_to_file(i.to_owned(), o.to_owned(), overwrite))?;
+        {
+            let input: Vec<ConversionInput> = input.into_iter().map(Into::into).collect();
+            let output: Vec<PathBuf> = output.into_iter().map(Into::into).collect();
+            input
+                .par_iter()
+                .zip(output.par_iter())
+                .try_for_each(|(i, o)| self.convert_to_file(i.clone(), o.clone(), overwrite))?;
+        }
 
         Ok(())
     }

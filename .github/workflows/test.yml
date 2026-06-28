@@ -1,52 +1,70 @@
-name: CI Tests - Pull Request
+name: Test
 
 on:
   pull_request:
+  push:
+    branches:
+      - main
+
+env:
+  CARGO_TERM_COLOR: always
 
 jobs:
-  testing_pr:
-    runs-on: ubuntu-latest
+  test:
+    name: Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        os: [ubuntu-latest, macos-latest]
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Jake (also sets up Rust)
+        uses: AstraBert/setup-jake@v0.1.0
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
         with:
-          fetch-depth: 1
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-test-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
 
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libreoffice imagemagick ghostscript tesseract-ocr
+      - name: Run tests (no rayon)
+        run: jake test
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v6
-        with:
-          python-version: ${{ matrix.python-version }}
-          enable-cache: true
+      - name: Run tests (with rayon)
+        run: jake test-rayon --options "-p pdfitdown"
 
-      - name: Run Tests on Main Package (No Extras)
-        run: make test-liteparse
+  test-windows:
+    name: Test on windows-latest
+    runs-on: windows-latest
 
-      - name: Run Tests on Main Package (Extras)
-        run: make test
-
-  testing_pr_mcp:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v6
-        with:
-          python-version: ${{ matrix.python-version }}
-          enable-cache: true
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
 
-      - name: Run Tests on Main Package
-        run: make test
-        working-directory: packages/mcp-server
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ runner.os == 'Windows' && '~\\.cargo\\registry' || '~/.cargo/registry' }}
+            ${{ runner.os == 'Windows' && '~\\.cargo\\git' || '~/.cargo/git' }}
+            target
+          key: ${{ runner.os }}-cargo-test-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Run tests (no rayon)
+        run: cargo test
+
+      - name: Run tests (with rayon)
+        run: cargo test --features rayon -p "pdfitdown"

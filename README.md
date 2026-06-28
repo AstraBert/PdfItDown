@@ -11,73 +11,76 @@
     <img src="https://raw.githubusercontent.com/AstraBert/PdfItDown/main/img/logo.png" alt="PdfItDown Logo">
 </div>
 
-**PdfItDown** is a python package that relies on [`LiteParse` by LlamaIndex](https://github.com/run-llama/liteparse) (or [`Markitdown` by Microsoft](https://github.com/microsoft/markitdown), optionally), [`markdown_pdf`](https://github.com/vb64/markdown-pdf) and [`img2pdf`](https://pypi.org/project/img2pdf/) to carry out the conversion of text-based files, images and unstructured documents to PDF. Visit us on our [documentation website](https://pdfitdown.eu)!
+[Looking for the legacy python package?](https://github.com/AstraBert/PdfItDown/tree/v3)
+
+**PdfItDown** is a Rust-based tool and library that converts text-based files, images, office documents, and markup files to PDF. It is built on top of [`markdown2pdf`](https://crates.io/crates/markdown2pdf), [`office2pdf`](https://crates.io/crates/office2pdf), and [`image`](https://crates.io/crates/image) crates to carry out fast, reliable conversions. Visit us on our [documentation website](https://pdfitdown.eu)!
 
 ### Applicability
 
 **PdfItDown** is applicable to the following file formats:
 
-- Markdown
-- PowerPoint
-- Word
-- Excel
-- HTML
-- Text-based formats (CSV, XML, JSON)
-- ZIP files (iterates over contents)
-- Image files (PNG, JPG)
-
-The format-specific support needs to be evaluated for the specific reader you are using.
+- Markdown (`.md`)
+- HTML (`.html`, `.htm`)
+- PowerPoint (`.pptx`)
+- Word (`.docx`)
+- Excel (`.xlsx`)
+- Text-based formats (`.txt`, `.csv`, `.xml`, `.json`, and more)
+- Image files (`.png`, `.jpg`, `.jpeg`, `.webp`, `.tiff`, `.avif`)
+- PDF (pass-through)
 
 ### How does it work?
 
 **PdfItDown** works in a very simple way:
 
-- From **markdown** to PDF (default)
+- From **markdown / HTML** to PDF
 
 ```mermaid
 graph LR
 2(Input File) --> 3[Markdown content]
-3[Markdown content] --> 4[markdown-pdf]
-4[markdown-pdf] --> 5(PDF file)
+3[Markdown content] --> 4[markdown2pdf]
+4[markdown2pdf] --> 5(PDF file)
 ```
 
-- From **image** to PDF (default)
+- From **image** to PDF
 
 ```mermaid
 graph LR
 2(Input File) --> 3[Bytes]
-3[Bytes] --> 4[img2pdf]
-4[img2pdf] --> 5(PDF file)
+3[Bytes] --> 4[image crate]
+4[image crate] --> 5(PDF file)
 ```
 
-- From other **text-based** file formats or **unstructured** file formats to PDF (default)
+- From **Office documents** to PDF
 
 ```mermaid
 graph LR
-2(Input File) -->  3[MarkitDown]
-3[MarkitDown / LiteParse] -->  4[Markdown content]
-4[Markdown content] --> 5[markdown-pdf]
-5[markdown-pdf] --> 6(PDF file)
+2(Input File) --> 3[office2pdf]
+3[office2pdf] --> 4(PDF file)
 ```
 
-- Using a **custom conversion callback**
+- From other **text-based** file formats to PDF
 
 ```mermaid
 graph LR
-2(Input File) -->  3[Conversion Callback]
-3[Conversion Callback] --> 4(PDF file)
+2(Input File) --> 3[Text content]
+3[Text content] --> 4[markdown2pdf]
+4[markdown2pdf] --> 5(PDF file)
 ```
 
 ### Installation and Usage
 
-To install **PdfItDown**, just run:
+**PdfItDown** is distributed as a Rust crate and a standalone CLI binary.
+
+#### Install the CLI
 
 ```bash
-# with uv
-uv add pdfitdown
-uv add pdfitdown[markitdown] # with markitdown
-# with pip
-pip install pdfitdown
+# Install from crates.io
+cargo install pdfitdown
+
+# Or build from source
+git clone https://github.com/AstraBert/PdfItDown.git
+cd PdfItDown
+cargo install --path crates/pdfitdown
 ```
 
 You can now use the **command line tool**:
@@ -85,38 +88,32 @@ You can now use the **command line tool**:
 ```
 Usage: pdfitdown [OPTIONS]
 
-  Convert (almost) everything to PDF
+  PdfItDown CLI: convert any file format to PDF
 
 Options:
-  -i, --inputfile TEXT   Path to the input file(s) that need to be converted
-                         to PDF. Can be used multiple times.
-  -o, --outputfile TEXT  Path to the output PDF file(s). If more than one
-                         input file is provided, you should provide an equal
-                         number of output files.
-  -t, --title TEXT       Title to include in the PDF metadata. Default: 'File
-                         Converted with PdfItDown'. If more than one file is
-                         provided, it will be ignored.
-  -d, --directory TEXT   Directory whose files you want to bulk-convert to
-                         PDF. If `--inputfile` is also provided, this option
-                         will be ignored. Defaults to None.
-  --help                 Show this message and exit.
+  -i, --inputfile <INPUTFILE>    Path to the input file(s) that need to be converted to PDF. Can be used multiple times.
+  -o, --outputfile <OUTPUTFILE>  Path to the output PDF file(s). If more than one input file is provided, you should provide an equal number of output files.
+  -d, --directory <DIRECTORY>    Directory whose files you want to bulk-convert to PDF. If `--inputfile` is also provided, this option will be ignored.
+      --no-overwrite             Do not overwrite existing PDF files
+      --recursive                Recursively go through a directory when converting files to PDFs
+  -h, --help                     Print help
+  -V, --version                  Print version
 ```
 
 An example usage can be:
 
 ```bash
-pdfitdown -i README.md -o README.pdf -t "README"
+pdfitdown -i README.md -o README.pdf
 ```
 
-Or you can use it **inside your python scripts**:
+Or you can use it **inside your Rust projects**:
 
-```python
-from pdfitdown.pdfconversion import Converter
+```rust
+use pdfitdown::{PdfItDownConverter, types::Converter};
 
-converter = Converter()
-converter.convert(file_path = "business_grow.md", output_path = "business_growth.pdf", title="Business Growth for Q3 in 2024")
-converter.convert(file_path = "logo.png", output_path = "logo.pdf")
-converter.convert(file_path = "users.xlsx", output_path = "users.pdf")
+let converter = PdfItDownConverter::new();
+let pdf_bytes = converter.convert("business_growth.md")?;
+std::fs::write("business_growth.pdf", pdf_bytes)?;
 ```
 
 You can also convert **multiple files at once**:
@@ -126,20 +123,19 @@ You can also convert **multiple files at once**:
 ```bash
 # with custom output paths
 pdfitdown -i test0.png -i test1.md -o testoutput0.pdf -o testoutput1.pdf
-# with inferred output paths
-pdfitdown -i test0.png -i test1.csv
 ```
 
-- In the Python API:
+- In the Rust API:
 
-```python
-from pdfitdown.pdfconversion import Converter
+```rust
+use pdfitdown::{PdfItDownConverter, types::Converter};
 
-converter = Converter()
-# with custom output paths
-converter.multiple_convert(file_paths = ["business_growth.md", "logo.png"], output_paths = ["business_growth.pdf", "logo.pdf"])
-# with inferred output paths
-converter.multiple_convert(file_paths = ["business_growth.md", "logo.png"])
+let converter = PdfItDownConverter::new();
+converter.convert_multiple_files(
+    vec!["business_growth.md", "logo.png"],
+    vec!["business_growth.pdf", "logo.pdf"],
+    true, // overwrite
+)?;
 ```
 
 You can bulk-convert **all the files in a directory**:
@@ -147,109 +143,39 @@ You can bulk-convert **all the files in a directory**:
 - In the CLI:
 
 ```bash
+# non-recursive
 pdfitdown -d tests/data/testdir
+# recursive
+pdfitdown -d tests/data/testdir --recursive
 ```
 
-- In the Python API:
+- In the Rust API:
 
-```python
-from pdfitdown.pdfconversion import Converter
+```rust
+use pdfitdown::{PdfItDownConverter, types::Converter};
 
-converter = Converter()
-output_paths = converter.convert_directory(directory_path = "tests/data/testdir")
-print(output_paths)
+let converter = PdfItDownConverter::new();
+converter.convert_directory("tests/data/testdir", true, true)?; // overwrite, recursive
 ```
 
-In the python API you can also define a **custom callback for the conversion**. In this example, we use Google Gemini to summarize a file and save its content as a PDF:
+#### Parallelization with `rayon`
 
-```python
-from pathlib import Path
-from pdfitdown.pdfconversion import Converter
-from markdown_pdf import MarkdownPdf, Section
-from google import genai
+Enable the `rayon` feature for parallel conversion of multiple files:
 
-client = genai.Client()
-
-def conversion_callback(input_file: str, output_file: str, title: str | None = None, overwrite: bool = True)
-    uploaded_file = client.files.upload(file=Path(input_file))
-    response = client.models.generate_content(
-        model="gemini-2.0-flash",
-        contents=["Give me a summary of this file.", uploaded_file],
-    )
-    content = response.text
-    pdf = MarkdownPdf(toc_level=0)
-    pdf.add_section(Section(content))
-    pdf.meta["title"] = title or "Summary by Gemini"
-    pdf.save(output_file)
-    return output_fle
-
-converter = Converter(conversion_callback=conversion_callback)
-converter.convert(file_path = "business_growth.md", output_path = "business_growth.pdf", title="Business Growth for Q3 in 2024")
+```toml
+[dependencies]
+pdfitdown = { version = "4.0", features = ["rayon"] }
 ```
-
-Moreover, the python API provides you with the possibility of mounting PdfItDown conversion features into a backend server built with Starlette and Starlette-compatible frameworks (such as FastAPI):
-
-```python
-from starlette.applications import Starlette
-from starlette.requests import Request
-from startlette.responses import PlainTextResponse
-from starlette.routing import Route
-from pdfitdown.pdfconversion import Converter
-from pdfitdown.server import mount
-
-async def hello_world(request: Request) -> PlainTextResponse:
-    return PlainTextResponse(content="hello world!")
-
-routes = Route("/helloworld", hello_world)
-app = Starlette(routes=routes)
-
-app = mount(app, converter=Converter(), path="/conversions/pdf", name="pdfitdown")
-```
-
-Now you can send file payloads to the `/conversions/pdf` endpoint through POST requests and get the content of the converted file back, in the response content:
-
-```python
-import httpx
-
-with open("file.txt", "rb") as f:
-    content = f.read()
-
-files = {"file_upload": ("file.txt", content, "text/plain")}
-
-with httpx.Client() as client:
-    response = client.post("http://localhost:80/conversions/pdf", files=files)
-
-    assert response.status_code == 200
-    with open("file.pdf", "wb") as f:
-        f.write(response.content)
-```
-
-### MCP Server
-
-PdfItDown has an MCP server, [`pdfitdown-mcp-server`](./packages/mcp-server), built on top of [FastMCP](https://gofastmcp.com/getting-started/welcome) and running over `stdio` transport.
-
-Install with:
 
 ```bash
-uv tool install pdfitdown-mcp-server
+cargo install pdfitdown --features rayon
 ```
 
-And run with:
+### Python Legacy
 
-```bash
-pdfitdown-mcp run
-```
+Looking for the legacy Python package? It is available on the [`v3` branch](https://github.com/AstraBert/PdfItDown/tree/v3) and on PyPI as `pdfitdown<4.0`.
 
-For more details, visit the [documentation page](https://pdfitdown.eu/mcp-server) and the [server specs](https://pdfitdown.eu/api-reference/mcp-server).
 
-### Contributing
-
-Contributions are always welcome!
-
-Find contribution guidelines at [CONTRIBUTING.md](https://github.com/AstraBert/PdfItDown/tree/main/CONTRIBUTING.md)
-
-### License and Funding
+### License
 
 This project is open-source and is provided under an [MIT License](https://github.com/AstraBert/PdfItDown/tree/main/LICENSE).
-
-If you found it useful, please consider [funding it](https://github.com/sponsors/AstraBert).
