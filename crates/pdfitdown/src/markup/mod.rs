@@ -1,5 +1,8 @@
 use html_to_markdown_rs::convert;
-use markdown2pdf::parse_into_bytes;
+use markdown2pdf::{
+    fonts::{FontConfig, FontSource},
+    parse_into_bytes,
+};
 use regex::Regex;
 use std::{
     fs,
@@ -72,7 +75,11 @@ impl Converter for MarkupConverter {
         let pdf_bytes = parse_into_bytes(
             to_convert,
             markdown2pdf::config::ConfigSource::Default,
-            None,
+            Some(
+                &FontConfig::new()
+                    .with_default_font_source(FontSource::Builtin("Helvetica"))
+                    .with_code_font_source(FontSource::Builtin("Courier")),
+            ),
         )
         .map_err(|e| io::Error::other(e.to_string()))?;
 

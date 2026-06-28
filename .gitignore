@@ -9,3 +9,4 @@ tests/data/*.pdf
 .venv/
 __pycache__/
 target/
+.wrangler/

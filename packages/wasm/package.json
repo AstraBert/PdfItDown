@@ -1,0 +1,52 @@
+{
+  "name": "@cle-does-things/pdfitdown-wasm",
+  "version": "4.0.0",
+  "description": "Convert (almost) anything to PDF — WASM build for browsers",
+  "type": "module",
+  "main": "./pkg/pdfitdown_wasm.js",
+  "types": "./pkg/pdfitdown_wasm.d.ts",
+  "exports": {
+    ".": {
+      "types": "./pkg/pdfitdown_wasm.d.ts",
+      "import": "./pkg/pdfitdown_wasm.js"
+    },
+    "./pdfitdown_wasm_bg.wasm": "./pkg/pdfitdown_wasm_bg.wasm",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "pkg",
+    "README.md",
+    "LICENSE"
+  ],
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "scripts": {
+    "build": "wasm-pack build ../../crates/pdfitdown-wasm --release --target web --out-dir ../../packages/wasm/pkg --out-name pdfitdown_wasm",
+    "build:bundler": "wasm-pack build ../../crates/pdfitdown-wasm --release --target bundler --out-dir ../../packages/wasm/pkg --out-name pdfitdown_wasm && node scripts/patch-wasi-imports.js",
+    "build:nodejs": "wasm-pack build ../../crates/pdfitdown-wasm --release --target nodejs --out-dir ../../packages/wasm/pkg --out-name pdfitdown_wasm && node scripts/patch-wasi-imports.js",
+    "clean": "rm -rf pkg",
+    "prepublishOnly": "bun run build"
+  },
+  "keywords": [
+    "pdf",
+    "conveter",
+    "office",
+    "image",
+    "text",
+    "file-to-pdf",
+    "wasm",
+    "webassembly",
+    "browser",
+    "file-conversion"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AstraBert/PdfItDown.git"
+  },
+  "author": "Clelia Astra Bertelli",
+  "license": "MIT"
+}
