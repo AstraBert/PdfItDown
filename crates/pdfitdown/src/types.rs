@@ -9,33 +9,33 @@ pub enum ConversionInput {
     File(PathBuf),
 }
 
-impl Into<ConversionInput> for Vec<u8> {
-    fn into(self) -> ConversionInput {
-        ConversionInput::Binary(self)
+impl From<Vec<u8>> for ConversionInput {
+    fn from(val: Vec<u8>) -> Self {
+        ConversionInput::Binary(val)
     }
 }
 
-impl Into<ConversionInput> for &[u8] {
-    fn into(self) -> ConversionInput {
-        ConversionInput::Binary(self.to_vec())
+impl From<&[u8]> for ConversionInput {
+    fn from(val: &[u8]) -> Self {
+        ConversionInput::Binary(val.to_vec())
     }
 }
 
-impl Into<ConversionInput> for String {
-    fn into(self) -> ConversionInput {
-        ConversionInput::File(PathBuf::from(self))
+impl From<String> for ConversionInput {
+    fn from(val: String) -> Self {
+        ConversionInput::File(PathBuf::from(val))
     }
 }
 
-impl Into<ConversionInput> for PathBuf {
-    fn into(self) -> ConversionInput {
-        ConversionInput::File(self)
+impl From<PathBuf> for ConversionInput {
+    fn from(val: PathBuf) -> Self {
+        ConversionInput::File(val)
     }
 }
 
-impl Into<ConversionInput> for &str {
-    fn into(self) -> ConversionInput {
-        ConversionInput::File(PathBuf::from(self))
+impl From<&str> for ConversionInput {
+    fn from(val: &str) -> Self {
+        ConversionInput::File(PathBuf::from(val))
     }
 }
 
@@ -53,7 +53,7 @@ pub trait Converter {
     ) -> io::Result<()> {
         let path = output.clone().into();
         if let Some(ext) = &path.extension()
-            && ext.to_string_lossy().to_string() != "pdf"
+            && ext.to_string_lossy() != "pdf"
         {
             return Err(io::Error::new(
                 io::ErrorKind::Unsupported,
@@ -80,8 +80,7 @@ pub trait Converter {
         overwrite: bool,
     ) -> io::Result<()> {
         if input.len() != output.len() {
-            return Err(io::Error::new(
-                io::ErrorKind::Other,
+            return Err(io::Error::other(
                 "Number of inputs and outputs must be the same",
             ));
         }

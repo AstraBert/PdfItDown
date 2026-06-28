@@ -16,3 +16,7 @@ regex = "1.12.4"
 
 [features]
 rayon = ["dep:rayon"]
+
+[dev-dependencies]
+tempfile = "3.27.0"
+zip = "2"

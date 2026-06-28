@@ -52,8 +52,7 @@ impl Converter for ImageConverter {
             }
         };
 
-        let img = image::load_from_memory(&data)
-            .map_err(|e| io::Error::new(io::ErrorKind::Other, e.to_string()))?;
+        let img = image::load_from_memory(&data).map_err(|e| io::Error::other(e.to_string()))?;
 
         let (width, height) = img.dimensions();
 
@@ -176,7 +175,89 @@ fn separate_rgb_and_alpha(img: DynamicImage) -> (Vec<u8>, Vec<u8>) {
 }
 
 #[cfg(test)]
+pub(crate) fn make_1x1_png(r: u8, g: u8, b: u8, a: u8) -> Vec<u8> {
+    // PNG signature
+    let mut out = vec![0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
+
+    // IHDR chunk: 1x1, 8-bit RGBA
+    write_chunk(
+        &mut out,
+        b"IHDR",
+        &[
+            0, 0, 0, 1, // width = 1
+            0, 0, 0, 1, // height = 1
+            8, // bit depth
+            6, // color type = RGBA
+            0, 0, 0, // compression, filter, interlace
+        ],
+    );
+
+    // IDAT chunk: zlib-wrap the pixel (filter byte 0x00 + RGBA)
+    let raw = [0x00, r, g, b, a];
+    write_chunk(&mut out, b"IDAT", &zlib_deflate(&raw));
+
+    // IEND chunk
+    write_chunk(&mut out, b"IEND", &[]);
+
+    out
+}
+
+#[cfg(test)]
+#[allow(dead_code)]
+fn write_chunk(out: &mut Vec<u8>, name: &[u8; 4], data: &[u8]) {
+    let len = data.len() as u32;
+    out.extend_from_slice(&len.to_be_bytes());
+    out.extend_from_slice(name);
+    out.extend_from_slice(data);
+    let crc = crc32(&[name.as_slice(), data].concat());
+    out.extend_from_slice(&crc.to_be_bytes());
+}
+
+#[cfg(test)]
+#[allow(dead_code)]
+fn crc32(data: &[u8]) -> u32 {
+    let mut crc = 0xFFFF_FFFFu32;
+    for &byte in data {
+        crc ^= byte as u32;
+        for _ in 0..8 {
+            if crc & 1 != 0 {
+                crc = (crc >> 1) ^ 0xEDB8_8320;
+            } else {
+                crc >>= 1;
+            }
+        }
+    }
+    !crc
+}
+
+#[cfg(test)]
+#[allow(dead_code)]
+fn zlib_deflate(data: &[u8]) -> Vec<u8> {
+    // zlib header (deflate, default compression)
+    let mut out = vec![0x78, 0x01];
+
+    // Non-compressed deflate block (BTYPE=00)
+    let len = data.len() as u16;
+    out.push(0x01); // BFINAL=1, BTYPE=00
+    out.extend_from_slice(&len.to_le_bytes());
+    out.extend_from_slice(&(!len).to_le_bytes());
+    out.extend_from_slice(data);
+
+    // Adler-32 checksum
+    let (mut s1, mut s2) = (1u32, 0u32);
+    for &b in data {
+        s1 = (s1 + b as u32) % 65521;
+        s2 = (s2 + s1) % 65521;
+    }
+    out.extend_from_slice(&((s2 << 16) | s1).to_be_bytes());
+
+    out
+}
+
+#[cfg(test)]
 mod tests {
+    use std::fs;
+
     use super::*;
 
     #[test]
@@ -186,5 +267,110 @@ mod tests {
             converter.supported_formats(),
             &["png", "jpg", "jpeg", "avif", "tiff", "webp"]
         )
+    }
+
+    #[test]
+    fn test_image_converter_convert() {
+        let png = make_1x1_png(255, 0, 0, 255);
+
+        let converter = ImageConverter::default();
+        let converted = converter
+            .convert(png)
+            .expect("Should be able to convert PNG image");
+        let kind = infer::get(&converted).expect("Should be able to infer kind");
+        assert_eq!(kind.mime_type(), "application/pdf");
+    }
+
+    #[test]
+    fn test_image_converter_convert_unsupported() {
+        let png = make_1x1_png(255, 0, 0, 255);
+
+        let converter = ImageConverter::default();
+        let converted = converter
+            .convert(png)
+            .expect("Should be able to convert PNG image");
+        let result = converter.convert(converted);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_image_converter_convert_file() {
+        let png = make_1x1_png(255, 0, 0, 255);
+        let mut tmp = tempfile::NamedTempFile::with_suffix(".png").unwrap();
+        let other_file = tempfile::NamedTempFile::with_suffix(".pdf").unwrap();
+        tmp.write_all(&png).unwrap();
+
+        let converter = ImageConverter::default();
+        converter
+            .convert_to_file(tmp.path().to_owned(), other_file.path(), true)
+            .expect("Should be able to convert PNG image");
+        let converted = fs::read(other_file.path()).expect("Should be able to read file");
+        let kind = infer::get(&converted).expect("Shoule be able to infer kind");
+        assert_eq!(kind.mime_type(), "application/pdf");
+    }
+
+    #[test]
+    fn test_image_converter_convert_directory() {
+        let png = make_1x1_png(255, 0, 0, 255);
+        let png_1 = make_1x1_png(128, 0, 0, 255);
+        let png_2 = make_1x1_png(213, 0, 0, 255);
+
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let mut tmp = tempfile::NamedTempFile::with_suffix_in(".png", tmp_dir.path()).unwrap();
+        let mut tmp_1 = tempfile::NamedTempFile::with_suffix_in(".png", tmp_dir.path()).unwrap();
+        let mut tmp_2 = tempfile::NamedTempFile::with_suffix_in(".png", tmp_dir.path()).unwrap();
+        tmp.write_all(&png).unwrap();
+        tmp_1.write_all(&png_1).unwrap();
+        tmp_2.write_all(&png_2).unwrap();
+
+        let converter = ImageConverter::default();
+        converter
+            .convert_directory(tmp_dir.path(), true, false)
+            .expect("Should be able to convert files in directory");
+        for t in [&tmp, &tmp_1, &tmp_2] {
+            assert!(t.path().with_extension("pdf").exists());
+            let converted =
+                fs::read(t.path().with_extension("pdf")).expect("Should be able to read file");
+            let kind = infer::get(&converted).expect("Shoule be able to infer kind");
+            assert_eq!(kind.mime_type(), "application/pdf");
+        }
+    }
+
+    #[test]
+    fn test_image_converter_convert_files() {
+        let png = make_1x1_png(255, 0, 0, 255);
+        let png_1 = make_1x1_png(128, 0, 0, 255);
+        let png_2 = make_1x1_png(213, 0, 0, 255);
+
+        let mut tmp = tempfile::NamedTempFile::with_suffix(".PNG").unwrap();
+        let mut tmp_1 = tempfile::NamedTempFile::with_suffix(".png").unwrap();
+        let mut tmp_2 = tempfile::NamedTempFile::with_suffix(".png").unwrap();
+        tmp.write_all(&png).unwrap();
+        tmp_1.write_all(&png_1).unwrap();
+        tmp_2.write_all(&png_2).unwrap();
+
+        let converter = ImageConverter::default();
+        converter
+            .convert_multiple_files(
+                vec![
+                    tmp.path().to_owned(),
+                    tmp_1.path().to_owned(),
+                    tmp_2.path().to_owned(),
+                ],
+                vec![
+                    tmp.path().with_extension("pdf"),
+                    tmp_1.path().with_extension("pdf"),
+                    tmp_2.path().with_extension("pdf"),
+                ],
+                true,
+            )
+            .expect("Should be able to convert files in directory");
+        for t in [&tmp, &tmp_1, &tmp_2] {
+            assert!(t.path().with_extension("pdf").exists());
+            let converted =
+                fs::read(t.path().with_extension("pdf")).expect("Should be able to read file");
+            let kind = infer::get(&converted).expect("Shoule be able to infer kind");
+            assert_eq!(kind.mime_type(), "application/pdf");
+        }
     }
 }

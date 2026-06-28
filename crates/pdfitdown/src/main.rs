@@ -31,12 +31,12 @@ fn main() {
         eprintln!("\x1b[1;31mA different number of input and output files has been provided");
         std::process::exit(1);
     }
-    if args.inputfile.len() > 0 {
+    if !args.inputfile.is_empty() {
         converter
             .convert_multiple_files(args.inputfile, args.outputfile, !args.no_overwrite)
             .map_or_else(
                 |e| {
-                    eprintln!("\x1b[1;31m{}", e.to_string());
+                    eprintln!("\x1b[1;31m{}", e);
                     std::process::exit(1)
                 },
                 |_| {},
@@ -46,7 +46,7 @@ fn main() {
             .convert_directory(dir, !args.no_overwrite, args.recursive)
             .map_or_else(
                 |e| {
-                    eprintln!("\x1b[1;31m{}", e.to_string());
+                    eprintln!("\x1b[1;31m{}", e);
                     std::process::exit(1)
                 },
                 |_| {},
