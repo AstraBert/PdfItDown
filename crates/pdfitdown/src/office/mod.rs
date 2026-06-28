@@ -29,7 +29,9 @@ impl Converter for OfficeConverter {
             ConversionInput::Binary(b) => {
                 let kind = infer::get(&b);
                 if let Some(k) = kind
-                    && self.supported_formats().contains(&k.extension())
+                    && self
+                        .supported_formats()
+                        .contains(&k.extension().to_lowercase().as_str())
                 {
                     data = b;
                 } else {

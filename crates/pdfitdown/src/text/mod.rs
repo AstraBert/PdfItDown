@@ -51,7 +51,7 @@ impl Converter for TextConverter {
                 if let Some(ext) = &f.extension() {
                     if !self
                         .supported_formats()
-                        .contains(&ext.to_string_lossy().to_string().as_str())
+                        .contains(&ext.to_string_lossy().to_lowercase().as_str())
                     {
                         return Err(io::Error::new(
                             io::ErrorKind::InvalidInput,

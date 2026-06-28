@@ -34,7 +34,7 @@ impl Converter for ImageConverter {
                 if let Some(ext) = f.extension() {
                     if !self
                         .supported_formats()
-                        .contains(&ext.to_string_lossy().to_string().as_str())
+                        .contains(&ext.to_string_lossy().to_lowercase().as_str())
                     {
                         return Err(io::Error::new(
                             io::ErrorKind::InvalidInput,
@@ -173,4 +173,18 @@ fn separate_rgb_and_alpha(img: DynamicImage) -> (Vec<u8>, Vec<u8>) {
     }
 
     (rgb, alpha)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_image_converter_supported_type() {
+        let converter = ImageConverter::default();
+        assert_eq!(
+            converter.supported_formats(),
+            &["png", "jpg", "jpeg", "avif", "tiff", "webp"]
+        )
+    }
 }

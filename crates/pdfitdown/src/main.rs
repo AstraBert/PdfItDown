@@ -56,5 +56,5 @@ fn main() {
         std::process::exit(1);
     }
 
-    println!("\x1b[1;32mConversion successful!");
+    println!("\x1b[1;32mConversion successful!🎉");
 }

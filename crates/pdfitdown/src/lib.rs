@@ -4,7 +4,7 @@ mod office;
 mod text;
 pub mod types;
 
-use std::io;
+use std::{fs, io};
 
 pub use img::ImageConverter;
 pub use markup::MarkupConverter;
@@ -40,6 +40,7 @@ impl Converter for PdfItDownConverter {
             .chain(self.office_converter.supported_formats().iter())
             .chain(self.markup_converter.supported_formats().iter())
             .chain(self.text_converter.supported_formats().iter())
+            .chain(["pdf"].iter())
             .copied()
             .collect::<Vec<&'static str>>()
             .leak()
@@ -51,9 +52,11 @@ impl Converter for PdfItDownConverter {
             types::ConversionInput::Binary(b) => {
                 let kind = infer::get(&b);
                 if let Some(k) = kind
-                    && self.supported_formats().contains(&k.extension())
+                    && self
+                        .supported_formats()
+                        .contains(&k.extension().to_lowercase().as_str())
                 {
-                    extension = k.extension().to_string();
+                    extension = k.extension().to_lowercase();
                 } else {
                     return Err(io::Error::new(
                         io::ErrorKind::InvalidData,
@@ -65,7 +68,7 @@ impl Converter for PdfItDownConverter {
                 if let Some(ext) = &f.extension() {
                     if !self
                         .supported_formats()
-                        .contains(&ext.to_string_lossy().to_string().as_str())
+                        .contains(&ext.to_string_lossy().to_lowercase().as_str())
                     {
                         return Err(io::Error::new(
                             io::ErrorKind::InvalidInput,
@@ -78,7 +81,7 @@ impl Converter for PdfItDownConverter {
                         "Cannot infer extension from file name, please add an extension if this is an image",
                     ));
                 }
-                extension = f.extension().unwrap().to_string_lossy().to_string();
+                extension = f.extension().unwrap().to_string_lossy().to_lowercase();
             }
         };
         if self
@@ -99,6 +102,15 @@ impl Converter for PdfItDownConverter {
             .contains(&extension.as_str())
         {
             self.markup_converter.convert(input)
+        } else if extension == "pdf" {
+            // PDF -> PDF is a no-op
+            match input.into() {
+                types::ConversionInput::Binary(b) => Ok(b),
+                types::ConversionInput::File(f) => {
+                    let d = fs::read(f)?;
+                    Ok(d)
+                }
+            }
         } else {
             self.text_converter.convert(input)
         }
