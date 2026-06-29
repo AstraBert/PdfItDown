@@ -85,7 +85,6 @@ impl Converter for PdfItDownConverter {
                 extension = f.extension().unwrap().to_string_lossy().to_lowercase();
             }
         };
-        println!("{}", extension);
         if self
             .image_converter
             .supported_formats()

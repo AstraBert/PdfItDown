@@ -26,14 +26,14 @@
   },
   "scripts": {
     "build": "wasm-pack build ../../crates/pdfitdown-wasm --release --target web --out-dir ../../packages/wasm/pkg --out-name pdfitdown_wasm",
-    "build:bundler": "wasm-pack build ../../crates/pdfitdown-wasm --release --target bundler --out-dir ../../packages/wasm/pkg --out-name pdfitdown_wasm && node scripts/patch-wasi-imports.js",
-    "build:nodejs": "wasm-pack build ../../crates/pdfitdown-wasm --release --target nodejs --out-dir ../../packages/wasm/pkg --out-name pdfitdown_wasm && node scripts/patch-wasi-imports.js",
+    "build:bundler": "wasm-pack build ../../crates/pdfitdown-wasm --release --target bundler --out-dir ../../packages/wasm/pkg --out-name pdfitdown_wasm",
+    "build:nodejs": "wasm-pack build ../../crates/pdfitdown-wasm --release --target nodejs --out-dir ../../packages/wasm/pkg --out-name pdfitdown_wasm",
     "clean": "rm -rf pkg",
     "prepublishOnly": "bun run build"
   },
   "keywords": [
     "pdf",
-    "conveter",
+    "converter",
     "office",
     "image",
     "text",

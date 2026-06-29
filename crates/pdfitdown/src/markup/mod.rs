@@ -1,10 +1,7 @@
-use html_to_markdown_rs::convert;
-use markdown2pdf::{
-    fonts::{FontConfig, FontSource},
-    parse_into_bytes,
-};
+use printpdf::{GeneratePdfOptions, PdfDocument, PdfSaveOptions};
 use regex::Regex;
 use std::{
+    collections::BTreeMap,
     fs,
     io::{self},
     sync::OnceLock,
@@ -25,14 +22,9 @@ fn html_regex() -> &'static Regex {
 pub struct MarkupConverter {}
 
 impl MarkupConverter {
-    pub fn convert_html_to_md(&self, html: &str) -> Result<String, io::Error> {
-        let result = convert(html, None).map_err(|e| io::Error::other(e.to_string()))?;
-        if let Some(content) = result.content {
-            return Ok(content);
-        }
-        Err(io::Error::other(
-            "No HTML -> Markdown converted content was produced",
-        ))
+    pub fn convert_md_to_html(&self, md: &str) -> String {
+        let result = markdown::to_html(md);
+        result
     }
 }
 
@@ -66,22 +58,28 @@ impl Converter for MarkupConverter {
             }
         };
 
-        let to_convert = if html_regex().is_match(&data) {
-            self.convert_html_to_md(&data)?
+        let to_convert = if !html_regex().is_match(&data) {
+            let int = self.convert_md_to_html(&data);
+            format!(
+                "<html>\n<head>\n\t<header>\n\t\t<hr/>\n\t<header>\n<footer>\n\t<hr/>\n</footer>\n</head>\n{}\n</html>",
+                int
+            )
         } else {
             data
         };
 
-        let pdf_bytes = parse_into_bytes(
-            to_convert,
-            markdown2pdf::config::ConfigSource::Default,
-            Some(
-                &FontConfig::new()
-                    .with_default_font_source(FontSource::Builtin("Helvetica"))
-                    .with_code_font_source(FontSource::Builtin("Courier")),
-            ),
-        )
-        .map_err(|e| io::Error::other(e.to_string()))?;
+        println!("{}", to_convert);
+
+        // Create PDF from HTML
+        let images = BTreeMap::new();
+        let fonts = BTreeMap::new();
+        let options = GeneratePdfOptions::default();
+        let mut warnings = Vec::new();
+
+        let pdf_bytes =
+            PdfDocument::from_html(&to_convert, &images, &fonts, &options, &mut warnings)
+                .map_err(|e| io::Error::new(io::ErrorKind::Other, e.to_string()))?
+                .save(&PdfSaveOptions::default(), &mut warnings);
 
         Ok(pdf_bytes)
     }
@@ -105,12 +103,10 @@ mod tests {
     #[test]
     fn test_markup_converter_convert_html_to_md() {
         let converter = MarkupConverter::default();
-        let html = "<h1>Hello</h1><p>World</p>";
-        let md = converter
-            .convert_html_to_md(html)
-            .expect("Should convert HTML to Markdown");
-        assert!(md.contains("# Hello"));
-        assert!(md.contains("World"));
+        let md = "# Hello\nWorld";
+        let html = converter.convert_md_to_html(md);
+        assert!(html.contains("<h1>Hello</h1>"));
+        assert!(html.contains("World"));
     }
 
     #[test]
