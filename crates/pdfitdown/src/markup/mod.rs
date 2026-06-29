@@ -23,8 +23,7 @@ pub struct MarkupConverter {}
 
 impl MarkupConverter {
     pub fn convert_md_to_html(&self, md: &str) -> String {
-        let result = markdown::to_html(md);
-        result
+        markdown::to_html(md)
     }
 }
 
@@ -78,7 +77,7 @@ impl Converter for MarkupConverter {
 
         let pdf_bytes =
             PdfDocument::from_html(&to_convert, &images, &fonts, &options, &mut warnings)
-                .map_err(|e| io::Error::new(io::ErrorKind::Other, e.to_string()))?
+                .map_err(|e| io::Error::other(e.to_string()))?
                 .save(&PdfSaveOptions::default(), &mut warnings);
 
         Ok(pdf_bytes)
