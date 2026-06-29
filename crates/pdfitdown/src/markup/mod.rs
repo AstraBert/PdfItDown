@@ -1,91 +1,219 @@
-use printpdf::{GeneratePdfOptions, PdfDocument, PdfSaveOptions};
 use regex::Regex;
-use std::{
-    collections::BTreeMap,
-    fs,
-    io::{self},
-    sync::OnceLock,
-};
-
-use crate::types::{ConversionInput, Converter};
+use std::sync::OnceLock;
 
 static HTML_REGEX: OnceLock<Regex> = OnceLock::new();
 
 fn html_regex() -> &'static Regex {
-    HTML_REGEX.get_or_init(|| {
-        Regex::new(r"(?i)<(html|head|body|div|span|p|a|img|table|ul|ol|li|h[1-6])[\s>]").unwrap()
-    })
+    HTML_REGEX.get_or_init(|| Regex::new(r"(?i)<(html|head|body)[\s>]").unwrap())
 }
 
-/// Struct implementing the Converter trait for markup languages (HTML, markdown)
-#[derive(Debug, Clone, Copy, Default)]
-pub struct MarkupConverter {}
+#[cfg(target_arch = "wasm32")]
+mod inner {
+    use std::{
+        collections::BTreeMap,
+        fs,
+        io::{self},
+    };
 
-impl MarkupConverter {
-    pub fn convert_md_to_html(&self, md: &str) -> String {
-        markdown::to_html(md)
+    use crate::types::{ConversionInput, Converter};
+
+    use super::*;
+    use printpdf::{GeneratePdfOptions, PdfDocument, PdfSaveOptions};
+
+    /// Struct implementing the Converter trait for markup languages (HTML, markdown)
+    #[derive(Debug, Clone, Copy, Default)]
+    pub struct MarkupConverter {}
+
+    impl MarkupConverter {
+        pub fn convert_md_to_html(&self, md: &str) -> String {
+            markdown::to_html(md)
+        }
     }
-}
 
-impl Converter for MarkupConverter {
-    fn supported_formats(&self) -> &'static [&'static str] {
-        &["html", "md", "markdown", "htm"]
-    }
+    impl Converter for MarkupConverter {
+        fn supported_formats(&self) -> &'static [&'static str] {
+            &["html", "md", "markdown", "htm"]
+        }
 
-    /// Convert markup data to PDF
-    fn convert(&self, input: impl Into<ConversionInput> + Clone) -> io::Result<Vec<u8>> {
-        let data = match input.into() {
-            ConversionInput::Binary(b) => String::from_utf8_lossy(&b).to_string(),
-            ConversionInput::File(f) => {
-                if let Some(ext) = f.extension() {
-                    if !self
-                        .supported_formats()
-                        .contains(&ext.to_string_lossy().to_lowercase().as_str())
-                    {
+        /// Convert markup data to PDF
+        fn convert(&self, input: impl Into<ConversionInput> + Clone) -> io::Result<Vec<u8>> {
+            let data = match input.into() {
+                ConversionInput::Binary(b) => String::from_utf8_lossy(&b).to_string(),
+                ConversionInput::File(f) => {
+                    if let Some(ext) = f.extension() {
+                        if !self
+                            .supported_formats()
+                            .contains(&ext.to_string_lossy().to_lowercase().as_str())
+                        {
+                            return Err(io::Error::new(
+                                io::ErrorKind::InvalidInput,
+                                "File format not supported for image conversion",
+                            ));
+                        }
+                    } else {
                         return Err(io::Error::new(
                             io::ErrorKind::InvalidInput,
-                            "File format not supported for image conversion",
+                            "Cannot infer extension from file name, please add an extension if this is an image",
                         ));
                     }
-                } else {
-                    return Err(io::Error::new(
-                        io::ErrorKind::InvalidInput,
-                        "Cannot infer extension from file name, please add an extension if this is an image",
-                    ));
+                    fs::read_to_string(f)?
                 }
-                fs::read_to_string(f)?
+            };
+
+            let to_convert = if !html_regex().is_match(&data) {
+                let int = self.convert_md_to_html(&data);
+                format!(
+                    "<!DOCTYPE html>\n<html>\n<head>\n<style>\n* {{ box-sizing: border-box; }}\nhtml, body {{ width: 100%; margin: 0; padding: 0; display: block; }}\n</style>\n</head>\n<body>\n{}\n</body>\n</html>",
+                    int
+                )
+            } else {
+                data
+            };
+
+            // On wasm there are no system fonts, so seed the font pool with
+            // printpdf's compiled-in builtin fonts. Without this, build_font_pool
+            // finds nothing and the layout engine produces zero text items,
+            // yielding a valid-but-blank PDF.
+            let mut fonts: BTreeMap<String, printpdf::Base64OrRaw> = BTreeMap::new();
+            for variant in [
+                printpdf::BuiltinFont::Helvetica,
+                printpdf::BuiltinFont::HelveticaBold,
+                printpdf::BuiltinFont::HelveticaOblique,
+                printpdf::BuiltinFont::HelveticaBoldOblique,
+                printpdf::BuiltinFont::TimesRoman,
+                printpdf::BuiltinFont::TimesBold,
+                printpdf::BuiltinFont::TimesItalic,
+                printpdf::BuiltinFont::TimesBoldItalic,
+                printpdf::BuiltinFont::Courier,
+                printpdf::BuiltinFont::CourierBold,
+                printpdf::BuiltinFont::CourierOblique,
+                printpdf::BuiltinFont::CourierBoldOblique,
+            ] {
+                fonts.insert(
+                    format!("{:?}", variant),
+                    printpdf::Base64OrRaw::Raw(variant.get_subset_font().bytes),
+                );
             }
-        };
 
-        let to_convert = if !html_regex().is_match(&data) {
-            let int = self.convert_md_to_html(&data);
-            format!(
-                "<html>\n<head>\n\t<header>\n\t\t<hr/>\n\t<header>\n<footer>\n\t<hr/>\n</footer>\n</head>\n{}\n</html>",
-                int
-            )
-        } else {
-            data
-        };
+            let images = BTreeMap::new();
+            let options = GeneratePdfOptions::default();
+            let mut warnings = Vec::new();
 
-        println!("{}", to_convert);
+            let doc = PdfDocument::from_html(&to_convert, &images, &fonts, &options, &mut warnings)
+                .map_err(|e| io::Error::other(e.to_string()))?;
 
-        // Create PDF from HTML
-        let images = BTreeMap::new();
-        let fonts = BTreeMap::new();
-        let options = GeneratePdfOptions::default();
-        let mut warnings = Vec::new();
+            if !warnings.is_empty() {
+                let errors: Vec<_> = warnings
+                    .iter()
+                    .filter(|w| w.severity == printpdf::PdfParseErrorSeverity::Error)
+                    .map(|w| w.msg.clone())
+                    .collect();
+                if !errors.is_empty() {
+                    return Err(io::Error::other(errors.join("; ")));
+                }
+            }
 
-        let pdf_bytes =
-            PdfDocument::from_html(&to_convert, &images, &fonts, &options, &mut warnings)
-                .map_err(|e| io::Error::other(e.to_string()))?
-                .save(&PdfSaveOptions::default(), &mut warnings);
+            let pdf_bytes = doc.save(&PdfSaveOptions::default(), &mut warnings);
 
-        Ok(pdf_bytes)
+            if !warnings.is_empty() {
+                let errors: Vec<_> = warnings
+                    .iter()
+                    .filter(|w| w.severity == printpdf::PdfParseErrorSeverity::Error)
+                    .map(|w| w.msg.clone())
+                    .collect();
+                if !errors.is_empty() {
+                    return Err(io::Error::other(errors.join("; ")));
+                }
+            }
+
+            Ok(pdf_bytes)
+        }
     }
 }
+
+#[cfg(not(target_arch = "wasm32"))]
+mod inner {
+    use super::*;
+    use html_to_markdown_rs::convert;
+    use markdown2pdf::parse_into_bytes;
+
+    use std::{
+        fs,
+        io::{self},
+    };
+
+    use crate::types::{ConversionInput, Converter};
+
+    /// Struct implementing the Converter trait for markup languages (HTML, markdown)
+    #[derive(Debug, Clone, Copy, Default)]
+    pub struct MarkupConverter {}
+
+    impl MarkupConverter {
+        pub fn convert_html_to_md(&self, html: &str) -> Result<String, io::Error> {
+            let result = convert(html, None).map_err(|e| io::Error::other(e.to_string()))?;
+            if let Some(content) = result.content {
+                return Ok(content);
+            }
+            Err(io::Error::other(
+                "No HTML -> Markdown converted content was produced",
+            ))
+        }
+    }
+
+    impl Converter for MarkupConverter {
+        fn supported_formats(&self) -> &'static [&'static str] {
+            &["html", "md", "markdown", "htm"]
+        }
+
+        /// Convert markup data to PDF
+        fn convert(&self, input: impl Into<ConversionInput> + Clone) -> io::Result<Vec<u8>> {
+            let data = match input.into() {
+                ConversionInput::Binary(b) => String::from_utf8_lossy(&b).to_string(),
+                ConversionInput::File(f) => {
+                    if let Some(ext) = f.extension() {
+                        if !self
+                            .supported_formats()
+                            .contains(&ext.to_string_lossy().to_lowercase().as_str())
+                        {
+                            return Err(io::Error::new(
+                                io::ErrorKind::InvalidInput,
+                                "File format not supported for image conversion",
+                            ));
+                        }
+                    } else {
+                        return Err(io::Error::new(
+                            io::ErrorKind::InvalidInput,
+                            "Cannot infer extension from file name, please add an extension if this is an image",
+                        ));
+                    }
+                    fs::read_to_string(f)?
+                }
+            };
+
+            let to_convert = if html_regex().is_match(&data) {
+                self.convert_html_to_md(&data)?
+            } else {
+                data
+            };
+
+            let pdf_bytes = parse_into_bytes(
+                to_convert,
+                markdown2pdf::config::ConfigSource::Default,
+                None,
+            )
+            .map_err(|e| io::Error::other(e.to_string()))?;
+
+            Ok(pdf_bytes)
+        }
+    }
+}
+
+pub use inner::MarkupConverter;
 
 #[cfg(test)]
 mod tests {
+    use crate::types::Converter;
+    use std::fs;
     use std::io::Write;
 
     use super::*;
@@ -100,11 +228,24 @@ mod tests {
     }
 
     #[test]
-    fn test_markup_converter_convert_html_to_md() {
+    #[cfg(target_arch = "wasm32")]
+    fn test_markup_converter_convert_md_to_html() {
         let converter = MarkupConverter::default();
         let md = "# Hello\nWorld";
         let html = converter.convert_md_to_html(md);
         assert!(html.contains("<h1>Hello</h1>"));
+        assert!(html.contains("World"));
+    }
+
+    #[test]
+    #[cfg(not(target_arch = "wasm32"))]
+    fn test_markup_converter_convert_html_to_md() {
+        let converter = MarkupConverter::default();
+        let md = "<h1>Hello</h1>\n<p>World</p>";
+        let html = converter
+            .convert_html_to_md(md)
+            .expect("Should be able to convert html to md");
+        assert!(html.contains("# Hello"));
         assert!(html.contains("World"));
     }
 
