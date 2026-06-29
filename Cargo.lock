@@ -2809,6 +2809,7 @@ dependencies = [
  "rayon",
  "regex",
  "tempfile",
+ "web-sys",
  "zip 2.4.2",
 ]
 

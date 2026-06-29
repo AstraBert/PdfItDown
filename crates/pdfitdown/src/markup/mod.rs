@@ -63,41 +63,62 @@ mod inner {
             let to_convert = if !html_regex().is_match(&data) {
                 let int = self.convert_md_to_html(&data);
                 format!(
-                    "<!DOCTYPE html>\n<html>\n<head>\n<style>\n* {{ box-sizing: border-box; }}\nhtml, body {{ width: 100%; margin: 0; padding: 0; display: block; }}\n</style>\n</head>\n<body>\n{}\n</body>\n</html>",
+                    concat!(
+                        "<!DOCTYPE html><html><head><style>",
+                        "* {{ box-sizing: border-box; }}",
+                        "html, body {{ width: 100%; margin: 0; padding: 0; display: block; }}",
+                        "body {{ font-family: \"Helvetica\", sans-serif; }}",
+                        "code {{ font-family: \"Courier\", monospace; }}",
+                        "</style></head><body>{}</body></html>"
+                    ),
                     int
                 )
             } else {
-                data
+                let style = "<style>body { font-family: \"Helvetica\", sans-serif; } code { font-family: \"Courier\", monospace; }</style>";
+                if let Some(pos) = data.find("</head>") {
+                    let mut s = data.clone();
+                    s.insert_str(pos, style);
+                    s
+                } else {
+                    // no <head> tag, just prepend
+                    format!("{}{}", style, data)
+                }
             };
 
-            // On wasm there are no system fonts, so seed the font pool with
-            // printpdf's compiled-in builtin fonts. Without this, build_font_pool
-            // finds nothing and the layout engine produces zero text items,
-            // yielding a valid-but-blank PDF.
+            // On wasm there are no system fonts, so we must seed the font pool with
+            // full TTF bytes that have intact NAME tables (required by FcParseFontBytes
+            // for family-name resolution). The printpdf subset fonts lack a NAME table
+            // and cannot be registered — using them yields an empty font cache and a
+            // blank PDF. We bundle the full fonts via include_bytes! instead.
             let mut fonts: BTreeMap<String, printpdf::Base64OrRaw> = BTreeMap::new();
-            for variant in [
-                printpdf::BuiltinFont::Helvetica,
-                printpdf::BuiltinFont::HelveticaBold,
-                printpdf::BuiltinFont::HelveticaOblique,
-                printpdf::BuiltinFont::HelveticaBoldOblique,
-                printpdf::BuiltinFont::TimesRoman,
-                printpdf::BuiltinFont::TimesBold,
-                printpdf::BuiltinFont::TimesItalic,
-                printpdf::BuiltinFont::TimesBoldItalic,
-                printpdf::BuiltinFont::Courier,
-                printpdf::BuiltinFont::CourierBold,
-                printpdf::BuiltinFont::CourierOblique,
-                printpdf::BuiltinFont::CourierBoldOblique,
-            ] {
-                fonts.insert(
-                    format!("{:?}", variant),
-                    printpdf::Base64OrRaw::Raw(variant.get_subset_font().bytes),
-                );
+            macro_rules! embed_font {
+                ($name:expr, $path:expr) => {
+                    fonts.insert(
+                        $name.to_string(),
+                        printpdf::Base64OrRaw::Raw(
+                            include_bytes!(concat!("../../assets/fonts/", $path)).to_vec(),
+                        ),
+                    );
+                };
             }
+            embed_font!("Helvetica", "Helvetica.ttf");
+            embed_font!("Helvetica-Bold", "Helvetica-Bold.ttf");
+            embed_font!("Helvetica-Oblique", "Helvetica-Oblique.ttf");
+            embed_font!("Helvetica-BoldOblique", "Helvetica-BoldOblique.ttf");
+            embed_font!("Times-Roman", "Times.ttf");
+            embed_font!("Times-Bold", "Times-Bold.ttf");
+            embed_font!("Times-Oblique", "Times-Oblique.ttf");
+            embed_font!("Times-BoldOblique", "Times-BoldOblique.ttf");
+            embed_font!("Courier", "Courier.ttf");
+            embed_font!("Courier-Bold", "Courier-Bold.ttf");
+            embed_font!("Courier-Oblique", "Courier-Oblique.ttf");
+            embed_font!("Courier-BoldOblique", "Courier-BoldOblique.ttf");
 
             let images = BTreeMap::new();
             let options = GeneratePdfOptions::default();
             let mut warnings = Vec::new();
+
+            web_sys::console::log_1(&format!("{}", to_convert).into());
 
             let doc = PdfDocument::from_html(&to_convert, &images, &fonts, &options, &mut warnings)
                 .map_err(|e| io::Error::other(e.to_string()))?;
@@ -105,7 +126,7 @@ mod inner {
             if !warnings.is_empty() {
                 let errors: Vec<_> = warnings
                     .iter()
-                    .filter(|w| w.severity == printpdf::PdfParseErrorSeverity::Error)
+                    .filter(|w| w.severity >= printpdf::PdfParseErrorSeverity::Warning)
                     .map(|w| w.msg.clone())
                     .collect();
                 if !errors.is_empty() {
@@ -118,7 +139,7 @@ mod inner {
             if !warnings.is_empty() {
                 let errors: Vec<_> = warnings
                     .iter()
-                    .filter(|w| w.severity == printpdf::PdfParseErrorSeverity::Error)
+                    .filter(|w| w.severity >= printpdf::PdfParseErrorSeverity::Warning)
                     .map(|w| w.msg.clone())
                     .collect();
                 if !errors.is_empty() {
