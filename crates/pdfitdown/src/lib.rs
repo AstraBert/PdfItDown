@@ -58,10 +58,11 @@ impl Converter for PdfItDownConverter {
                 {
                     extension = k.extension().to_lowercase();
                 } else {
-                    return Err(io::Error::new(
-                        io::ErrorKind::InvalidData,
-                        "Inferred file type is not supported",
-                    ));
+                    // Infer does not know about text types
+                    // and for binary data, the safest option is
+                    // to use 'txt'. If the data is not text,
+                    // this will fail downstream
+                    extension = String::from("txt");
                 }
             }
             types::ConversionInput::File(f) => {
@@ -189,13 +190,6 @@ mod tests {
             .convert(tmp.path().to_owned())
             .expect("Should pass through PDF");
         assert_eq!(&converted, pdf.as_slice());
-    }
-
-    #[test]
-    fn test_pdfitdown_converter_convert_unsupported() {
-        let converter = PdfItDownConverter::default();
-        let result = converter.convert(vec![0x00, 0x01, 0x02, 0x03]);
-        assert!(result.is_err());
     }
 
     #[test]

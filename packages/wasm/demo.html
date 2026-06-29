@@ -1,0 +1,24 @@
+<script type="module">
+    import init, { convert } from "./pkg/pdfitdown_wasm.js";
+
+    await init("./pkg/pdfitdown_wasm_bg.wasm");
+
+    document.querySelector("input").addEventListener("change", async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const bytes = new Uint8Array(await file.arrayBuffer());
+        const result = convert(bytes);
+
+        // Trigger download
+        const blob = new Blob([result], { type: "application/pdf" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = file.name.replace(/\.[^.]+$/, ".pdf");
+        a.click();
+        URL.revokeObjectURL(url);
+    });
+</script>
+
+<input type="file" />
