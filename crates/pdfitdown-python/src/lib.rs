@@ -58,8 +58,8 @@ mod pdfitdown {
 mod pdfconversion {
     use std::path::PathBuf;
 
-    use pdfitdown::PdfItDownConverter;
-    use pdfitdown::types::Converter as ConverterTrait;
+    use ::pdfitdown::PdfItDownConverter;
+    use ::pdfitdown::types::Converter as ConverterTrait;
     use pyo3::prelude::*;
 
     #[pyclass]
@@ -128,8 +128,8 @@ mod pdfconversion {
                     .collect(),
             };
             self.inner
-                .convert_multiple_files(file_paths, out_paths, overwrite)?;
-            Ok(vec![])
+                .convert_multiple_files(file_paths, out_paths.clone(), overwrite)?;
+            Ok(out_paths)
         }
 
         #[pyo3(signature = (directory_path, overwrite = true, recursive = true))]
@@ -162,8 +162,8 @@ mod pdfconversion {
 /// CLI module
 #[pymodule]
 mod cli {
+    use ::pdfitdown::{PdfItDownConverter, types::Converter};
     use clap::Parser;
-    use pdfitdown::{PdfItDownConverter, types::Converter};
     use pyo3::prelude::*;
 
     #[derive(Parser, Debug)]
