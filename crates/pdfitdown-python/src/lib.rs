@@ -63,6 +63,7 @@ mod pdfconversion {
     use pyo3::prelude::*;
 
     #[pyclass]
+    /// Converter class for handling file and directory conversions.
     struct Converter {
         inner: PdfItDownConverter,
     }
@@ -78,13 +79,13 @@ mod pdfconversion {
 
         #[pyo3(signature = (file_path, output_path, overwrite = true))]
         /// Converts a file to PDF.
-
+        ///
         /// Args:
         ///     file_path (str): The path to the input file.
         ///     output_path (str): The path where the converted PDF file will be saved.
         ///     title (str | None, optional): An optional title for the converted PDF file. Defaults to None.
         ///     overwrite (bool, optional): Whether to overwrite the output file if it already exists. Defaults to True.
-
+        ///
         /// Returns:
         ///     str | None: The path to the converted file if successful, otherwise None.
         fn convert(
@@ -100,12 +101,12 @@ mod pdfconversion {
 
         #[pyo3(signature = (file_paths, output_paths = None, overwrite = true))]
         /// Converts multiple input files using the specified conversion logic.
-
+        ///
         /// Args:
         ///     file_paths (list[str]): List of input file paths to be converted.
         ///     output_paths (list[str] | None, optional): List of output file paths. If None, output paths are determined automatically. Defaults to None.
         ///     overwrite (bool, optional): Whether to overwrite existing output files. Defaults to True.
-
+        ///
         /// Returns:
         ///     list[str]: List of output file paths after conversion.
         fn multiple_convert(
@@ -133,12 +134,12 @@ mod pdfconversion {
 
         #[pyo3(signature = (directory_path, overwrite = true, recursive = true))]
         /// Converts all files in the specified directory to the desired format.
-
+        ///
         /// Args:
         ///     directory_path (str): The path to the directory containing files to convert.
         ///     overwrite (bool, optional): Whether to overwrite existing converted files. Defaults to True.
         ///     recursive (bool, optional): Whether to include files in subdirectories recursively. Defaults to True.
-
+        ///
         /// Returns:
         ///     Result of the multiple file conversion process.
         fn convert_directory(
