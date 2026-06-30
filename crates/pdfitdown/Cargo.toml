@@ -2,6 +2,10 @@
 name = "pdfitdown"
 version = "4.0.0"
 edition = "2024"
+readme = "README.md"
+repository = "https://github.com/AstraBert/PdfItDown"
+description = "PdfItDown: Convert anything to PDF."
+keywords = ["pdf", "conversion", "office", "images", "markup"]
 
 [dependencies]
 clap = { version = "4.6.1", features = ["derive"] }
