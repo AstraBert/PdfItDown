@@ -3,15 +3,21 @@
 #
 #    maturin generate-ci github
 #
-name: CI
+name: CI - Python Bindings
 
 on:
   push:
     branches:
       - main
+    paths:
+      - "crates/**"
+      - ".github/workflows/ci-python.yml"
     # tags:
     #   - "*"
   pull_request:
+    paths:
+      - "crates/**"
+      - ".github/workflows/ci-python.yml"
   workflow_dispatch:
 
 permissions:
