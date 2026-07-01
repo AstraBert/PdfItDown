@@ -1,15 +1,23 @@
+#[cfg(feature = "image")]
 mod img;
+#[cfg(feature = "markup")]
 mod markup;
+#[cfg(feature = "office")]
 mod office;
+#[cfg(feature = "markup")]
 mod text;
 pub mod types;
 
 use std::{fs, io, sync::OnceLock};
 
+#[cfg(feature = "image")]
 pub use img::ImageConverter;
-pub use markup::{MarkupConverter, html_regex};
+#[cfg(feature = "markup")]
+pub use markup::MarkupConverter;
+#[cfg(feature = "office")]
 pub use office::OfficeConverter;
 use regex::bytes::Regex;
+#[cfg(feature = "markup")]
 pub use text::TextConverter;
 
 use crate::types::Converter;
@@ -21,20 +29,34 @@ fn markdown_regex() -> &'static Regex {
     })
 }
 
+static HTML_REGEX: OnceLock<Regex> = OnceLock::new();
+
+fn html_regex() -> &'static Regex {
+    HTML_REGEX.get_or_init(|| Regex::new(r"(?i)<(html|head|body)[\s>]").unwrap())
+}
+
 #[derive(Debug, Clone, Copy, Default)]
 pub struct PdfItDownConverter {
+    #[cfg(feature = "markup")]
     markup_converter: MarkupConverter,
+    #[cfg(feature = "office")]
     office_converter: OfficeConverter,
+    #[cfg(feature = "markup")]
     text_converter: TextConverter,
+    #[cfg(feature = "image")]
     image_converter: ImageConverter,
 }
 
 impl PdfItDownConverter {
     pub fn new() -> Self {
         PdfItDownConverter {
+            #[cfg(feature = "markup")]
             markup_converter: MarkupConverter {},
+            #[cfg(feature = "office")]
             office_converter: OfficeConverter {},
+            #[cfg(feature = "markup")]
             text_converter: TextConverter::new(),
+            #[cfg(feature = "image")]
             image_converter: ImageConverter {},
         }
     }
@@ -42,23 +64,27 @@ impl PdfItDownConverter {
 
 impl Converter for PdfItDownConverter {
     fn supported_formats(&self) -> &'static [&'static str] {
-        self.image_converter
-            .supported_formats()
-            .iter()
-            .chain(self.office_converter.supported_formats().iter())
-            .chain(self.markup_converter.supported_formats().iter())
-            .chain(self.text_converter.supported_formats().iter())
-            .chain(["pdf"].iter())
-            .copied()
-            .collect::<Vec<&'static str>>()
-            .leak()
+        let mut formats: Vec<&'static str> = Vec::new();
+        #[cfg(feature = "image")]
+        formats.extend(self.image_converter.supported_formats());
+        #[cfg(feature = "office")]
+        formats.extend(self.office_converter.supported_formats());
+        #[cfg(feature = "markup")]
+        {
+            formats.extend(self.markup_converter.supported_formats());
+            formats.extend(self.text_converter.supported_formats());
+        }
+        formats.push("pdf");
+        formats.leak()
     }
 
     fn convert(&self, input: impl Into<types::ConversionInput> + Clone) -> io::Result<Vec<u8>> {
         let extension;
         match input.clone().into() {
             types::ConversionInput::Binary(b) => {
+                #[cfg(any(feature = "image", feature = "office"))]
                 let kind = infer::get(&b);
+                #[cfg(any(feature = "image", feature = "office"))]
                 if let Some(k) = kind
                     && self
                         .supported_formats()
@@ -74,7 +100,23 @@ impl Converter for PdfItDownConverter {
                     })?;
                     extension = if markdown_regex().is_match(s.as_bytes()) {
                         String::from("md")
-                    } else if html_regex().is_match(&s) {
+                    } else if html_regex().is_match(s.as_bytes()) {
+                        String::from("html")
+                    } else {
+                        String::from("txt")
+                    };
+                }
+                #[cfg(not(any(feature = "image", feature = "office")))]
+                {
+                    let s = String::from_utf8(b).map_err(|_| {
+                        io::Error::new(
+                            io::ErrorKind::InvalidData,
+                            "Binary data was expected to be readable to string, but it is not",
+                        )
+                    })?;
+                    extension = if markdown_regex().is_match(s.as_bytes()) {
+                        String::from("md")
+                    } else if html_regex().is_match(s.as_bytes()) {
                         String::from("html")
                     } else {
                         String::from("txt")
@@ -89,37 +131,43 @@ impl Converter for PdfItDownConverter {
                     {
                         return Err(io::Error::new(
                             io::ErrorKind::InvalidInput,
-                            "File format not supported for image conversion",
+                            "File format not supported for conversion",
                         ));
                     }
                 } else {
                     return Err(io::Error::new(
                         io::ErrorKind::InvalidInput,
-                        "Cannot infer extension from file name, please add an extension if this is an image",
+                        "Cannot infer extension from file name, please add an extension",
                     ));
                 }
                 extension = f.extension().unwrap().to_string_lossy().to_lowercase();
             }
         };
+        #[cfg(feature = "image")]
         if self
             .image_converter
             .supported_formats()
             .contains(&extension.as_str())
         {
-            self.image_converter.convert(input)
-        } else if self
+            return self.image_converter.convert(input);
+        }
+        #[cfg(feature = "office")]
+        if self
             .office_converter
             .supported_formats()
             .contains(&extension.as_str())
         {
-            self.office_converter.convert(input)
-        } else if self
+            return self.office_converter.convert(input);
+        }
+        #[cfg(feature = "markup")]
+        if self
             .markup_converter
             .supported_formats()
             .contains(&extension.as_str())
         {
-            self.markup_converter.convert(input)
-        } else if extension == "pdf" {
+            return self.markup_converter.convert(input);
+        }
+        if extension == "pdf" {
             // PDF -> PDF is a no-op
             match input.into() {
                 types::ConversionInput::Binary(b) => Ok(b),
@@ -129,7 +177,17 @@ impl Converter for PdfItDownConverter {
                 }
             }
         } else {
-            self.text_converter.convert(input)
+            #[cfg(feature = "markup")]
+            {
+                self.text_converter.convert(input)
+            }
+            #[cfg(not(feature = "markup"))]
+            {
+                Err(io::Error::new(
+                    io::ErrorKind::InvalidInput,
+                    "File format not supported",
+                ))
+            }
         }
     }
 }
@@ -144,21 +202,31 @@ mod tests {
     fn test_pdfitdown_converter_supported_formats() {
         let converter = PdfItDownConverter::default();
         let formats = converter.supported_formats();
-        assert!(formats.contains(&"png"));
-        assert!(formats.contains(&"jpg"));
-        assert!(formats.contains(&"docx"));
-        assert!(formats.contains(&"xlsx"));
-        assert!(formats.contains(&"pptx"));
-        assert!(formats.contains(&"html"));
-        assert!(formats.contains(&"md"));
-        assert!(formats.contains(&"txt"));
-        assert!(formats.contains(&"rs"));
-        assert!(formats.contains(&"json"));
+        #[cfg(feature = "image")]
+        {
+            assert!(formats.contains(&"png"));
+            assert!(formats.contains(&"jpg"));
+        }
+        #[cfg(feature = "office")]
+        {
+            assert!(formats.contains(&"docx"));
+            assert!(formats.contains(&"xlsx"));
+            assert!(formats.contains(&"pptx"));
+        }
+        #[cfg(feature = "markup")]
+        {
+            assert!(formats.contains(&"html"));
+            assert!(formats.contains(&"md"));
+            assert!(formats.contains(&"txt"));
+            assert!(formats.contains(&"rs"));
+            assert!(formats.contains(&"json"));
+        }
         assert!(formats.contains(&"pdf"));
         assert!(!formats.contains(&"unknown"));
     }
 
     #[test]
+    #[cfg(feature = "image")]
     fn test_pdfitdown_converter_convert_image() {
         let png = crate::img::make_1x1_png(255, 0, 0, 255);
         let converter = PdfItDownConverter::default();
@@ -168,6 +236,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "markup")]
     fn test_pdfitdown_converter_convert_text() {
         let converter = PdfItDownConverter::default();
         let text = "Hello world\n";
@@ -182,6 +251,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "markup")]
     fn test_pdfitdown_converter_convert_markdown() {
         let converter = PdfItDownConverter::default();
         let md = "# Hello\n\nWorld\n";
@@ -209,6 +279,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "image")]
     fn test_pdfitdown_converter_convert_to_file_no_overwrite_error() {
         let png = crate::img::make_1x1_png(255, 0, 0, 255);
         let mut tmp = tempfile::NamedTempFile::with_suffix(".png").unwrap();
@@ -229,6 +300,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(all(feature = "image", feature = "markup"))]
     fn test_pdfitdown_converter_convert_directory_recursive() {
         let png = crate::img::make_1x1_png(255, 0, 0, 255);
         let md = "# Hello\n";
@@ -269,6 +341,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(all(feature = "image", feature = "markup"))]
     fn test_pdfitdown_converter_convert_directory_non_recursive() {
         let png = crate::img::make_1x1_png(255, 0, 0, 255);
         let md = "# Hello\n";
@@ -295,6 +368,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(all(feature = "image", feature = "markup"))]
     fn test_pdfitdown_converter_convert_multiple_files() {
         let png = crate::img::make_1x1_png(255, 0, 0, 255);
         let md = "# Hello\n";

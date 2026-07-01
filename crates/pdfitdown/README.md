@@ -30,6 +30,26 @@ Or enable parallelization with the `rayon` feature:
 pdfitdown = { version = "4.0", features = ["rayon"] }
 ```
 
+### Feature Flags
+
+| Feature | Description | Default |
+|---------|-------------|---------|
+| `cli` | Command-line interface (`clap`) | ✅ |
+| `image` | Image-to-PDF conversion | ✅ |
+| `office` | Office document conversion (`docx`, `xlsx`, `pptx`) | ✅ |
+| `markup` | Markdown/HTML and text-based format conversion | ✅ |
+| `rayon` | Parallelized batch conversion | ❌ |
+
+```toml
+# Library only — no CLI, only markup and image support
+[dependencies]
+pdfitdown = { version = "4.0", default-features = false, features = ["markup", "image"] }
+
+# Minimal — markup only
+[dependencies]
+pdfitdown = { version = "4.0", default-features = false, features = ["markup"] }
+```
+
 ## Usage
 
 ### Basic Conversion
@@ -112,12 +132,14 @@ pdfitdown -d tests/data/testdir --recursive
 
 ## API Overview
 
-The crate exposes a unified `Converter` trait and a composite `PdfItDownConverter` that delegates to specialized converters:
+The crate exposes a unified `Converter` trait and a composite `PdfItDownConverter` that delegates to specialized converters. Each converter is available only when its corresponding feature is enabled:
 
-- **`ImageConverter`** — Converts image files to PDF via the `image` crate.
-- **`OfficeConverter`** — Converts Word, Excel, and PowerPoint via `office2pdf`.
-- **`MarkupConverter`** — Converts Markdown and HTML via `markdown2pdf`.
-- **`TextConverter`** — Converts plain text and text-based formats via `markdown2pdf`.
+| Converter | Feature | Description |
+|-----------|---------|-------------|
+| `ImageConverter` | `image` | Converts image files to PDF via the `image` crate. |
+| `OfficeConverter` | `office` | Converts Word, Excel, and PowerPoint via `office2pdf`. |
+| `MarkupConverter` | `markup` | Converts Markdown and HTML via `markdown2pdf`. |
+| `TextConverter` | `markup` | Converts plain text and text-based formats via `markdown2pdf`. |
 
 All converters implement:
 

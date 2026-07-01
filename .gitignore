@@ -10,3 +10,4 @@ tests/data/*.pdf
 __pycache__/
 target/
 .wrangler/
+.DS_Store

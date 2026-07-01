@@ -83,6 +83,8 @@ cd PdfItDown
 cargo install --path crates/pdfitdown
 ```
 
+> **Note:** The CLI requires the `cli` feature (enabled by default). To install the library only without CLI support, use `cargo install pdfitdown --no-default-features`.
+
 You can now use the **command line tool**:
 
 ```
@@ -158,17 +160,36 @@ let converter = PdfItDownConverter::new();
 converter.convert_directory("tests/data/testdir", true, true)?; // overwrite, recursive
 ```
 
-#### Parallelization with `rayon`
+#### Feature Flags
 
-Enable the `rayon` feature for parallel conversion of multiple files:
+PdfItDown uses Cargo features to let you choose which converters to include:
+
+| Feature | Description | Default |
+|---------|-------------|---------|
+| `cli` | Enables the command-line interface and `clap` dependency | ✅ |
+| `image` | Enables image-to-PDF conversion (`png`, `jpg`, etc.) | ✅ |
+| `office` | Enables Office document conversion (`docx`, `xlsx`, `pptx`) | ✅ |
+| `markup` | Enables Markdown/HTML conversion and text-based formats | ✅ |
+| `rayon` | Enables parallelized batch conversion | ❌ |
+
+**Examples:**
 
 ```toml
+# Library only, no CLI
+[dependencies]
+pdfitdown = { version = "4.0", default-features = false, features = ["markup", "image"] }
+
+# All converters + parallelization
 [dependencies]
 pdfitdown = { version = "4.0", features = ["rayon"] }
 ```
 
 ```bash
+# Install CLI with all features
 cargo install pdfitdown --features rayon
+
+# Install library only (e.g. for WASM or embedded use)
+cargo install pdfitdown --no-default-features --features markup
 ```
 
 ### Python Legacy

@@ -76,7 +76,16 @@ jobs:
         run: jake test
 
       - name: Run tests (with rayon)
-        run: jake test-rayon --options "-p pdfitdown"
+        run: jake test-rayon
+
+      - name: Run tests (markup only)
+        run: jake test-markup
+
+      - name: Run tests (image only)
+        run: jake test-image
+
+      - name: Run tests (office only)
+        run: jake test-office
 
   test-windows:
     name: Test on windows-latest
@@ -101,7 +110,16 @@ jobs:
             ${{ runner.os }}-cargo-
 
       - name: Run tests (no rayon)
-        run: cargo test
+        run: cargo test --release -p 'pdfitdown'
 
       - name: Run tests (with rayon)
-        run: cargo test --features rayon -p "pdfitdown"
+        run: cargo test --release --features rayon -p 'pdfitdown'
+
+      - name: Run tests (markup only)
+        run: cargo test --no-default-features --features markup --release -p 'pdfitdown'
+
+      - name: Run tests (image only)
+        run: cargo test --no-default-features --features image --release -p 'pdfitdown'
+
+      - name: Run tests (office only)
+        run: cargo test --no-default-features --features office --release -p 'pdfitdown'
