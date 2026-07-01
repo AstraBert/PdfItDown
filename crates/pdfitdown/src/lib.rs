@@ -1,6 +1,10 @@
+#[cfg(feature = "image")]
 mod img;
+#[cfg(feature = "markup")]
 mod markup;
+#[cfg(feature = "office")]
 mod office;
+#[cfg(feature = "markup")]
 mod text;
 pub mod types;
 
