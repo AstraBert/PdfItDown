@@ -4,14 +4,22 @@ mod office;
 mod text;
 pub mod types;
 
-use std::{fs, io};
+use std::{fs, io, sync::OnceLock};
 
 pub use img::ImageConverter;
-pub use markup::MarkupConverter;
+pub use markup::{MarkupConverter, html_regex};
 pub use office::OfficeConverter;
+use regex::bytes::Regex;
 pub use text::TextConverter;
 
 use crate::types::Converter;
+
+static MARKDOWN_REGEX: OnceLock<Regex> = OnceLock::new();
+fn markdown_regex() -> &'static Regex {
+    MARKDOWN_REGEX.get_or_init(|| {
+        Regex::new(r"(?m)(^#{1,6}\s|^\s*[-*+]\s|^\s*\d+\.\s|^```|\[.+?\]\(.+?\)|^>\s|\*\*[^*]+\*\*|__[^_]+__)").unwrap()
+    })
+}
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct PdfItDownConverter {
@@ -58,11 +66,19 @@ impl Converter for PdfItDownConverter {
                 {
                     extension = k.extension().to_lowercase();
                 } else {
-                    // Infer does not know about text types
-                    // and for binary data, the safest option is
-                    // to use 'txt'. If the data is not text,
-                    // this will fail downstream
-                    extension = String::from("txt");
+                    let s = String::from_utf8(b).map_err(|_| {
+                        io::Error::new(
+                            io::ErrorKind::InvalidData,
+                            "Binary data was expected to be readable to string, but it is not",
+                        )
+                    })?;
+                    extension = if markdown_regex().is_match(s.as_bytes()) {
+                        String::from("md")
+                    } else if html_regex().is_match(&s) {
+                        String::from("html")
+                    } else {
+                        String::from("txt")
+                    };
                 }
             }
             types::ConversionInput::File(f) => {

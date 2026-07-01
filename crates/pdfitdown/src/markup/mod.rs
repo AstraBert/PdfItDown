@@ -1,9 +1,9 @@
 use regex::Regex;
 use std::sync::OnceLock;
 
-static HTML_REGEX: OnceLock<Regex> = OnceLock::new();
+pub static HTML_REGEX: OnceLock<Regex> = OnceLock::new();
 
-fn html_regex() -> &'static Regex {
+pub fn html_regex() -> &'static Regex {
     HTML_REGEX.get_or_init(|| Regex::new(r"(?i)<(html|head|body)[\s>]").unwrap())
 }
 
@@ -47,13 +47,13 @@ mod inner {
                         {
                             return Err(io::Error::new(
                                 io::ErrorKind::InvalidInput,
-                                "File format not supported for image conversion",
+                                "File format not supported for markup conversion",
                             ));
                         }
                     } else {
                         return Err(io::Error::new(
                             io::ErrorKind::InvalidInput,
-                            "Cannot infer extension from file name, please add an extension if this is an image",
+                            "Cannot infer extension from file name, please add an extension if this is a markup file",
                         ));
                     }
                     fs::read_to_string(f)?
@@ -198,13 +198,13 @@ mod inner {
                         {
                             return Err(io::Error::new(
                                 io::ErrorKind::InvalidInput,
-                                "File format not supported for image conversion",
+                                "File format not supported for markup conversion",
                             ));
                         }
                     } else {
                         return Err(io::Error::new(
                             io::ErrorKind::InvalidInput,
-                            "Cannot infer extension from file name, please add an extension if this is an image",
+                            "Cannot infer extension from file name, please add an extension if this is a markup file",
                         ));
                     }
                     fs::read_to_string(f)?

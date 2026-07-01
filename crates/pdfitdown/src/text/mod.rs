@@ -55,13 +55,13 @@ impl Converter for TextConverter {
                     {
                         return Err(io::Error::new(
                             io::ErrorKind::InvalidInput,
-                            "File format not supported for image conversion",
+                            "File format not supported for text conversion",
                         ));
                     }
                 } else {
                     return Err(io::Error::new(
                         io::ErrorKind::InvalidInput,
-                        "Cannot infer extension from file name, please add an extension if this is an image",
+                        "Cannot infer extension from file name, please add an extension if this is a text file",
                     ));
                 }
                 let d = std::fs::read_to_string(&f)?;
