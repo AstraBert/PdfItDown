@@ -5,16 +5,19 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/napi-rs/package-template.git"
+    "url": "git+ssh://git@github.com/AstraBert/PdfItDown.git"
   },
   "license": "MIT",
   "keywords": [
+    "pdf",
+    "converter",
+    "office",
+    "image",
+    "text",
+    "file-to-pdf",
+    "node-bindings",
     "napi-rs",
-    "NAPI",
-    "N-API",
-    "Rust",
-    "node-addon",
-    "node-addon-api"
+    "file-conversion"
   ],
   "files": [
     "index.d.ts",
