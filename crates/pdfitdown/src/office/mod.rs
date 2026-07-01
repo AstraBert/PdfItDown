@@ -51,13 +51,13 @@ impl Converter for OfficeConverter {
                     {
                         return Err(io::Error::new(
                             io::ErrorKind::InvalidInput,
-                            "File format not supported for image conversion",
+                            "File format not supported for office conversion",
                         ));
                     }
                 } else {
                     return Err(io::Error::new(
                         io::ErrorKind::InvalidInput,
-                        "Cannot infer extension from file name, please add an extension if this is an image",
+                        "Cannot infer extension from file name, please add an extension if this is an office file",
                     ));
                 }
                 let d = std::fs::read(&f)?;
