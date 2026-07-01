@@ -25,6 +25,7 @@ impl Converter for OfficeConverter {
     /// Convert office files to PDF (migth be unstable)
     fn convert(&self, input: impl Into<ConversionInput> + Clone) -> io::Result<Vec<u8>> {
         let data;
+        let extension;
         match input.into() {
             ConversionInput::Binary(b) => {
                 let kind = infer::get(&b);
@@ -34,6 +35,7 @@ impl Converter for OfficeConverter {
                         .contains(&k.extension().to_lowercase().as_str())
                 {
                     data = b;
+                    extension = k.extension().to_lowercase();
                 } else {
                     return Err(io::Error::new(
                         io::ErrorKind::InvalidData,
@@ -58,29 +60,23 @@ impl Converter for OfficeConverter {
                         "Cannot infer extension from file name, please add an extension if this is an image",
                     ));
                 }
-                let d = std::fs::read(f)?;
+                let d = std::fs::read(&f)?;
+                extension = f.extension().unwrap().to_string_lossy().to_lowercase();
                 data = d;
             }
         };
 
-        let format = infer::get(&data);
-        if let Some(form) = format {
-            let office_format = self.to_format(form.extension());
-            if let Some(of) = office_format {
-                let pdf = office2pdf::convert_bytes(
-                    &data,
-                    of,
-                    &office2pdf::config::ConvertOptions::default(),
-                )
-                .map_err(|e| io::Error::other(e.to_string()))?;
-                return Ok(pdf.pdf);
-            }
-            return Err(io::Error::other("Unsupported office file format"));
+        let office_format = self.to_format(&extension);
+        if let Some(of) = office_format {
+            let pdf = office2pdf::convert_bytes(
+                &data,
+                of,
+                &office2pdf::config::ConvertOptions::default(),
+            )
+            .map_err(|e| io::Error::other(e.to_string()))?;
+            return Ok(pdf.pdf);
         }
-        Err(io::Error::new(
-            io::ErrorKind::InvalidInput,
-            "Cannot determine the input format for the provided data",
-        ))
+        Err(io::Error::other("Unsupported office file format"))
     }
 }
 
