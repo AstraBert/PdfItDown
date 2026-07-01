@@ -1,5 +1,3 @@
-#![cfg(feature = "cli")]
-
 use clap::Parser;
 use pdfitdown::{PdfItDownConverter, types::Converter};
 

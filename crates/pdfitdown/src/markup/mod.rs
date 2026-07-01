@@ -1,9 +1,9 @@
 use regex::Regex;
 use std::sync::OnceLock;
 
-pub static HTML_REGEX: OnceLock<Regex> = OnceLock::new();
+static HTML_REGEX: OnceLock<Regex> = OnceLock::new();
 
-pub fn html_regex() -> &'static Regex {
+fn html_regex() -> &'static Regex {
     HTML_REGEX.get_or_init(|| Regex::new(r"(?i)<(html|head|body)[\s>]").unwrap())
 }
 
