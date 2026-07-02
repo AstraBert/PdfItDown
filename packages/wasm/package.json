@@ -25,8 +25,7 @@
     "build": "wasm-pack build ../../crates/pdfitdown-wasm --release --target web --out-dir ../../packages/wasm/pkg --out-name pdfitdown_wasm",
     "build:bundler": "wasm-pack build ../../crates/pdfitdown-wasm --release --target bundler --out-dir ../../packages/wasm/pkg --out-name pdfitdown_wasm",
     "build:nodejs": "wasm-pack build ../../crates/pdfitdown-wasm --release --target nodejs --out-dir ../../packages/wasm/pkg --out-name pdfitdown_wasm",
-    "clean": "rm -rf pkg",
-    "prepublishOnly": "bun run build"
+    "clean": "rm -rf pkg"
   },
   "keywords": [
     "pdf",
