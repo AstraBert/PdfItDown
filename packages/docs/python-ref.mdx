@@ -1,0 +1,86 @@
+---
+title: 'Python API Usage'
+description: 'Use PdfItDown in your Python project through PyO3 bindings'
+---
+
+The `pdfitdown` Python package provides a native interface to the Rust PdfItDown engine via [PyO3](https://pyo3.rs) and [Maturin](https://www.maturin.rs).
+
+## Installation
+
+```bash
+uv add pdfitdown
+```
+
+Or build from source:
+
+```bash
+git clone https://github.com/AstraBert/PdfItDown.git
+cd PdfItDown/crates/pdfitdown-python
+maturin build --release
+uv pip install target/wheels/pdfitdown-*.whl
+```
+
+## Supported Formats
+
+| Category | Formats |
+|----------|---------|
+| Markup | `.md`, `.html`, `.htm` |
+| Office | `.docx`, `.xlsx`, `.pptx` |
+| Images | `.png`, `.jpg`, `.jpeg`, `.webp`, `.tiff`, `.avif` |
+| Text | `.txt`, `.csv`, `.xml`, `.json`, and more |
+| Other | `.pdf` (pass-through) |
+
+## CLI
+
+The package installs a `pdfitdown` CLI entry point:
+
+```bash
+# Single file
+pdfitdown -i README.md -o README.pdf
+
+# Multiple files
+pdfitdown -i file1.png -i file2.docx -o out1.pdf -o out2.pdf
+
+# Bulk directory conversion
+pdfitdown -d ./documents --recursive
+```
+
+## Python API
+
+Import the `Converter` class from `pdfitdown.pdfconversion`:
+
+```python
+from pdfitdown.pdfconversion import Converter
+
+converter = Converter()
+```
+
+### Convert a single file
+
+```python
+result = converter.convert("README.md", "README.pdf", overwrite=False)
+```
+
+### Convert multiple files
+
+```python
+results = converter.multiple_convert(
+    ["business.md", "report.docx"],
+    ["business.pdf", "report.pdf"],
+    overwrite=True
+)
+```
+
+If you omit `output_paths`, PDFs are written next to the inputs with `.pdf` extension.
+
+### Convert a directory
+
+```python
+results = converter.convert_directory("docs/", overwrite=True, recursive=True)
+```
+
+Returns a list of generated PDF paths.
+
+## Error handling
+
+All methods raise standard Python exceptions on failure (e.g. `IOError` when an output file exists and `overwrite=False`).

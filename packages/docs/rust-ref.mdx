@@ -5,6 +5,42 @@ description: 'Use PdfItDown in your Rust project, customize as much as you want,
 
 **PdfItDown** is designed to be flexible and highly customizable, while also providing a ready-to-use solution that you can employ in your code immediately without any modifications.
 
+## Installation
+
+Add to your `Cargo.toml`:
+
+```toml
+[dependencies]
+pdfitdown = "4.0"
+```
+
+Or enable parallelized batch conversion with the `rayon` feature:
+
+```toml
+[dependencies]
+pdfitdown = { version = "4.0", features = ["rayon"] }
+```
+
+### Feature flags
+
+| Feature | Description | Default |
+|---------|-------------|---------|
+| `cli` | Command-line interface (`clap`) | ✅ |
+| `image` | Image-to-PDF conversion | ✅ |
+| `office` | Office document conversion (`docx`, `xlsx`, `pptx`) | ✅ |
+| `markup` | Markdown/HTML and text-based format conversion | ✅ |
+| `rayon` | Parallelized batch conversion | ❌ |
+
+```toml
+# Library only — no CLI, only markup and image support
+[dependencies]
+pdfitdown = { version = "4.0", default-features = false, features = ["markup", "image"] }
+
+# Minimal — markup only
+[dependencies]
+pdfitdown = { version = "4.0", default-features = false, features = ["markup"] }
+```
+
 Let's explore three levels of usage:
 
 ## Level 1: Use PdfItDown as-is
