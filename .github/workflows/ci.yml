@@ -1,7 +1,18 @@
 name: CI - Rust
 
 on:
+  push:
+    branches:
+      - main
+    tags:
+      - "core@**"
+    paths:
+      - "crates/**"
+      - ".github/workflows/ci.yml"
   pull_request:
+    paths:
+      - "crates/**"
+      - ".github/workflows/ci.yml"
 env:
   CARGO_TERM_COLOR: always
 
@@ -123,3 +134,47 @@ jobs:
 
       - name: Run tests (office only)
         run: cargo test --no-default-features --features office --release -p 'pdfitdown'
+
+  publish:
+    name: Publish - Rust Core
+    runs-on: ubuntu-latest
+    if: ${{ startsWith(github.ref, 'refs/tags/') }}
+    needs:
+      - clippy
+      - format
+      - test
+      - test-windows
+    permissions:
+      contents: write # to be able to publish a GitHub release
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-clippy-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Login to cargo
+        run: cargo login <<< $CARGO_API_TOKEN
+        env:
+          CARGO_API_TOKEN: ${{ secrets.CARGO_API_TOKEN }}
+
+      - name: Publish to crates
+        run: cargo publish -p "pdfitdown"
+        env:
+          CARGO_API_TOKEN: ${{ secrets.CARGO_API_TOKEN }}
+
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          generateReleaseNotes: true

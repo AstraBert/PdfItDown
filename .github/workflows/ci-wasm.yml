@@ -3,6 +3,8 @@ name: CI - WASM Bindings
 on:
   push:
     branches: [main]
+    tags:
+      - "wasm@**"
     paths:
       - "crates/**"
       - "packages/wasm/**"
@@ -25,9 +27,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 24
 
       - uses: dtolnay/rust-toolchain@1.95.0
         with:
@@ -72,9 +74,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 24
 
       - name: Download WASM artifact
         uses: actions/download-artifact@v4
@@ -87,3 +89,37 @@ jobs:
 
       - name: Run edge runtime parse test
         run: node scripts/edge-compat/wasm-test.mjs
+
+  publish:
+    name: Publish - WASM Bindings
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    if: ${{ startsWith(github.ref, 'refs/tags/') }}
+    needs:
+      - build
+      - edge-test
+    steps:
+      - uses: actions/checkout@v7
+      - name: Setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Install dependencies
+        run: npm ci
+        working-directory: packages/wasm
+      - name: Download WASM artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: wasm-pkg
+          path: packages/wasm/pkg/
+      - name: Publish
+        run: |
+          npm config set provenance true
+          echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+          npm publish --access public
+        working-directory: packages/wasm
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

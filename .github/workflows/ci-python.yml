@@ -12,8 +12,8 @@ on:
     paths:
       - "crates/**"
       - ".github/workflows/ci-python.yml"
-    # tags:
-    #   - "*"
+    tags:
+      - "python@**"
   pull_request:
     paths:
       - "crates/**"
@@ -170,29 +170,29 @@ jobs:
           name: wheels-sdist
           path: crates/pdfitdown-python/dist
 
-  # release:
-  #   name: Release
-  #   runs-on: ubuntu-latest
-  #   if: ${{ startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' }}
-  #   needs: [linux, musllinux, windows, macos, sdist]
-  #   permissions:
-  #     # Use to sign the release artifacts
-  #     id-token: write
-  #     # Used to upload release artifacts
-  #     contents: write
-  #     # Used to generate artifact attestation
-  #     attestations: write
-  #   steps:
-  #     - uses: actions/download-artifact@v7
-  #     - name: Generate artifact attestation
-  #       uses: actions/attest@v4
-  #       with:
-  #         subject-path: "wheels-*/*"
-  #     - name: Install uv
-  #       if: ${{ startsWith(github.ref, 'refs/tags/') }}
-  #       uses: astral-sh/setup-uv@v7
-  #     - name: Publish to PyPI
-  #       if: ${{ startsWith(github.ref, 'refs/tags/') }}
-  #       run: uv publish 'wheels-*/*'
-  #       env:
-  #         UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+  publish:
+    name: Publish - Python Bindings
+    runs-on: ubuntu-latest
+    if: ${{ startsWith(github.ref, 'refs/tags/') }}
+    needs: [linux, musllinux, windows, macos, sdist]
+    permissions:
+      # Use to sign the release artifacts
+      id-token: write
+      # Used to upload release artifacts
+      contents: write
+      # Used to generate artifact attestation
+      attestations: write
+    steps:
+      - uses: actions/download-artifact@v7
+      - name: Generate artifact attestation
+        uses: actions/attest@v4
+        with:
+          subject-path: "wheels-*/*"
+      - name: Install uv
+        if: ${{ startsWith(github.ref, 'refs/tags/') }}
+        uses: astral-sh/setup-uv@v7
+      - name: Publish to PyPI
+        if: ${{ startsWith(github.ref, 'refs/tags/') }}
+        run: uv publish 'wheels-*/*'
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}

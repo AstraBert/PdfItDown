@@ -3,6 +3,7 @@ name = "pdfitdown"
 version = "4.0.0"
 edition = "2024"
 readme = "README.md"
+license = "MIT"
 repository = "https://github.com/AstraBert/PdfItDown"
 description = "PdfItDown: Convert anything to PDF."
 keywords = ["pdf", "conversion", "office", "images", "markup"]

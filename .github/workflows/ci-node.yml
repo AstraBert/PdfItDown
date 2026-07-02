@@ -8,15 +8,16 @@ env:
   push:
     branches:
       - main
-    tags-ignore:
-      - "**"
-    paths-ignore:
-      - "**/*.md"
-      - LICENSE
-      - "**/*.gitignore"
-      - .editorconfig
-      - docs/**
-  pull_request: null
+    tags:
+      - "node@**"
+    paths:
+      - "crates/**"
+      - ".github/workflows/ci-python.yml"
+  pull_request:
+    paths:
+      - "crates/**"
+      - ".github/workflows/ci-python.yml"
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -256,50 +257,49 @@ jobs:
           name: test-bindings-${{ matrix.target }}
           options: "-v ${{ github.workspace }}:${{ github.workspace }} -w ${{ github.workspace }}/crates/pdfitdown-ts --platform ${{ steps.docker.outputs.PLATFORM }}"
           args: yarn test
-  # publish:
-  #   name: Publish
-  #   runs-on: ubuntu-latest
-  #   permissions:
-  #     contents: write
-  #     id-token: write
-  #   needs:
-  #     - lint
-  #     - test-macOS-windows-binding
-  #     - test-linux-binding
-  #   steps:
-  #     - uses: actions/checkout@v7
-  #     - name: Setup node
-  #       uses: actions/setup-node@v6
-  #       with:
-  #         node-version: 24
-  #         cache: yarn
-  #     - name: Install dependencies
-  #       run: yarn install
-  #     - name: create npm dirs
-  #       run: yarn napi create-npm-dirs
-  #     - name: Download all artifacts
-  #       uses: actions/download-artifact@v8
-  #       with:
-  #         path: artifacts
-  #     - name: Move artifacts
-  #       run: yarn artifacts
-  #     - name: List packages
-  #       run: ls -R ./npm
-  #       shell: bash
-  #     - name: Publish
-  #       run: |
-  #         npm config set provenance true
-  #         if git log -1 --pretty=%B | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+$";
-  #         then
-  #           echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-  #           npm publish --access public
-  #         elif git log -1 --pretty=%B | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+";
-  #         then
-  #           echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-  #           npm publish --tag next --access public
-  #         else
-  #           echo "Not a release, skipping publish"
-  #         fi
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #         NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publish:
+    name: Publish - Node Bindings
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    if: ${{ startsWith(github.ref, 'refs/tags/') }}
+    needs:
+      - lint
+      - test-macOS-windows-binding
+      - test-linux-binding
+    steps:
+      - uses: actions/checkout@v7
+      - name: Setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: yarn
+          cache-dependency-path: crates/pdfitdown-ts/yarn.lock
+      - name: Install dependencies
+        run: yarn install
+        working-directory: crates/pdfitdown-ts
+      - name: create npm dirs
+        run: yarn napi create-npm-dirs
+        working-directory: crates/pdfitdown-ts
+      - name: Download all artifacts
+        uses: actions/download-artifact@v8
+        with:
+          path: crates/pdfitdown-ts/artifacts
+      - name: Move artifacts
+        run: yarn artifacts
+        working-directory: crates/pdfitdown-ts
+      - name: List packages
+        run: ls -R ./npm
+        shell: bash
+        working-directory: crates/pdfitdown-ts
+      - name: Publish
+        run: |
+          npm config set provenance true
+          echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+          npm publish --access public
+        working-directory: crates/pdfitdown-ts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
