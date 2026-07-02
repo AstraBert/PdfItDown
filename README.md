@@ -69,9 +69,11 @@ graph LR
 
 ### Installation and Usage
 
-**PdfItDown** is distributed as a Rust crate and a standalone CLI binary.
+**PdfItDown** is distributed as a Rust crate, a standalone CLI binary, and bindings for Python, TypeScript/Node.js, and WebAssembly.
 
-#### Install the CLI
+#### Rust (Crate + CLI)
+
+##### Install the CLI
 
 ```bash
 # Install from crates.io
@@ -160,6 +162,132 @@ let converter = PdfItDownConverter::new();
 converter.convert_directory("tests/data/testdir", true, true)?; // overwrite, recursive
 ```
 
+#### Python
+
+Python bindings are available via PyPI, built with [PyO3](https://pyo3.rs/):
+
+```bash
+uv add pdfitdown
+```
+
+Or build from source with Maturin:
+
+```bash
+git clone https://github.com/AstraBert/PdfItDown.git
+cd PdfItDown/crates/pdfitdown-python
+maturin build --release
+uv pip install target/wheels/pdfitdown-*.whl
+```
+
+**Usage:**
+
+```python
+from pdfitdown.pdfconversion import Converter
+
+# Convert a single file
+converter = Converter()
+converter.convert("README.md", "README.pdf", overwrite=False)
+
+# Convert multiple files
+converter.multiple_convert(["business.md", "report.docx"])
+
+# Bulk convert a directory
+converter.convert_directory("docs/", overwrite=True, recursive=True)
+```
+
+The Python package also installs a CLI entry point:
+
+```bash
+pdfitdown -i README.md -o README.pdf
+```
+
+#### TypeScript / Node.js
+
+TypeScript/Node.js bindings are available on npm, built with [NAPI-RS](https://napi.rs):
+
+```bash
+npm install @cle-does-things/pdfitdown
+```
+
+Prebuilt binaries are available for macOS, Linux, and Windows (x86_64 and arm64).
+
+**Usage:**
+
+```typescript
+import { PdfItDownConverter } from '@cle-does-things/pdfitdown'
+
+const converter = new PdfItDownConverter()
+
+// Convert a single file
+converter.convertFile('input.docx', 'output.pdf', true)
+
+// Convert multiple files
+converter.convertMultipleFiles(
+  ['file1.docx', 'file2.pptx'],
+  ['file1.pdf', 'file2.pdf'],
+  true,
+)
+
+// Convert a directory
+converter.convertDirectory('./documents', true, true)
+
+// Convert from memory (Buffer → Buffer)
+import { readFileSync, writeFileSync } from 'fs'
+const input = readFileSync('input.docx')
+const output = converter.convertBytes(input)
+writeFileSync('output.pdf', output)
+```
+
+#### WebAssembly
+
+A WebAssembly build is published on npm as `@cle-does-things/pdfitdown-wasm` and can also be built from source:
+
+```bash
+# Install from npm
+npm install @cle-does-things/pdfitdown-wasm
+
+# Or build from source
+cd PdfItDown/packages/wasm
+npm run build        # web target
+npm run build:bundler  # bundler target
+npm run build:nodejs   # Node.js target
+```
+
+**Usage (via CDN in a browser):**
+
+```html
+<script type="module">
+  import init, { convert } from 'https://cdn.jsdelivr.net/npm/@cle-does-things/pdfitdown-wasm@4.0.0/pdfitdown_wasm.js';
+
+  await init('https://cdn.jsdelivr.net/npm/@cle-does-things/pdfitdown-wasm@4.0.0/pdfitdown_wasm_bg.wasm');
+
+  const fileInput = document.querySelector('input');
+  fileInput.addEventListener('change', async (e) => {
+    const bytes = new Uint8Array(await e.target.files[0].arrayBuffer());
+    const result = convert(bytes);
+    console.log('output bytes:', result);
+  });
+</script>
+
+<input type="file" />
+```
+
+**Usage (in a bundler or Deno/Bun):**
+
+```javascript
+import init, { convert, convertImage, convertMarkup, convertOffice, convertText } from '@cle-does-things/pdfitdown-wasm'
+
+await init()
+
+// Auto-detect format
+const pdfBytes = convert(new Uint8Array(await file.arrayBuffer()))
+
+// Or use specific converters
+const imagePdf = convertImage(imageBytes)
+const markupPdf = convertMarkup(markdownBytes)
+const docxPdf = convertOffice(docxBytes)
+```
+
 #### Feature Flags
 
 PdfItDown uses Cargo features to let you choose which converters to include:
@@ -194,7 +322,7 @@ cargo install pdfitdown --no-default-features --features markup
 
 ### Python Legacy
 
-Looking for the legacy Python package? It is available on the [`v3` branch](https://github.com/AstraBert/PdfItDown/tree/v3) and on PyPI as `pdfitdown<4.0`.
+Looking for the legacy Python package (v3, pure Python)? It is available on the [`v3` branch](https://github.com/AstraBert/PdfItDown/tree/v3) and on PyPI as `pdfitdown<4.0`. The current v4 Python bindings are a Rust-based rewrite and are the recommended way to use PdfItDown in Python.
 
 
 ### License
