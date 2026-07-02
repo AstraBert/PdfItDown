@@ -18,7 +18,14 @@
         "groups": [
           {
             "group": "Documentation",
-            "pages": ["introduction", "rust-ref", "cli"]
+            "pages": [
+              "introduction",
+              "rust-ref",
+              "python-ref",
+              "ts-ref",
+              "wasm-ref",
+              "cli"
+            ]
           }
         ]
       }

@@ -31,6 +31,8 @@ description: "Welcome to our documentation!"
 
 ## Setting up
 
+### Rust CLI
+
 To set up PdfItDown, you need a working [Rust toolchain](https://rustup.rs).
 
 <CodeGroup>
@@ -51,17 +53,56 @@ To set up PdfItDown, you need a working [Rust toolchain](https://rustup.rs).
 
 </CodeGroup>
 
+### Python
+
+```bash
+uv add pdfitdown
+```
+
+### Node.js / TypeScript
+
+```bash
+npm install @cle-does-things/pdfitdown
+```
+
+### WebAssembly (browser)
+
+```bash
+npm install @cle-does-things/pdfitdown-wasm
+```
+
 ## Choose how to use it
 
 Once you have PdfItDown set up, you can choose how to use it:
 
 <CardGroup cols={3}>
   <Card
-    title="In Rust Projects"
-    icon="code"
+    title="Rust"
+    icon="rust"
     href="/rust-ref"
   >
     Adapt PdfItDown to your pipelines by coding it yourself!
+  </Card>
+  <Card
+    title="Python"
+    icon="python"
+    href="/python-ref"
+  >
+    Use PdfItDown from Python with PyO3 bindings.
+  </Card>
+  <Card
+    title="TypeScript / Node.js"
+    icon="js"
+    href="/ts-ref"
+  >
+    Native Node.js bindings via NAPI-RS.
+  </Card>
+  <Card
+    title="WebAssembly"
+    icon="globe"
+    href="/wasm-ref"
+  >
+    Run PdfItDown directly in the browser with WASM.
   </Card>
   <Card
     title="In the CLI"
@@ -72,7 +113,7 @@ Once you have PdfItDown set up, you can choose how to use it:
   </Card>
   <Card
     title="Python Legacy"
-    icon="python"
+    icon="book-open"
     href="https://github.com/AstraBert/PdfItDown/tree/v3"
   >
     Looking for the legacy Python package? Find it on the v3 branch.

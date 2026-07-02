@@ -1,0 +1,124 @@
+---
+title: 'WebAssembly (WASM) API Usage'
+description: 'Use PdfItDown in the browser via WebAssembly'
+---
+
+The `@cle-does-things/pdfitdown-wasm` package lets you run PdfItDown directly in the browser through WebAssembly. It is built from the `pdfitdown-wasm` Rust crate using [`wasm-bindgen`](https://github.com/rustwasm/wasm-bindgen) and [`wasm-pack`](https://rustwasm.github.io/wasm-pack/).
+
+## Installation
+
+### Via npm
+
+```bash
+npm install @cle-does-things/pdfitdown-wasm
+```
+
+### Via CDN (esm)
+
+```html
+<script type="module">
+  import init, { convert } from 'https://cdn.jsdelivr.net/npm/pdfitdown-wasm@4.0.0/pdfitdown_wasm.js';
+  await init('https://cdn.jsdelivr.net/npm/pdfitdown-wasm@4.0.0/pdfitdown_wasm_bg.wasm');
+  // ... use convert()
+</script>
+```
+
+## Supported Formats
+
+| Category | Formats |
+|----------|---------|
+| Markup | `.md`, `.html`, `.htm` |
+| Office | `.docx`, `.xlsx`, `.pptx` |
+| Images | `.png`, `.jpg`, `.jpeg`, `.webp`, `.tiff`, `.avif` |
+| Text | `.txt`, `.csv`, `.xml`, `.json`, and more |
+| Other | `.pdf` (pass-through) |
+
+## API
+
+All functions accept a `Uint8Array` of input bytes and return a `Uint8Array` of PDF bytes.
+
+### General conversion
+
+```javascript
+import init, { convert } from '@cle-does-things/pdfitdown-wasm';
+
+await init();
+
+const inputBytes = new Uint8Array(/* ... */);
+const pdfBytes = convert(inputBytes);
+```
+
+### Specialized converters
+
+If you already know the file type, you can call a dedicated converter for a slightly smaller WASM footprint:
+
+```javascript
+import init, {
+  convertImage,
+  convertMarkup,
+  convertOffice,
+  convertText
+} from '@cle-does-things/pdfitdown-wasm';
+
+await init();
+
+const imagePdf = convertImage(imageBytes);
+const markupPdf = convertMarkup(markdownBytes);
+const officePdf = convertOffice(docxBytes);
+const textPdf = convertText(txtBytes);
+```
+
+## Browser example
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>PdfItDown WASM Demo</title>
+</head>
+<body>
+  <input type="file" id="fileInput" />
+  <a id="download" style="display:none">Download PDF</a>
+
+  <script type="module">
+    import init, { convert } from '@cle-does-things/pdfitdown-wasm';
+
+    await init();
+
+    document.getElementById('fileInput').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const pdfBytes = convert(bytes);
+
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.getElementById('download');
+      link.href = url;
+      link.download = file.name.replace(/\.[^.]+$/, '.pdf');
+      link.style.display = 'inline';
+      link.textContent = 'Download PDF';
+    });
+  </script>
+</body>
+</html>
+```
+
+## Build targets
+
+The package ships three build flavours:
+
+| Target | Use case |
+|--------|----------|
+| `web` (default) | Native ES modules in the browser |
+| `bundler` | Webpack, Vite, Rollup, etc. |
+| `nodejs` | Node.js (if you prefer WASM over NAPI-RS) |
+
+You can rebuild for a specific target from the monorepo root:
+
+```bash
+cd packages/wasm
+bun run build          # web target
+bun run build:bundler  # bundler target
+bun run build:nodejs   # nodejs target
+```
