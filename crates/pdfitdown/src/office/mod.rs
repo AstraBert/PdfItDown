@@ -28,14 +28,13 @@ impl Converter for OfficeConverter {
         let extension;
         match input.into() {
             ConversionInput::Binary(b) => {
-                let kind = infer::get(&b);
-                if let Some(k) = kind
-                    && self
-                        .supported_formats()
-                        .contains(&k.extension().to_lowercase().as_str())
+                let kind = file_format::FileFormat::from_bytes(&b);
+                if self
+                    .supported_formats()
+                    .contains(&kind.extension().to_lowercase().as_str())
                 {
                     data = b;
-                    extension = k.extension().to_lowercase();
+                    extension = kind.extension().to_lowercase();
                 } else {
                     return Err(io::Error::new(
                         io::ErrorKind::InvalidData,
