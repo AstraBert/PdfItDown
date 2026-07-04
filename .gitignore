@@ -11,3 +11,4 @@ __pycache__/
 target/
 .wrangler/
 .DS_Store
+packages/benchmarks/benchmark_report.html

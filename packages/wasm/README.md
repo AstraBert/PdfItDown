@@ -6,9 +6,14 @@ Example usage:
 
 ```html
 <script type="module">
-  import init, { convert } from 'https://cdn.jsdelivr.net/npm/pdfitdown-wasm@0.1.0/pdfitdown_wasm.js';
+  import init, {
+      convert,
+  } from "https://unpkg.com/@cle-does-things/pdfitdown-wasm@4.0.0/pkg/pdfitdown_wasm.js";
+
   
-  await init('https://cdn.jsdelivr.net/npm/pdfitdown-wasm@0.1.0/pdfitdown_wasm_bg.wasm');
+  await init(
+      "https://unpkg.com/@cle-does-things/pdfitdown-wasm@4.0.0/pkg/pdfitdown_wasm_bg.wasm",
+  );
 
   const fileInput = document.querySelector('input');
   fileInput.addEventListener('change', async (e) => {

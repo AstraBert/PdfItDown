@@ -12,6 +12,7 @@ Usage:
 
 import base64
 import json
+import os
 from pathlib import Path
 
 from jinja2 import Template
@@ -78,15 +79,23 @@ def b64_pdf(path: Path) -> str | None:
 
 def build_office_data(office_num: int) -> dict:
     office_id = f"office{office_num}"
+    office_ext = "unknown"
+    for f in os.listdir(DATA_DIR):
+        if not f.endswith(".pdf"):
+            if f.startswith(office_id):
+                office_ext = f.replace(office_id, "")
 
     lit_json = RESULTS_DIR / "lit" / f"{office_id}.json"
     markitdown_json = RESULTS_DIR / "markitdown" / f"{office_id}.json"
 
     lit = parse_result_json(lit_json) if lit_json.exists() else None
-    markitdown = parse_result_json(markitdown_json) if markitdown_json.exists() else None
+    markitdown = (
+        parse_result_json(markitdown_json) if markitdown_json.exists() else None
+    )
 
     return {
         "id": office_id,
+        "ext": office_ext,
         "lit": lit,
         "markitdown": markitdown,
         "pdfs": {
@@ -235,7 +244,7 @@ HTML_TEMPLATE = """
     <div class="tabs" id="mainTabs">
       {% for office in offices %}
       <button class="tab-btn {% if loop.first %}active{% endif %}" data-target="{{ office.id }}">
-        {{ office.id | upper }}
+        {{ office.id | upper }} {{ office.ext }}
       </button>
       {% endfor %}
     </div>
