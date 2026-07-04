@@ -1,24 +1,433 @@
-<script type="module">
-    import init, { convert } from "./pkg/pdfitdown_wasm.js";
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Any File → PDF</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            :root {
+                --paper: #f7f4ec;
+                --paper-edge: #e8e2d2;
+                --ink: #232120;
+                --graphite: #6f6a5f;
+                --stamp-red: #a83a2e;
+                --stamp-red-dark: #7e2c22;
+                --ok-green: #45684a;
+                --radius: 3px;
+            }
 
-    await init("./pkg/pdfitdown_wasm_bg.wasm");
+            * {
+                box-sizing: border-box;
+            }
 
-    document.querySelector("input").addEventListener("change", async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+            html,
+            body {
+                height: 100%;
+            }
 
-        const bytes = new Uint8Array(await file.arrayBuffer());
-        const result = convert(bytes);
+            body {
+                margin: 0;
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: var(--paper);
+                background-image: radial-gradient(
+                    circle at 1px 1px,
+                    rgba(35, 33, 32, 0.05) 1px,
+                    transparent 0
+                );
+                background-size: 22px 22px;
+                font-family: "Inter", sans-serif;
+                color: var(--ink);
+                padding: 24px;
+            }
 
-        // Trigger download
-        const blob = new Blob([result], { type: "application/pdf" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = file.name.replace(/\.[^.]+$/, ".pdf");
-        a.click();
-        URL.revokeObjectURL(url);
-    });
-</script>
+            .sheet {
+                position: relative;
+                width: 100%;
+                max-width: 460px;
+                background: #fffdf8;
+                border: 1px solid var(--paper-edge);
+                box-shadow:
+                    0 1px 0 rgba(35, 33, 32, 0.04),
+                    0 20px 40px -20px rgba(35, 33, 32, 0.25);
+                padding: 48px 40px 40px;
+                overflow: hidden;
+            }
 
-<input type="file" />
+            /* torn/perforated top edge */
+            .sheet::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 6px;
+                background-image: radial-gradient(
+                    circle,
+                    var(--paper) 2.5px,
+                    transparent 2.6px
+                );
+                background-size: 14px 12px;
+                background-position: center -6px;
+            }
+
+            .eyebrow {
+                font-family: "JetBrains Mono", monospace;
+                font-size: 11px;
+                letter-spacing: 0.14em;
+                text-transform: uppercase;
+                color: var(--graphite);
+                margin: 0 0 6px;
+            }
+
+            h1 {
+                font-family: "JetBrains Mono", monospace;
+                font-weight: 700;
+                font-size: 26px;
+                line-height: 1.15;
+                letter-spacing: -0.01em;
+                margin: 0 0 8px;
+            }
+
+            h1 .arrow {
+                color: var(--stamp-red);
+            }
+
+            .sub {
+                font-size: 14.5px;
+                color: var(--graphite);
+                margin: 0 0 30px;
+                line-height: 1.5;
+            }
+
+            .dropzone {
+                position: relative;
+                border: 1.5px dashed #c9c2ab;
+                border-radius: var(--radius);
+                padding: 34px 20px;
+                text-align: center;
+                cursor: pointer;
+                transition:
+                    border-color 0.18s ease,
+                    background 0.18s ease;
+                background: rgba(232, 226, 210, 0.15);
+            }
+
+            .dropzone:hover {
+                border-color: var(--stamp-red);
+                background: rgba(168, 58, 46, 0.04);
+            }
+
+            .dropzone.dragover {
+                border-color: var(--stamp-red);
+                background: rgba(168, 58, 46, 0.07);
+            }
+
+            .dropzone.busy {
+                cursor: default;
+                border-color: #c9c2ab;
+            }
+
+            .dz-icon {
+                width: 30px;
+                height: 30px;
+                margin: 0 auto 12px;
+                color: var(--graphite);
+            }
+
+            .dz-title {
+                font-size: 14.5px;
+                font-weight: 600;
+                margin: 0 0 4px;
+            }
+
+            .dz-hint {
+                font-size: 12.5px;
+                color: var(--graphite);
+                margin: 0;
+            }
+
+            .dz-hint .key {
+                font-family: "JetBrains Mono", monospace;
+                background: var(--paper-edge);
+                padding: 1px 5px;
+                border-radius: 2px;
+            }
+
+            input[type="file"] {
+                display: none;
+            }
+
+            .status-line {
+                margin-top: 18px;
+                font-family: "JetBrains Mono", monospace;
+                font-size: 12.5px;
+                color: var(--graphite);
+                min-height: 18px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .status-line .dot {
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                background: var(--graphite);
+                flex-shrink: 0;
+            }
+            .status-line.ok .dot {
+                background: var(--ok-green);
+            }
+            .status-line.busy .dot {
+                background: var(--stamp-red);
+                animation: pulse 0.9s ease-in-out infinite;
+            }
+            .status-line.err .dot {
+                background: var(--stamp-red-dark);
+            }
+            .status-line.ok {
+                color: var(--ok-green);
+            }
+            .status-line.err {
+                color: var(--stamp-red-dark);
+            }
+
+            @keyframes pulse {
+                0%,
+                100% {
+                    opacity: 1;
+                    transform: scale(1);
+                }
+                50% {
+                    opacity: 0.4;
+                    transform: scale(0.7);
+                }
+            }
+
+            /* the stamp — signature element */
+            .stamp {
+                position: absolute;
+                top: 38px;
+                right: -18px;
+                width: 108px;
+                height: 108px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                pointer-events: none;
+                opacity: 0;
+                transform: rotate(-18deg) scale(1.6);
+                transition: none;
+            }
+
+            .stamp.hit {
+                transition:
+                    opacity 0.08s ease-out,
+                    transform 0.28s cubic-bezier(0.2, 1.4, 0.4, 1);
+                opacity: 1;
+                transform: rotate(-14deg) scale(1);
+            }
+
+            .stamp svg {
+                width: 100%;
+                height: 100%;
+            }
+            .stamp-ring {
+                fill: none;
+                stroke: var(--stamp-red);
+                stroke-width: 2.5;
+            }
+            .stamp-text {
+                font-family: "JetBrains Mono", monospace;
+                font-weight: 700;
+                fill: var(--stamp-red);
+            }
+
+            footer {
+                margin-top: 26px;
+                font-size: 11.5px;
+                color: #a8a396;
+                font-family: "JetBrains Mono", monospace;
+                letter-spacing: 0.03em;
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+                .stamp.hit,
+                .status-line.busy .dot {
+                    transition: none;
+                    animation: none;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <main class="sheet">
+            <div class="stamp" id="stamp">
+                <svg viewBox="0 0 108 108">
+                    <circle class="stamp-ring" cx="54" cy="54" r="46" />
+                    <circle
+                        class="stamp-ring"
+                        cx="54"
+                        cy="54"
+                        r="38"
+                        opacity="0.5"
+                    />
+                    <text
+                        class="stamp-text"
+                        x="54"
+                        y="50"
+                        font-size="15"
+                        text-anchor="middle"
+                    >
+                        MADE
+                    </text>
+                    <text
+                        class="stamp-text"
+                        x="54"
+                        y="66"
+                        font-size="15"
+                        text-anchor="middle"
+                    >
+                        PDF
+                    </text>
+                </svg>
+            </div>
+
+            <p class="eyebrow">File conversion, no upload</p>
+            <h1>Any file <span class="arrow">→</span> PDF</h1>
+            <p class="sub">
+                Drop a document in. It's converted right here in your browser
+                and saved straight to your downloads — nothing leaves your
+                machine.
+            </p>
+
+            <div
+                class="dropzone"
+                id="dropzone"
+                tabindex="0"
+                role="button"
+                aria-label="Choose or drop a file to convert to PDF"
+            >
+                <svg
+                    class="dz-icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                >
+                    <path
+                        d="M12 3v12m0 0l-4-4m4 4l4-4"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    />
+                    <path
+                        d="M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    />
+                </svg>
+                <p class="dz-title">Drop a file, or click to choose</p>
+                <p class="dz-hint">Any format your browser can open</p>
+                <input type="file" id="fileInput" />
+            </div>
+
+            <div class="status-line" id="status">
+                <span class="dot"></span>
+                <span id="statusText">Waiting for a file</span>
+            </div>
+
+            <footer>runs locally · wasm-powered</footer>
+        </main>
+
+        <script type="module">
+            import init, {
+                convert,
+            } from "https://unpkg.com/@cle-does-things/pdfitdown-wasm@4.0.0/pkg/pdfitdown_wasm.js";
+
+            const dropzone = document.getElementById("dropzone");
+            const fileInput = document.getElementById("fileInput");
+            const status = document.getElementById("status");
+            const statusText = document.getElementById("statusText");
+            const stamp = document.getElementById("stamp");
+
+            function setStatus(kind, text) {
+                status.className = "status-line" + (kind ? " " + kind : "");
+                statusText.textContent = text;
+            }
+
+            setStatus("", "Loading converter…");
+            await init(
+                "https://unpkg.com/@cle-does-things/pdfitdown-wasm@4.0.0/pkg/pdfitdown_wasm_bg.wasm",
+            );
+            setStatus("", "Waiting for a file");
+
+            dropzone.addEventListener("click", () => fileInput.click());
+            dropzone.addEventListener("keydown", (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    fileInput.click();
+                }
+            });
+
+            ["dragenter", "dragover"].forEach((evt) =>
+                dropzone.addEventListener(evt, (e) => {
+                    e.preventDefault();
+                    dropzone.classList.add("dragover");
+                }),
+            );
+            ["dragleave", "drop"].forEach((evt) =>
+                dropzone.addEventListener(evt, (e) => {
+                    e.preventDefault();
+                    dropzone.classList.remove("dragover");
+                }),
+            );
+            dropzone.addEventListener("drop", (e) => {
+                const file = e.dataTransfer.files[0];
+                if (file) handleFile(file);
+            });
+
+            fileInput.addEventListener("change", (e) => {
+                const file = e.target.files[0];
+                if (file) handleFile(file);
+            });
+
+            async function handleFile(file) {
+                stamp.classList.remove("hit");
+                dropzone.classList.add("busy");
+                setStatus("busy", `Converting ${file.name}…`);
+
+                try {
+                    const bytes = new Uint8Array(await file.arrayBuffer());
+                    const result = convert(bytes);
+
+                    const blob = new Blob([result], {
+                        type: "application/pdf",
+                    });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = file.name.replace(/\.[^.]+$/, ".pdf");
+                    a.click();
+                    URL.revokeObjectURL(url);
+
+                    setStatus("ok", `Downloaded ${a.download}`);
+                    requestAnimationFrame(() => stamp.classList.add("hit"));
+                } catch (err) {
+                    setStatus("err", "Couldn't convert that file");
+                    console.error(err);
+                } finally {
+                    dropzone.classList.remove("busy");
+                    fileInput.value = "";
+                }
+            }
+        </script>
+    </body>
+</html>
