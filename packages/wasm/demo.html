@@ -350,7 +350,7 @@
         <script type="module">
             import init, {
                 convert,
-            } from "https://unpkg.com/@cle-does-things/pdfitdown-wasm@4.0.0/pkg/pdfitdown_wasm.js";
+            } from "https://unpkg.com/@cle-does-things/pdfitdown-wasm@4.1.0/pkg/pdfitdown_wasm.js";
 
             const dropzone = document.getElementById("dropzone");
             const fileInput = document.getElementById("fileInput");
@@ -365,7 +365,7 @@
 
             setStatus("", "Loading converter…");
             await init(
-                "https://unpkg.com/@cle-does-things/pdfitdown-wasm@4.0.0/pkg/pdfitdown_wasm_bg.wasm",
+                "https://unpkg.com/@cle-does-things/pdfitdown-wasm@4.1.0/pkg/pdfitdown_wasm_bg.wasm",
             );
             setStatus("", "Waiting for a file");
 

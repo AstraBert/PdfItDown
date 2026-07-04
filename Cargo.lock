@@ -2953,7 +2953,7 @@ dependencies = [
 
 [[package]]
 name = "pdfitdown"
-version = "4.0.0"
+version = "4.1.0"
 dependencies = [
  "clap",
  "file-format",
@@ -2973,7 +2973,7 @@ dependencies = [
 
 [[package]]
 name = "pdfitdown-python"
-version = "4.0.0"
+version = "4.1.0"
 dependencies = [
  "clap",
  "pdfitdown",
@@ -2992,7 +2992,7 @@ dependencies = [
 
 [[package]]
 name = "pdfitdown-wasm"
-version = "4.0.0"
+version = "4.1.0"
 dependencies = [
  "pdfitdown",
  "wasm-bindgen",
