@@ -17,8 +17,12 @@ npm install @cle-does-things/pdfitdown-wasm
 
 ```html
 <script type="module">
-  import init, { convert } from 'https://cdn.jsdelivr.net/npm/pdfitdown-wasm@4.0.0/pdfitdown_wasm.js';
-  await init('https://cdn.jsdelivr.net/npm/pdfitdown-wasm@4.0.0/pdfitdown_wasm_bg.wasm');
+  import init, {
+      convert,
+  } from "https://unpkg.com/@cle-does-things/pdfitdown-wasm@4.1.0/pkg/pdfitdown_wasm.js";
+  await init(
+      "https://unpkg.com/@cle-does-things/pdfitdown-wasm@4.1.0/pkg/pdfitdown_wasm_bg.wasm",
+  );
   // ... use convert()
 </script>
 ```
@@ -81,9 +85,13 @@ const textPdf = convertText(txtBytes);
   <a id="download" style="display:none">Download PDF</a>
 
   <script type="module">
-    import init, { convert } from '@cle-does-things/pdfitdown-wasm';
+    import init, {
+        convert,
+    } from "https://unpkg.com/@cle-does-things/pdfitdown-wasm@4.1.0/pkg/pdfitdown_wasm.js";
 
-    await init();
+    await init(
+        "https://unpkg.com/@cle-does-things/pdfitdown-wasm@4.1.0/pkg/pdfitdown_wasm_bg.wasm",
+    );
 
     document.getElementById('fileInput').addEventListener('change', async (e) => {
       const file = e.target.files[0];
@@ -104,6 +112,38 @@ const textPdf = convertText(txtBytes);
 </html>
 ```
 
+Find a full browser example [here](https://github.com/AstraBert/PdfItDown/tree/main/packages/wasm/demo.html)
+
+## Edge example
+
+PdfItDown WASM bindings can be used in edge runtimes such as Cloudflare Workers, AWS Lambdas, Vercel Edge Functions and many others.
+
+Here is a quick example on how to set up a CloudFlare worker endpoint:
+
+```ts
+import { convert, initSync } from '@cle-does-things/pdfitdown-wasm';
+import wasmModule from '../pdfitdown_wasm_bg.wasm';
+
+let initialized = false;
+
+export default {
+	async fetch(request, env, ctx): Promise<Response> {
+		if (!initialized) {
+			initSync({ module: wasmModule });
+			initialized = true;
+		}
+		const buf = await request.arrayBuffer();
+		const converted = convert(new Uint8Array(buf));
+
+		return new Response(converted, {
+			headers: { 'Content-Type': 'application/octet-stream' },
+		});
+	},
+} satisfies ExportedHandler<Env>;
+```
+
+Full reference [here](https://github.com/AstraBert/PdfItDown/tree/main/packages/pdfitdown-worker/README.md)
+
 ## Build targets
 
 The package ships three build flavours:
@@ -118,7 +158,7 @@ You can rebuild for a specific target from the monorepo root:
 
 ```bash
 cd packages/wasm
-bun run build          # web target
-bun run build:bundler  # bundler target
-bun run build:nodejs   # nodejs target
+npm run build          # web target
+npm run build:bundler  # bundler target
+npm run build:nodejs   # nodejs target
 ```
