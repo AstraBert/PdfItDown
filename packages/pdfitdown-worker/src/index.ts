@@ -11,8 +11,22 @@
  * Learn more at https://developers.cloudflare.com/workers/
  */
 
+import { convert, initSync } from '@cle-does-things/pdfitdown-wasm';
+import wasmModule from '../pdfitdown_wasm_bg.wasm';
+
+let initialized = false;
+
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
-		return new Response("Hello World!");
+		if (!initialized) {
+			initSync({ module: wasmModule });
+			initialized = true;
+		}
+		const buf = await request.arrayBuffer();
+		const converted = convert(new Uint8Array(buf));
+
+		return new Response(converted, {
+			headers: { 'Content-Type': 'application/octet-stream' },
+		});
 	},
 } satisfies ExportedHandler<Env>;

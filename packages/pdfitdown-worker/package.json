@@ -6,8 +6,9 @@
 		"deploy": "wrangler deploy",
 		"dev": "wrangler dev",
 		"start": "wrangler dev",
-		"test": "vitest",
-		"cf-typegen": "wrangler types"
+		"test": "vitest run",
+		"cf-typegen": "wrangler types",
+		"cp-wasm": "cp node_modules/@cle-does-things/pdfitdown-wasm/pkg/pdfitdown_wasm_bg.wasm ./"
 	},
 	"devDependencies": {
 		"@cloudflare/vitest-pool-workers": "^0.12.4",
@@ -15,5 +16,8 @@
 		"typescript": "^5.5.2",
 		"vitest": "~3.2.0",
 		"wrangler": "^4.107.0"
+	},
+	"dependencies": {
+		"@cle-does-things/pdfitdown-wasm": "4.1.0"
 	}
 }
