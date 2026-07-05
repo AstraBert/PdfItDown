@@ -18,10 +18,8 @@ impl Converter for ImageConverter {
         let data;
         match input.into() {
             ConversionInput::Binary(b) => {
-                let kind = infer::get(&b);
-                if let Some(k) = kind
-                    && self.supported_formats().contains(&k.extension())
-                {
+                let kind = file_format::FileFormat::from_bytes(&b);
+                if self.supported_formats().contains(&kind.extension()) {
                     data = b;
                 } else {
                     return Err(io::Error::new(

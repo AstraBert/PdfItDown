@@ -83,14 +83,13 @@ impl Converter for PdfItDownConverter {
         match input.clone().into() {
             types::ConversionInput::Binary(b) => {
                 #[cfg(any(feature = "image", feature = "office"))]
-                let kind = infer::get(&b);
+                let kind = file_format::FileFormat::from_bytes(&b);
                 #[cfg(any(feature = "image", feature = "office"))]
-                if let Some(k) = kind
-                    && self
-                        .supported_formats()
-                        .contains(&k.extension().to_lowercase().as_str())
+                if self
+                    .supported_formats()
+                    .contains(&kind.extension().to_lowercase().as_str())
                 {
-                    extension = k.extension().to_lowercase();
+                    extension = kind.extension().to_lowercase();
                 } else {
                     let s = String::from_utf8(b).map_err(|_| {
                         io::Error::new(

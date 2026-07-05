@@ -1,6 +1,6 @@
 [package]
 name = "pdfitdown-python"
-version = "4.0.0"
+version = "4.1.0"
 edition = "2024"
 license = "MIT"
 readme = "README.md"
@@ -16,5 +16,5 @@ crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = "0.28.3"
-pdfitdown = { path = "../pdfitdown", version = "4.0.0" }
+pdfitdown = { path = "../pdfitdown", version = "4.1.0" }
 clap = { version = "4.6.1", features = ["derive"] }
