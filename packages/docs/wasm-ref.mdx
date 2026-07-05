@@ -17,8 +17,12 @@ npm install @cle-does-things/pdfitdown-wasm
 
 ```html
 <script type="module">
-  import init, { convert } from 'https://cdn.jsdelivr.net/npm/pdfitdown-wasm@4.0.0/pdfitdown_wasm.js';
-  await init('https://cdn.jsdelivr.net/npm/pdfitdown-wasm@4.0.0/pdfitdown_wasm_bg.wasm');
+  import init, {
+      convert,
+  } from "https://unpkg.com/@cle-does-things/pdfitdown-wasm@4.1.0/pkg/pdfitdown_wasm.js";
+  await init(
+      "https://unpkg.com/@cle-does-things/pdfitdown-wasm@4.1.0/pkg/pdfitdown_wasm_bg.wasm",
+  );
   // ... use convert()
 </script>
 ```
@@ -118,7 +122,7 @@ You can rebuild for a specific target from the monorepo root:
 
 ```bash
 cd packages/wasm
-bun run build          # web target
-bun run build:bundler  # bundler target
-bun run build:nodejs   # nodejs target
+npm run build          # web target
+npm run build:bundler  # bundler target
+npm run build:nodejs   # nodejs target
 ```
