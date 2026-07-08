@@ -25,7 +25,7 @@
 - Word (`.docx`)
 - Excel (`.xlsx`)
 - Text-based formats (`.txt`, `.csv`, `.xml`, `.json`, and more)
-- Image files (`.png`, `.jpg`, `.jpeg`, `.webp`, `.tiff`, `.avif`)
+- Image files (`.png`, `.jpg`, `.jpeg`, `.webp`, `.tiff`, `.tif`, `.bmp`, `.svg`)
 - PDF (pass-through)
 
 ### How does it work?

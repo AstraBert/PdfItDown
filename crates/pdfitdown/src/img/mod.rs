@@ -508,7 +508,9 @@ fn convert_image_to_pdf(data: Vec<u8>) -> Result<Vec<u8>, io::Error> {
 
 impl Converter for ImageConverter {
     fn supported_formats(&self) -> &'static [&'static str] {
-        &["png", "jpg", "jpeg", "avif", "tiff", "webp"]
+        &[
+            "jpg", "jpeg", "png", "gif", "bmp", "tiff", "tif", "webp", "svg",
+        ]
     }
     /// Convert an image to PDF bytes
     fn convert(&self, input: impl Into<ConversionInput> + Clone) -> io::Result<Vec<u8>> {
