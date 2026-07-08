@@ -3,7 +3,7 @@
 authors = ["Clelia Astra Bertelli <astraberte9@gmail.com>"]
 edition = "2021"
 name    = "pdfitdown-ts"
-version = "4.1.0"
+version = "4.2.0"
 
 [lib]
 crate-type = ["cdylib"]
@@ -11,7 +11,7 @@ crate-type = ["cdylib"]
 [dependencies]
 napi        = "3.0.0"
 napi-derive = "3.0.0"
-pdfitdown   = { path = "../pdfitdown", version = "4.1.0" }
+pdfitdown   = { path = "../pdfitdown", version = "4.2.0" }
 
 [build-dependencies]
 napi-build = "2"
