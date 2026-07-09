@@ -205,6 +205,11 @@ mod tests {
         {
             assert!(formats.contains(&"png"));
             assert!(formats.contains(&"jpg"));
+            assert!(formats.contains(&"webp"));
+            assert!(formats.contains(&"tiff"));
+            assert!(formats.contains(&"tif"));
+            assert!(formats.contains(&"svg"));
+            assert!(formats.contains(&"bmp"));
         }
         #[cfg(feature = "office")]
         {
