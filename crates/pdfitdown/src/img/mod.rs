@@ -644,7 +644,9 @@ mod tests {
         let converter = ImageConverter::default();
         assert_eq!(
             converter.supported_formats(),
-            &["png", "jpg", "jpeg", "avif", "tiff", "webp"]
+            &[
+                "jpg", "jpeg", "png", "gif", "bmp", "tiff", "tif", "webp", "svg",
+            ]
         )
     }
 
